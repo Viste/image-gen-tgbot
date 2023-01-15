@@ -37,23 +37,25 @@ async def check_rights_and_permissions(bot: Bot, chat_id: int):
     if not chat_member_info.can_restrict_members or not chat_member_info.can_delete_messages:
         raise PermissionError("Мне нужны эти права: 'restrict participants' и 'delete messages'")
 
-async def send_data_chat_gpt(data: str):
-    async with aiohttp.ClientSession() as session:
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {config.api_key}"
-        }
-        data = {
-            "model": "text-davinci-003",
-            "prompt": data,
-            "temperature": 0.9,
-            "max_tokens": 512,
-            "top_p": 1,
-            "frequency_penalty": 0.0,
-            "presence_penalty": 0.6,
-        }
-        async with session.post(config.api_url, headers=headers, json=data) as resp:
-            return await resp.json()
+class ClientChatGPT:
+    @staticmethod
+    async def send_data_chat_gpt(data: str):
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {config.api_key}"
+            }
+            data = {
+                "model": "text-davinci-003",
+                "prompt": data,
+                "temperature": 0.9,
+                "max_tokens": 512,
+                "top_p": 1,
+                "frequency_penalty": 0.0,
+                "presence_penalty": 0.6,
+            }
+            async with session.post(config.api_url, headers=headers, json=data) as resp:
+                return await resp.json()
 
 def trim_message(text: str) -> str:
     if text.startswith("?"):

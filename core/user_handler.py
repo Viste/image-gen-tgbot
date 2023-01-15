@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from misc.utils import DeleteMsgCallback, config, result_to_text, trim_message, send_data_chat_gpt
+from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT
 from misc.language import Lang
 
 logger = logging.getLogger("report_bot")
@@ -135,7 +135,9 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 @router.message(Ask.get)
 async def process_ask(message: types.Message, state: FSMContext) -> None:
     await state.update_data(name=message.text)
-    logging.info("%s", message.text)
-    send_data_chat_gpt(message.text)
     await state.set_state(Ask.res)
-    await message.answer() # TODO get
+    logging.info("%s", message.text)
+    gpt = ClientChatGPT()
+    result = await gpt.send_data_chat_gpt(message.text)
+    text = result_to_text(result["choices"])
+    await message.answer(text)
