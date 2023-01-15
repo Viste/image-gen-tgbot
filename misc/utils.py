@@ -1,11 +1,17 @@
-import aiohttp
 from typing import Dict, List, Union
+import aiohttp
+import json
+import os
 from aiogram import Bot
-from aiogram.types import ChatMemberAdministrator, ChatMemberOwner
 from aiogram.filters.callback_data import CallbackData
-from config import load_config
+from aiogram.types import ChatMemberAdministrator, ChatMemberOwner
 
-config = load_config("config.ini")
+class JSONObject:
+    def __init__(self, dict):
+        vars(self).update(dict)
+
+cfg_file = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r', encoding='utf8')
+config = json.loads(cfg_file.read(), object_hook=JSONObject)
 
 class DeleteMsgCallback(CallbackData, prefix="delmsg"):
     action: str
