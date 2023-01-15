@@ -2,15 +2,20 @@ import logging
 from typing import List, Union, Optional
 from aiogram import types, Bot, html, F, Router
 from aiogram.filters.command import Command, CommandObject
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.exceptions import TelegramAPIError
-from aiogram.types import Chat, User
+from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from misc.utils import DeleteMsgCallback
-from misc.utils import config
+from misc.utils import DeleteMsgCallback, config, result_to_text, trim_message, send_data_chat_gpt
 from misc.language import Lang
 
 logger = logging.getLogger("report_bot")
 router = Router()
+
+class Ask(StatesGroup):
+    get = State()
+    res = State()
 
 def get_report_chats(bot_id: int) -> List[int]:
     if config.report_mode == "group":
@@ -106,3 +111,31 @@ async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot)
         await message.answer(lang.get("channels_not_allowed"))
         await bot.ban_chat_sender_chat(message.chat.id, message.sender_chat.id)
         await message.delete()
+
+@router.message(Command(commands="ask"), F.sender_chat)
+async def ask(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Ask.get)
+    text_message = "Дам тебе ответ на любой вопрос!"
+    await message.reply(text_message)
+
+@router.message(Command(commands=["cancel"]))
+@router.message(F.text.casefold() == "cancel")
+async def cancel_handler(message: types.Message, state: FSMContext) -> None:
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+
+    logging.info("Cancelling state %r", current_state)
+    await state.clear()
+    await message.answer(
+        "Cancelled.",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+
+@router.message(Ask.get)
+async def process_ask(message: types.Message, state: FSMContext) -> None:
+    await state.update_data(name=message.text)
+    logging.info("%s", message.text)
+    send_data_chat_gpt(message.text)
+    await state.set_state(Ask.res)
+    await message.answer() # TODO get
