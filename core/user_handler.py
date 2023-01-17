@@ -13,9 +13,11 @@ from misc.language import Lang
 logger = logging.getLogger("nasty_bot")
 router = Router()
 
+
 class Ask(StatesGroup):
     get = State()
     res = State()
+
 
 def get_report_chats(bot_id: int) -> List[int]:
     if config.report_mode == "group":
@@ -27,6 +29,7 @@ def get_report_chats(bot_id: int) -> List[int]:
                 recipients.append(admin_id)
         return recipients
 
+
 def make_report_message(reported_message: types.Message, comment: Optional[str], lang: Lang):
     msg = lang.get("report_message").format(
         time=reported_message.date.strftime(lang.get("report_date_format")),
@@ -35,6 +38,7 @@ def make_report_message(reported_message: types.Message, comment: Optional[str],
     if comment is not None:
         msg += lang.get("report_note").format(note=html.quote(comment))
     return msg
+
 
 def make_report_keyboard(entity_id: int, message_ids: str, lang: Lang) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
@@ -57,10 +61,12 @@ def make_report_keyboard(entity_id: int, message_ids: str, lang: Lang) -> Inline
     keyboard.adjust(1)
     return keyboard.as_markup()
 
+
 @router.message(Command(commands="report"), F.reply_to_message)
 async def report(message: types.Message, lang: Lang, bot: Bot, command: CommandObject):
     replied_msg = message.reply_to_message
-    reported_chat: Union[Chat, User] = replied_msg.sender_chat or replied_msg.from_user
+    reported_chat: Union[Chat,
+                         User] = replied_msg.sender_chat or replied_msg.from_user
 
     if isinstance(reported_chat, User) and reported_chat.id in config.admins.keys():
         await message.reply(lang.get("error_report_admin"))
@@ -83,7 +89,8 @@ async def report(message: types.Message, lang: Lang, bot: Bot, command: CommandO
             )
 
             await bot.send_message(
-                report_chat, text=make_report_message(message.reply_to_message, command.args, lang),
+                report_chat, text=make_report_message(
+                    message.reply_to_message, command.args, lang),
                 reply_markup=make_report_keyboard(
                     entity_id=reported_chat.id,
                     message_ids=f"{message.message_id},{message.reply_to_message.message_id},{msg.message_id}",
@@ -93,12 +100,16 @@ async def report(message: types.Message, lang: Lang, bot: Bot, command: CommandO
         except TelegramAPIError as ex:
             logger.error(f"[{type(ex).__name__}]: {str(ex)}")
 
+
 @router.message(F.text.startswith("@admin"))
 async def calling_all_units(message: types.Message, lang: Lang, bot: Bot):
     for chat in get_report_chats(bot.id):
         await bot.send_message(
-            chat, lang.get("need_admins_attention").format(msg_url=message.get_url(force_private=True))
+            chat, lang.get("need_admins_attention").format(
+                msg_url=message.get_url(force_private=True))
         )
+
+
 @router.message(F.sender_chat, lambda x: config.ban_channels is True)
 async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot):
     # If is_automatic_forward is not None, then this is post from linked channel, which shouldn't be banned
@@ -108,11 +119,13 @@ async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot)
         await bot.ban_chat_sender_chat(message.chat.id, message.sender_chat.id)
         await message.delete()
 
-@router.message(Command(commands="ask"), F.sender_chat)
+
+@router.message(Command(commands="ask"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Ask.get)
     text_message = "Дам тебе ответ на любой вопрос!"
     await message.reply(text_message)
+
 
 @router.message(Command(commands=["cancel"]))
 @router.message(F.text.casefold() == "cancel")
@@ -127,6 +140,7 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
         "Cancelled.",
         reply_markup=ReplyKeyboardRemove(),
     )
+
 
 @router.message(Ask.get)
 async def process_ask(message: types.Message, state: FSMContext) -> None:
