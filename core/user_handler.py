@@ -7,18 +7,20 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT
+from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT, result_to_url
 from misc.language import Lang
 
 logger = logging.getLogger("nasty_bot")
 router = Router()
 
 
-class Ask(StatesGroup):
+class Text(StatesGroup):
     get = State()
     res = State()
 
-
+class DaleImage(StatesGroup):
+    get = State()
+    res = State()
 def get_report_chats(bot_id: int) -> List[int]:
     if config.report_mode == "group":
         return [config.group_reports]
@@ -122,7 +124,7 @@ async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot)
 
 @router.message(Command(commands="ask"))
 async def ask(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Ask.get)
+    await state.set_state(Text.get)
     text_message = "Дам тебе ответ на любой вопрос!"
     await message.reply(text_message)
 
@@ -142,12 +144,42 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     )
 
 
-@router.message(Ask.get)
+@router.message(Text.get)
 async def process_ask(message: types.Message, state: FSMContext) -> None:
     await state.update_data(name=message.text)
-    await state.set_state(Ask.res)
+    await state.set_state(Text.res)
     logging.info("%s", message.text)
     gpt = ClientChatGPT()
     result = await gpt.send_qa_to_gpt(message.text)
     text = result_to_text(result["choices"])
-    await message.answer(text)
+    await message.reply(text)
+
+@router.message(Command(commands="paint"))
+async def ask(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(DaleImage.get)
+    text_message = "Опиши что ты хочешь увидеть на изображении?"
+    await message.reply(text_message)
+
+@router.message(DaleImage.get)
+async def process_paint(message: types.Message, state: FSMContext) -> None:
+    await state.update_data(name=message.text)
+    await state.set_state(DaleImage.res)
+    logging.info("%s", message.text)
+    gpt = ClientChatGPT()
+    result = await gpt.send_dale_img_req(message.text)
+    photo = result_to_url(result["data"])
+    await message.reply_photo(photo)
+
+
+@router.message(Command(commands="help"))
+async def info(message: types.Message):
+
+    text = "Бот написан специально для PPRFNK!\n" \
+           "По команде /report сообщу всем админам чата о плохом человеке! \n" \
+           "Если ошибся или что-то пошло не так напиши /cancel \n" \
+           "По команде /ask я дам один ответ на один вопрос\n" \
+           "По команде /paint сгенерирую изображение с помощью моей подруги нейросети DaLL E\n" \
+           "Еще скоро появится команда /dream для генерации изображений в нейросети SD, но пока мой автор ленится\n" \
+           "\n" \
+           "Автор: @vistee"
+    await message.reply(text)

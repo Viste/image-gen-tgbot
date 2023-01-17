@@ -1,7 +1,8 @@
 {
   "token": "5465711164:AAFaQ96qy1jIQzv_gedubu6nI7bbkAqx6BY",
   "api_key": "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",
-  "api_url": "https://api.openai.com/v1/completions",
+  "text_api_url": "https://api.openai.com/v1/completions",
+  "dalle_api_url": "https://api.openai.com/v1/images/generations",
   "admins": [58800377, 111388938, 350493882],
   "group_main": "-1001620154424",
   "remove_joins": "True",

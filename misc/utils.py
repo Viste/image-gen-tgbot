@@ -49,12 +49,12 @@ class ClientChatGPT:
                 "model": "text-davinci-003",
                 "prompt": data,
                 "temperature": 0.9,
-                "max_tokens": 512,
+                "max_tokens": 1024,
                 "top_p": 1,
                 "frequency_penalty": 0.0,
                 "presence_penalty": 0.6,
             }
-            async with session.post(config.api_url, headers=headers, json=data) as resp:
+            async with session.post(config.text_api_url, headers=headers, json=data) as resp:
                 return await resp.json()
 
     @staticmethod
@@ -69,7 +69,7 @@ class ClientChatGPT:
                 "n": 1,
                 "size": "1024x1024",
             }
-            async with session.post(config.api_url, headers=headers, json=data) as resp:
+            async with session.post(config.dalle_api_url, headers=headers, json=data) as resp:
                 return await resp.json()
 
 def trim_message(text: str) -> str:
@@ -84,4 +84,11 @@ def result_to_text(response: List[Dict[str, str]]) -> str:
             message.get("text")
         )
         result.append(clear_message)
+    return " ".join(result)
+
+def result_to_url(response: List[Dict[str, str]]) -> str:
+    result = []
+    for message in response:
+        msg = message.get("url")
+        result.append(msg)
     return " ".join(result)
