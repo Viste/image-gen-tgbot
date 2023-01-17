@@ -10,7 +10,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT
 from misc.language import Lang
 
-logger = logging.getLogger("report_bot")
+logger = logging.getLogger("nasty_bot")
 router = Router()
 
 class Ask(StatesGroup):
@@ -27,7 +27,6 @@ def get_report_chats(bot_id: int) -> List[int]:
                 recipients.append(admin_id)
         return recipients
 
-
 def make_report_message(reported_message: types.Message, comment: Optional[str], lang: Lang):
     msg = lang.get("report_message").format(
         time=reported_message.date.strftime(lang.get("report_date_format")),
@@ -37,10 +36,8 @@ def make_report_message(reported_message: types.Message, comment: Optional[str],
         msg += lang.get("report_note").format(note=html.quote(comment))
     return msg
 
-
 def make_report_keyboard(entity_id: int, message_ids: str, lang: Lang) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
-    # First button: delete messages only
     keyboard.button(
         text=lang.get("action_del_msg"),
         callback_data=DeleteMsgCallback(
@@ -49,7 +46,6 @@ def make_report_keyboard(entity_id: int, message_ids: str, lang: Lang) -> Inline
             message_ids=message_ids
         )
     )
-    # Second button: delete messages and ban user or channel (user writing on behalf of channel)
     keyboard.button(
         text=lang.get("action_del_and_ban"),
         callback_data=DeleteMsgCallback(
@@ -138,6 +134,6 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Ask.res)
     logging.info("%s", message.text)
     gpt = ClientChatGPT()
-    result = await gpt.send_data_chat_gpt(message.text)
+    result = await gpt.send_qa_to_gpt(message.text)
     text = result_to_text(result["choices"])
     await message.answer(text)

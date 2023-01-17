@@ -1,7 +1,6 @@
 from aiogram import Router, F
 from misc.utils import config
 
-
 def setup_routers() -> Router:
     from . import callbacks, admins, admin_handler, user_handler, misc
 

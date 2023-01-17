@@ -39,7 +39,7 @@ async def check_rights_and_permissions(bot: Bot, chat_id: int):
 
 class ClientChatGPT:
     @staticmethod
-    async def send_data_chat_gpt(data: str):
+    async def send_qa_to_gpt(data: str):
         async with aiohttp.ClientSession() as session:
             headers = {
                 "Content-Type": "application/json",
@@ -53,6 +53,21 @@ class ClientChatGPT:
                 "top_p": 1,
                 "frequency_penalty": 0.0,
                 "presence_penalty": 0.6,
+            }
+            async with session.post(config.api_url, headers=headers, json=data) as resp:
+                return await resp.json()
+
+    @staticmethod
+    async def send_dale_img_req(data: str):
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {config.api_key}"
+            }
+            data = {
+                "prompt": data,
+                "n": 1,
+                "size": "1024x1024",
             }
             async with session.post(config.api_url, headers=headers, json=data) as resp:
                 return await resp.json()
