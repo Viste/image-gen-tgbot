@@ -18,9 +18,12 @@ class Text(StatesGroup):
     get = State()
     res = State()
 
+
 class DaleImage(StatesGroup):
     get = State()
     res = State()
+
+
 def get_report_chats(bot_id: int) -> List[int]:
     if config.report_mode == "group":
         return [config.group_reports]
@@ -68,7 +71,7 @@ def make_report_keyboard(entity_id: int, message_ids: str, lang: Lang) -> Inline
 async def report(message: types.Message, lang: Lang, bot: Bot, command: CommandObject):
     replied_msg = message.reply_to_message
     reported_chat: Union[Chat,
-                         User] = replied_msg.sender_chat or replied_msg.from_user
+    User] = replied_msg.sender_chat or replied_msg.from_user
 
     if isinstance(reported_chat, User) and reported_chat.id in config.admins.keys():
         await message.reply(lang.get("error_report_admin"))
@@ -154,11 +157,13 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
     text = result_to_text(result["choices"])
     await message.reply(text)
 
+
 @router.message(Command(commands="paint"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(DaleImage.get)
     text_message = "Опиши что ты хочешь увидеть на изображении?"
     await message.reply(text_message)
+
 
 @router.message(DaleImage.get)
 async def process_paint(message: types.Message, state: FSMContext) -> None:
@@ -173,7 +178,6 @@ async def process_paint(message: types.Message, state: FSMContext) -> None:
 
 @router.message(Command(commands="help"))
 async def info(message: types.Message):
-
     text = "Бот написан специально для PPRFNK!\n" \
            "По команде /report сообщу всем админам чата о плохом человеке! \n" \
            "Если ошибся или что-то пошло не так напиши /cancel \n" \

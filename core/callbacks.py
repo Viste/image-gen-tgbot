@@ -8,6 +8,7 @@ from misc.utils import DeleteMsgCallback
 logger = logging.getLogger("nasty_bot")
 router = Router()
 
+
 @router.callback_query(DeleteMsgCallback.filter())
 async def delmsg_callback(call: types.CallbackQuery, callback_data: DeleteMsgCallback,
                           lang: Lang, bot: Bot):

@@ -9,6 +9,7 @@ from misc.utils import fetch_admins, check_rights_and_permissions
 from misc.utils import config
 from misc.language import Lang
 
+
 async def set_bot_commands(bot: Bot, main_group_id: int):
     commands = [
         BotCommand(command="report", description="Пожаловаться на сообщение"),
@@ -19,13 +20,14 @@ async def set_bot_commands(bot: Bot, main_group_id: int):
     ]
     await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=main_group_id))
 
+
 async def main():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
         stream=sys.stdout,
     )
-    
+
     bot = Bot(token=config.token, parse_mode="HTML")
     worker = Dispatcher()
 
@@ -62,6 +64,7 @@ async def main():
     await set_bot_commands(bot, config.group_main)
     logging.info("Starting bot")
     await worker.start_polling(bot, allowed_updates=useful_updates, lang=lang)
+
 
 if __name__ == '__main__':
     try:

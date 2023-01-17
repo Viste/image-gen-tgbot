@@ -8,12 +8,14 @@ from misc.language import Lang
 restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhd]\b)')
 router = Router()
 
+
 def get_restriction_period(text: str) -> int:
     multipliers = {"m": 60, "h": 3600, "d": 86400}
     if match := re.search(restriction_time_regex, text):
         time, modifier = match.groups()
         return int(time) * multipliers[modifier]
     return 0
+
 
 @router.message(Command(commands=["ro", "nm"]), F.reply_to_message, F.from_user.id.in_(config.admins.keys()))
 async def cmd_ro_or_nomedia(message: types.Message, lang: Lang, bot: Bot):

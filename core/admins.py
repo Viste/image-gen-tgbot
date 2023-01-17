@@ -3,6 +3,8 @@ from filters.admins import AdminAdded, AdminRemoved
 from misc.utils import config
 
 router = Router()
+
+
 @router.chat_member(AdminAdded())
 async def admin_added(event: types.ChatMemberUpdated):
     new = event.new_chat_member
@@ -10,6 +12,7 @@ async def admin_added(event: types.ChatMemberUpdated):
         config.admins[new.user.id] = {"can_restrict_members": True}
     else:
         config.admins[new.user.id] = {"can_restrict_members": new.can_restrict_members}
+
 
 @router.chat_member(AdminRemoved())
 async def admin_removed(event: types.ChatMemberUpdated):

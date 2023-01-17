@@ -6,17 +6,21 @@ from aiogram import Bot
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import ChatMemberAdministrator, ChatMemberOwner
 
+
 class JSONObject:
     def __init__(self, dic):
         vars(self).update(dic)
 
+
 cfg_file = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r', encoding='utf8')
 config = json.loads(cfg_file.read(), object_hook=JSONObject)
+
 
 class DeleteMsgCallback(CallbackData, prefix="delmsg"):
     action: str
     entity_id: int
     message_ids: str  # Lists are not supported =(
+
 
 async def fetch_admins(bot: Bot) -> Dict:
     result = {}
@@ -36,6 +40,7 @@ async def check_rights_and_permissions(bot: Bot, chat_id: int):
         raise PermissionError("Мне нужны Админ-права")
     if not chat_member_info.can_restrict_members or not chat_member_info.can_delete_messages:
         raise PermissionError("Мне нужны эти права: 'restrict participants' и 'delete messages'")
+
 
 class ClientChatGPT:
     @staticmethod
@@ -72,10 +77,12 @@ class ClientChatGPT:
             async with session.post(config.dalle_api_url, headers=headers, json=data) as resp:
                 return await resp.json()
 
+
 def trim_message(text: str) -> str:
     if text.startswith("?"):
         text = text.strip("?")
     return text.strip("\n")
+
 
 def result_to_text(response: List[Dict[str, str]]) -> str:
     result = []
@@ -85,6 +92,7 @@ def result_to_text(response: List[Dict[str, str]]) -> str:
         )
         result.append(clear_message)
     return " ".join(result)
+
 
 def result_to_url(response: List[Dict[str, str]]) -> str:
     result = []
