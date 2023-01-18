@@ -206,7 +206,7 @@ async def info(message: types.Message):
     await message.reply(text)
 
 
-@router.message(F.text.startswith("Как дела?"))
+@router.message(F.text.startswith("Настя, как дела?"))
 async def how_are_you(message: types.Message, lang: Lang):
     logging.info("%s", message.text)
     gpt = ClientChatGPT()
