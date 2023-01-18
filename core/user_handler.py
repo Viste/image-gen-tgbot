@@ -164,6 +164,9 @@ async def process_ask(message: types.Message, lang: Lang, state: FSMContext) -> 
         elif e == KeyError:
             text = (lang.get("error_key"))
             await message.reply(text)
+        elif e == TelegramBadRequest:
+            text = (lang.get("error_bad"))
+            await message.reply(text)
 
 
 @router.message(Command(commands="paint"))
@@ -183,7 +186,7 @@ async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -
     try:
         photo = result_to_url(result["data"])
         await message.reply_photo(photo)
-    except(TimeoutError, KeyError) as e:
+    except(TimeoutError, KeyError, TelegramBadRequest) as e:
         logging.info('error: %s', e)
         if e == TimeoutError:
             text = (lang.get("error_timeout"))
@@ -194,6 +197,7 @@ async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -
         elif e == TelegramBadRequest:
             text = (lang.get("error_bad"))
             await message.reply(text)
+
 
 @router.message(Command(commands="help"))
 async def info(message: types.Message):
@@ -223,6 +227,9 @@ async def how_are_you(message: types.Message, lang: Lang):
             await message.reply(text)
         elif e == KeyError:
             text = (lang.get("error_key"))
+            await message.reply(text)
+        elif e == TelegramBadRequest:
+            text = (lang.get("error_bad"))
             await message.reply(text)
 
 
