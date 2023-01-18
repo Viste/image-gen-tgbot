@@ -70,8 +70,7 @@ def make_report_keyboard(entity_id: int, message_ids: str, lang: Lang) -> Inline
 @router.message(Command(commands="report"), F.reply_to_message)
 async def report(message: types.Message, lang: Lang, bot: Bot, command: CommandObject):
     replied_msg = message.reply_to_message
-    reported_chat: Union[Chat,
-    User] = replied_msg.sender_chat or replied_msg.from_user
+    reported_chat: Union[Chat, User] = replied_msg.sender_chat or replied_msg.from_user
 
     if isinstance(reported_chat, User) and reported_chat.id in config.admins.keys():
         await message.reply(lang.get("error_report_admin"))
@@ -148,14 +147,23 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(Text.get)
-async def process_ask(message: types.Message, state: FSMContext) -> None:
+async def process_ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
     await state.update_data(name=message.text)
     await state.set_state(Text.res)
     logging.info("%s", message.text)
     gpt = ClientChatGPT()
     result = await gpt.send_qa_to_gpt(message.text)
-    text = result_to_text(result["choices"])
-    await message.reply(text)
+    try:
+        text = result_to_text(result["choices"])
+        await message.reply(text)
+    except(TimeoutError, KeyError) as e:
+        logging.info('error: %s', e)
+        if e == TimeoutError:
+            text = (lang.get("error_timeout"))
+            await message.reply(text)
+        elif e == KeyError:
+            text = (lang.get("error_key"))
+            await message.reply(text)
 
 
 @router.message(Command(commands="paint"))
@@ -166,14 +174,23 @@ async def ask(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(DaleImage.get)
-async def process_paint(message: types.Message, state: FSMContext) -> None:
+async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -> None:
     await state.update_data(name=message.text)
     await state.set_state(DaleImage.res)
     logging.info("%s", message.text)
     gpt = ClientChatGPT()
     result = await gpt.send_dale_img_req(message.text)
-    photo = result_to_url(result["data"])
-    await message.reply_photo(photo)
+    try:
+        photo = result_to_url(result["data"])
+        await message.reply_photo(photo)
+    except(TimeoutError, KeyError) as e:
+        logging.info('error: %s', e)
+        if e == TimeoutError:
+            text = (lang.get("error_timeout"))
+            await message.reply(text)
+        elif e == KeyError:
+            text = (lang.get("error_key"))
+            await message.reply(text)
 
 
 @router.message(Command(commands="help"))
@@ -187,3 +204,25 @@ async def info(message: types.Message):
            "\n" \
            "Автор: @vistee"
     await message.reply(text)
+
+
+@router.message(F.text.startswith("Как дела?"))
+async def how_are_you(message: types.Message, lang: Lang):
+    logging.info("%s", message.text)
+    gpt = ClientChatGPT()
+    result = await gpt.send_qa_to_gpt(message.text)
+    try:
+        text = result_to_text(result["choices"])
+        await message.reply(text)
+    except(TimeoutError, KeyError) as e:
+        logging.info('error: %s', e)
+        if e == TimeoutError:
+            text = (lang.get("error_timeout"))
+            await message.reply(text)
+        elif e == KeyError:
+            text = (lang.get("error_key"))
+            await message.reply(text)
+
+
+async def new_chat_member(message: types.Message):
+    pass
