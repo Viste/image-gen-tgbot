@@ -140,15 +140,8 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
-async def ask(message: types.Message, state: FSMContext) -> None:
+async def ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
     await state.set_state(Text.get)
-
-
-@router.message(Text.get)
-async def process_ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
-    await state.update_data(name=message.text)
-    await state.set_state(Text.res)
-    logging.info("%s", message.text)
     gpt = ClientChatGPT()
     trimmed = trim_name(message.text)
     result = await gpt.send_qa_to_gpt(trimmed)
@@ -166,6 +159,12 @@ async def process_ask(message: types.Message, lang: Lang, state: FSMContext) -> 
         elif e == TelegramBadRequest:
             text = lang.get("error_bad")
             await message.reply(text)
+
+
+@router.message(Text.get)
+async def process_ask(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Text.res)
+    logging.info("%s", message.text)
 
 
 @router.message(Command(commands="paint"))
