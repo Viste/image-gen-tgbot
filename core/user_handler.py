@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT, result_to_url
+from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT, result_to_url, trim_name
 from misc.language import Lang
 
 logger = logging.getLogger("nasty_bot")
@@ -124,13 +124,6 @@ async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot)
         await message.delete()
 
 
-@router.message(Command(commands="ask"))
-async def ask(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Text.get)
-    text_message = "Дам тебе ответ на любой вопрос!"
-    await message.reply(text_message)
-
-
 @router.message(Command(commands=["cancel"]))
 @router.message(F.text.casefold() == "cancel")
 async def cancel_handler(message: types.Message, state: FSMContext) -> None:
@@ -146,26 +139,27 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     )
 
 
-@router.message(Text.get)
+@router.message(Text.get, F.text.startswith("@naastyyaabot"))
 async def process_ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
     await state.update_data(name=message.text)
     await state.set_state(Text.res)
     logging.info("%s", message.text)
     gpt = ClientChatGPT()
-    result = await gpt.send_qa_to_gpt(message.text)
+    trimmed = trim_name(message.text)
+    result = await gpt.send_qa_to_gpt(trimmed)
     try:
         text = result_to_text(result["choices"])
         await message.reply(text)
     except(TimeoutError, KeyError, TelegramBadRequest) as e:
         logging.info('error: %s', e)
         if e == TimeoutError:
-            text = (lang.get("error_timeout"))
+            text = lang.get("error_timeout")
             await message.reply(text)
         elif e == KeyError:
-            text = (lang.get("error_key"))
+            text = lang.get("error_key")
             await message.reply(text)
         elif e == TelegramBadRequest:
-            text = (lang.get("error_bad"))
+            text = lang.get("error_bad")
             await message.reply(text)
 
 
@@ -189,13 +183,13 @@ async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -
     except(TimeoutError, KeyError, TelegramBadRequest) as e:
         logging.info('error: %s', e)
         if e == TimeoutError:
-            text = (lang.get("error_timeout"))
+            text = lang.get("error_timeout")
             await message.reply(text)
         elif e == KeyError:
-            text = (lang.get("error_key"))
+            text = lang.get("error_key")
             await message.reply(text)
         elif e == TelegramBadRequest:
-            text = (lang.get("error_bad"))
+            text = lang.get("error_bad")
             await message.reply(text)
 
 

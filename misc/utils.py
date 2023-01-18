@@ -84,6 +84,12 @@ def trim_message(text: str) -> str:
     return text.strip("\n")
 
 
+def trim_name(text: str) -> str:
+    if text.startswith("@naastyyaabot"):
+        text = text.strip("@naastyyaabot")
+    return text.strip("\n")
+
+
 def result_to_text(response: List[Dict[str, str]]) -> str:
     result = []
     for message in response:
