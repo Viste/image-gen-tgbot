@@ -4,7 +4,7 @@ from aiogram import types, Bot, html, F, Router
 from aiogram.filters.command import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.exceptions import TelegramAPIError
+from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT, result_to_url
@@ -156,7 +156,7 @@ async def process_ask(message: types.Message, lang: Lang, state: FSMContext) -> 
     try:
         text = result_to_text(result["choices"])
         await message.reply(text)
-    except(TimeoutError, KeyError) as e:
+    except(TimeoutError, KeyError, TelegramBadRequest) as e:
         logging.info('error: %s', e)
         if e == TimeoutError:
             text = (lang.get("error_timeout"))
@@ -191,7 +191,9 @@ async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -
         elif e == KeyError:
             text = (lang.get("error_key"))
             await message.reply(text)
-
+        elif e == TelegramBadRequest:
+            text = (lang.get("error_bad"))
+            await message.reply(text)
 
 @router.message(Command(commands="help"))
 async def info(message: types.Message):
