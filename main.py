@@ -13,8 +13,6 @@ from misc.language import Lang
 async def set_bot_commands(bot: Bot, main_group_id: int):
     commands = [
         BotCommand(command="report", description="Пожаловаться на сообщение"),
-        BotCommand(command="ask", description="Отвечу на любой твой вопрос"),
-        BotCommand(command="paint", description="Напиши что хочешь нарисовать? Я передам это нейросети DALL·E"),
         BotCommand(command="dream", description="Напиши что хочешь нарисовать? Я передам это нейросети SD"),
         BotCommand(command="help", description="Помощь"),
     ]
