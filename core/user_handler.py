@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT, result_to_url, trim_name
+from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT, result_to_url, trim_name, trim_cmd
 from misc.language import Lang
 
 logger = logging.getLogger("nasty_bot")
@@ -167,20 +167,12 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
     logging.info("%s", message.text)
 
 
-@router.message(Command(commands="paint"))
-async def ask(message: types.Message, state: FSMContext) -> None:
+@router.message(F.text.startswith("Нарисуй: "))
+async def ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
     await state.set_state(DaleImage.get)
-    text_message = "Опиши что ты хочешь увидеть на изображении?"
-    await message.reply(text_message)
-
-
-@router.message(DaleImage.get)
-async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -> None:
-    await state.update_data(name=message.text)
-    await state.set_state(DaleImage.res)
-    logging.info("%s", message.text)
     gpt = ClientChatGPT()
-    result = await gpt.send_dale_img_req(message.text)
+    trimmed = trim_cmd(message.text)
+    result = await gpt.send_dale_img_req(trimmed)
     try:
         photo = result_to_url(result["data"])
         await message.reply_photo(photo)
@@ -195,6 +187,12 @@ async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -
         elif e == TelegramBadRequest:
             text = lang.get("error_bad")
             await message.reply(text)
+
+
+@router.message(DaleImage.get)
+async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -> None:
+    await state.set_state(DaleImage.res)
+    logging.info("%s", message.text)
 
 
 @router.message(Command(commands="help"))
