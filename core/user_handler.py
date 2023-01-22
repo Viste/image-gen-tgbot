@@ -145,18 +145,18 @@ async def ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
     result = await gpt.send_qa_to_gpt(trimmed)
     try:
         text = result_to_text(result["choices"])
-        await message.reply(text, parse_mode="MarkdownV2")
+        await message.reply(text, parse_mode=None)
     except(TimeoutError, KeyError, TelegramBadRequest) as e:
         logging.info('error: %s', e)
         if e == TimeoutError:
             text = lang.get("error_timeout")
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
         elif e == KeyError:
             text = lang.get("error_key")
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
         elif e == TelegramBadRequest:
             text = lang.get("error_bad")
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
 
 
 @router.message(Text.get)
@@ -178,13 +178,13 @@ async def ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
         logging.info('error: %s', e)
         if e == TimeoutError:
             text = lang.get("error_timeout")
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
         elif e == KeyError:
             text = lang.get("error_key")
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
         elif e == TelegramBadRequest:
             text = lang.get("error_bad")
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
 
 
 @router.message(DaleImage.get)
@@ -204,7 +204,7 @@ async def info(message: types.Message):
            "Еще скоро появится команда /dream для генерации изображений в нейросети SD, но пока мой автор ленится\n" \
            "\n" \
            "Автор: @vistee"
-    await message.reply(text, parse_mode="MarkdownV2")
+    await message.reply(text, parse_mode=None)
 
 
 @router.message(F.text.startswith("Настя, как дела?"))
@@ -214,18 +214,18 @@ async def how_are_you(message: types.Message, lang: Lang):
     result = await gpt.send_qa_to_gpt(message.text)
     try:
         text = result_to_text(result["choices"])
-        await message.reply(text, parse_mode="MarkdownV2")
+        await message.reply(text, parse_mode=None)
     except(TimeoutError, KeyError) as e:
         logging.info('error: %s', e)
         if e == TimeoutError:
             text = (lang.get("error_timeout"))
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
         elif e == KeyError:
             text = (lang.get("error_key"))
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
         elif e == TelegramBadRequest:
             text = (lang.get("error_bad"))
-            await message.reply(text, parse_mode="MarkdownV2")
+            await message.reply(text, parse_mode=None)
 
 
 async def new_chat_member(message: types.Message):
