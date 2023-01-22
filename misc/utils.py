@@ -79,31 +79,31 @@ class ClientChatGPT:
 
 
 def trim_message(text: str) -> str:
-    if text.startswith("?"):
-        text = text.strip("?")
-    return text.strip("\n")
+    if text.startswith("""?"""):
+        text = text.strip("""?""")
+    return text.strip("""\n""")
 
 
 def trim_name(text: str) -> str:
-    if text.startswith("@naastyyaabot"):
-        text = text.strip("@naastyyaabot")
-    return text.strip("\n")
+    if text.startswith("""@naastyyaabot"""):
+        text = text.strip("""@naastyyaabot""")
+    return text.strip("""\n""")
 
 
 def trim_cmd(text: str) -> str:
-    if text.startswith("Нарисуй: "):
-        text = text.strip("Нарисуй: ")
-    return text.strip("\n")
+    if text.startswith("""Нарисуй: """):
+        text = text.strip("""Нарисуй: """)
+    return text.strip("""\n""")
 
 
 def result_to_text(response: List[Dict[str, str]]) -> str:
     result = []
     for message in response:
         clear_message = trim_message(
-            message.get("text")
+            message.get("""text""")
         )
         result.append(clear_message)
-    return " ".join(result)
+    return """ """.join(result)
 
 
 def result_to_url(response: List[Dict[str, str]]) -> str:
