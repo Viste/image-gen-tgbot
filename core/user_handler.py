@@ -116,8 +116,6 @@ async def calling_all_units(message: types.Message, lang: Lang, bot: Bot):
 
 @router.message(F.sender_chat, lambda x: config.ban_channels is True)
 async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot):
-    # If is_automatic_forward is not None, then this is post from linked channel, which shouldn't be banned
-    # If message.sender_chat.id == message.chat.id, then this is an anonymous admin, who shouldn't be banned either
     if message.is_automatic_forward is None and message.sender_chat.id != message.chat.id:
         await message.answer(lang.get("channels_not_allowed"))
         await bot.ban_chat_sender_chat(message.chat.id, message.sender_chat.id)
@@ -147,18 +145,18 @@ async def ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
     result = await gpt.send_qa_to_gpt(trimmed)
     try:
         text = result_to_text(result["choices"])
-        await message.reply(text)
+        await message.reply(text, parse_mode="MarkdownV2")
     except(TimeoutError, KeyError, TelegramBadRequest) as e:
         logging.info('error: %s', e)
         if e == TimeoutError:
             text = lang.get("error_timeout")
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
         elif e == KeyError:
             text = lang.get("error_key")
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
         elif e == TelegramBadRequest:
             text = lang.get("error_bad")
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
 
 
 @router.message(Text.get)
@@ -180,13 +178,13 @@ async def ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
         logging.info('error: %s', e)
         if e == TimeoutError:
             text = lang.get("error_timeout")
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
         elif e == KeyError:
             text = lang.get("error_key")
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
         elif e == TelegramBadRequest:
             text = lang.get("error_bad")
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
 
 
 @router.message(DaleImage.get)
@@ -206,7 +204,7 @@ async def info(message: types.Message):
            "Еще скоро появится команда /dream для генерации изображений в нейросети SD, но пока мой автор ленится\n" \
            "\n" \
            "Автор: @vistee"
-    await message.reply(text)
+    await message.reply(text, parse_mode="MarkdownV2")
 
 
 @router.message(F.text.startswith("Настя, как дела?"))
@@ -216,18 +214,18 @@ async def how_are_you(message: types.Message, lang: Lang):
     result = await gpt.send_qa_to_gpt(message.text)
     try:
         text = result_to_text(result["choices"])
-        await message.reply(text)
+        await message.reply(text, parse_mode="MarkdownV2")
     except(TimeoutError, KeyError) as e:
         logging.info('error: %s', e)
         if e == TimeoutError:
             text = (lang.get("error_timeout"))
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
         elif e == KeyError:
             text = (lang.get("error_key"))
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
         elif e == TelegramBadRequest:
             text = (lang.get("error_bad"))
-            await message.reply(text)
+            await message.reply(text, parse_mode="MarkdownV2")
 
 
 async def new_chat_member(message: types.Message):
