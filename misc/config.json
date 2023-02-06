@@ -9,6 +9,9 @@
   "lang": "ru",
   "report_mode": "private",
   "group_reports": "",
-  "ban_channels": "True"
+  "ban_channels": "True",
+  "user": "root",
+  "password": "",
+  "host": "/run/mariadb/mysql.sock",
+  "dbname": ""
 }
-
