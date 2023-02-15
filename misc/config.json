@@ -1,8 +1,12 @@
 {
   "token": "5465711164:AAFaQ96qy1jIQzv_gedubu6nI7bbkAqx6BY",
-  "api_key": "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",
+  "api_key": "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",
+  "ai21_api_key": "yGuLTAAj9XdRiiWTBb5VOMOt7nPvYBKc",
+  "deepai_api_key": "ef6809c3-2c0d-4f67-aacb-98aee3dd208b",
+  "sd_fa_api_key": "XHjUJejpMEQ31CB72jS1i6ig3S5wIwxpzkw3OJbmvF3KcNLru2zWbeEcK5Wn",
   "text_api_url": "https://api.openai.com/v1/completions",
   "dalle_api_url": "https://api.openai.com/v1/images/generations",
+  "deepai_api_url": "https://api.deepai.org/api/stable-diffusion",
   "admins": [58800377, 111388938, 350493882],
   "group_main": "-1001620154424",
   "remove_joins": "True",

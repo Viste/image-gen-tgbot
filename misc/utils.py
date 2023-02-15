@@ -1,6 +1,7 @@
 from typing import Dict, List, Union
 import json
 import os
+import requests
 from aiogram import Bot, types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import ChatMemberAdministrator, ChatMemberOwner
@@ -13,6 +14,16 @@ class JSONObject:
 
 cfg_file = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r', encoding='utf8')
 config = json.loads(cfg_file.read(), object_hook=JSONObject)
+
+
+class ClientSD:
+    @staticmethod
+    def send_sd_img_req(data: str):
+        req = requests.post(config.deepai_api_url,
+                            data={"text": data, "grid_size": 1, "width": 768, "height": 768},
+                            headers={'api-key': config.deepai_api_key})
+        result = req.json()
+        return result
 
 
 class DeleteMsgCallback(CallbackData, prefix="delmsg"):
@@ -53,28 +64,38 @@ def trim_name(text: str) -> str:
     return text.strip("\n")
 
 
+def trims(text: str) -> str:
+    if text.startswith("Настя,"):
+        text = text.strip("Настя,")
+    return text.strip("\n")
+
+
 def trim_cmd(text: str) -> str:
     if text.startswith("Нарисуй: "):
         text = text.strip("Нарисуй: ")
     return text.strip("\n")
 
 
-def result_to_text(response: List[Dict[str, str]]) -> str:
+def trim_image(text: str) -> str:
+    if text.startswith("Представь: "):
+        text = text.strip("Представь: ")
+    return text.strip("\n")
+
+
+def get_from_gpt(response: List[Dict[str, str]]) -> str:
     result = []
     for message in response:
-        clear_message = trim_message(
-            message.get("text")
-        )
+        clear_message = message.get("text")
         result.append(clear_message)
     return """ """.join(result)
 
 
-def result_to_url(response: List[Dict[str, str]]) -> str:
+def get_from_dalle(response: List[Dict[str, str]]) -> str:
     result = []
     for message in response:
-        msg = message.get("url")
-        result.append(msg)
-    return " ".join(result)
+        clear_message = message.get("url")
+        result.append(clear_message)
+    return """ """.join(result)
 
 
 new_user_added = types.ChatPermissions(

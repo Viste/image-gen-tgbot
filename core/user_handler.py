@@ -3,25 +3,17 @@ from typing import List, Union, Optional
 from aiogram import types, Bot, html, F, Router
 from aiogram.filters.command import Command, CommandObject
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
+from aiogram.exceptions import TelegramAPIError
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from misc.utils import DeleteMsgCallback, config, result_to_text, ClientChatGPT, result_to_url, trim_name, trim_cmd
+from misc.utils import DeleteMsgCallback, config, ClientSD, trim_image
+from misc.utils import trim_name, trim_cmd, trims, get_from_dalle, get_from_gpt
+from misc.states import DAImage, SDImage, Text
+from misc.bridge import OpenAI, Ai21
 from misc.language import Lang
 
 logger = logging.getLogger("nasty_bot")
 router = Router()
-
-
-class Text(StatesGroup):
-    get = State()
-    res = State()
-
-
-class DaleImage(StatesGroup):
-    get = State()
-    res = State()
 
 
 def get_report_chats(bot_id: int) -> List[int]:
@@ -138,58 +130,86 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
-async def ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
+async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
-    gpt = ClientChatGPT()
+    gpt = OpenAI()
     trimmed = trim_name(message.text)
-    result = await gpt.send_qa_to_gpt(trimmed)
+    result = gpt.send_to_gpt(trimmed)
     try:
-        text = result_to_text(result["choices"])
+        text = get_from_gpt(result["choices"])
         await message.reply(text, parse_mode=None)
-    except(TimeoutError, KeyError, TelegramBadRequest) as e:
-        logging.info('error: %s', e)
-        if e == TimeoutError:
-            text = lang.get("error_timeout")
-            await message.reply(text, parse_mode=None)
-        elif e == KeyError:
-            text = lang.get("error_key")
-            await message.reply(text, parse_mode=None)
-        elif e == TelegramBadRequest:
-            text = lang.get("error_bad")
-            await message.reply(text, parse_mode=None)
+    except ValueError as err:
+        logging.info('error: %s', err)
+        text = err
+        await message.reply(text, parse_mode=None)
 
 
 @router.message(Text.get)
 async def process_ask(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Text.res)
+    await state.set_state(Text.result)
+    logging.info("%s", message.text)
+
+
+@router.message(F.text.startswith("Настя,"))
+async def ask21(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Text.get)
+    ai21 = Ai21()
+    trimmed = trims(message.text)
+    result = ai21.send_to_ai21(trimmed)
+    try:
+        print(result['completions'][0]['data']['text'])
+        text = result['completions'][0]['data']['text']
+        await message.reply(text, parse_mode=None)
+    except ValueError as err:
+        logging.info('error: %s', err)
+        text = err
+        await message.reply(text, parse_mode=None)
+
+
+@router.message(Text.get)
+async def process_ask21(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Text.result)
     logging.info("%s", message.text)
 
 
 @router.message(F.text.startswith("Нарисуй: "))
-async def ask(message: types.Message, lang: Lang, state: FSMContext) -> None:
-    await state.set_state(DaleImage.get)
-    gpt = ClientChatGPT()
+async def draw(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(DAImage.get)
+    gpt = OpenAI()
     trimmed = trim_cmd(message.text)
-    result = await gpt.send_dale_img_req(trimmed)
+    result = gpt.send_to_dalle(trimmed)
     try:
-        photo = result_to_url(result["data"])
+        photo = get_from_dalle(result['data'])
         await message.reply_photo(photo)
-    except(TimeoutError, KeyError, TelegramBadRequest) as e:
-        logging.info('error: %s', e)
-        if e == TimeoutError:
-            text = lang.get("error_timeout")
-            await message.reply(text, parse_mode=None)
-        elif e == KeyError:
-            text = lang.get("error_key")
-            await message.reply(text, parse_mode=None)
-        elif e == TelegramBadRequest:
-            text = lang.get("error_bad")
-            await message.reply(text, parse_mode=None)
+    except ValueError as err:
+        logging.info('error: %s', err)
+        text = err
+        await message.reply(text, parse_mode=None)
 
 
-@router.message(DaleImage.get)
-async def process_paint(message: types.Message, lang: Lang, state: FSMContext) -> None:
-    await state.set_state(DaleImage.res)
+@router.message(DAImage.get)
+async def process_paint(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(DAImage.result)
+    logging.info("%s", message.text)
+
+
+@router.message(F.text.startswith("Представь: "))
+async def imagine(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(SDImage.get)
+    gpt = ClientSD()
+    trimmed = trim_image(message.text)
+    result = gpt.send_sd_img_req(trimmed)
+    try:
+        await message.reply_photo(result['output_url'])
+    except ValueError as err:
+        logging.info('error: %s', err)
+        text = err
+        await message.reply(text, parse_mode=None)
+
+
+@router.message(SDImage.get)
+async def process_imagine(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(SDImage.result)
     logging.info("%s", message.text)
 
 
@@ -208,24 +228,17 @@ async def info(message: types.Message):
 
 
 @router.message(F.text.startswith("Настя, как дела?"))
-async def how_are_you(message: types.Message, lang: Lang):
+async def how_are_you(message: types.Message):
     logging.info("%s", message.text)
-    gpt = ClientChatGPT()
-    result = await gpt.send_qa_to_gpt(message.text)
+    gpt = OpenAI()
+    result = await gpt.send_to_gpt(message.text)
     try:
-        text = result_to_text(result["choices"])
+        text = result
         await message.reply(text, parse_mode=None)
-    except(TimeoutError, KeyError) as e:
-        logging.info('error: %s', e)
-        if e == TimeoutError:
-            text = (lang.get("error_timeout"))
-            await message.reply(text, parse_mode=None)
-        elif e == KeyError:
-            text = (lang.get("error_key"))
-            await message.reply(text, parse_mode=None)
-        elif e == TelegramBadRequest:
-            text = (lang.get("error_bad"))
-            await message.reply(text, parse_mode=None)
+    except ValueError as err:
+        logging.info('error: %s', err)
+        text = err
+        await message.reply(text, parse_mode=None)
 
 
 async def new_chat_member(message: types.Message):

@@ -3,7 +3,7 @@ import logging
 import sys
 from aiogram import Bot, Dispatcher
 from core import setup_routers
-from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
+from aiogram.exceptions import TelegramAPIError
 from aiogram.types import BotCommand, BotCommandScopeChat
 from misc.utils import fetch_admins, check_rights_and_permissions
 from misc.utils import config
