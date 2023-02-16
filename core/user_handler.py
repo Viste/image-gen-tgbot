@@ -147,7 +147,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
 @router.message(Text.get)
 async def process_ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.result)
-    logging.info("%s", message.text)
+    logging.info("%s", message)
 
 
 @router.message(F.text.startswith("Настя,"))
