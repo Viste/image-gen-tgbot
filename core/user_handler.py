@@ -118,6 +118,7 @@ async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot)
 @router.message(F.text.casefold() == "cancel")
 async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     current_state = await state.get_state()
+    logging.info("%s", message)
     if current_state is None:
         return
 
@@ -132,6 +133,7 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("@naastyyaabot"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
+    logging.info("%s", message)
     gpt = OpenAI()
     trimmed = trim_name(message.text)
     result = gpt.send_to_gpt(trimmed)
@@ -153,11 +155,12 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Настя,"))
 async def ask21(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
+    logging.info("%s", message)
     ai21 = Ai21()
     trimmed = trims(message.text)
     result = ai21.send_to_ai21(trimmed)
     try:
-        print(result['completions'][0]['data']['text'])
+        print(result)
         text = result['completions'][0]['data']['text']
         await message.reply(text, parse_mode=None)
     except ValueError as err:
@@ -175,6 +178,7 @@ async def process_ask21(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Нарисуй: "))
 async def draw(message: types.Message, state: FSMContext) -> None:
     await state.set_state(DAImage.get)
+    logging.info("%s", message)
     gpt = OpenAI()
     trimmed = trim_cmd(message.text)
     result = gpt.send_to_dalle(trimmed)
@@ -196,6 +200,7 @@ async def process_paint(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Представь: "))
 async def imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.get)
+    logging.info("%s", message)
     gpt = ClientSD()
     trimmed = trim_image(message.text)
     result = gpt.send_sd_img_req(trimmed)
@@ -218,10 +223,11 @@ async def info(message: types.Message):
     text = "Бот написан специально для PPRFNK!\n" \
            "По команде /report сообщу всем админам чата о плохом человеке! \n" \
            "Если ошибся или что-то пошло не так напиши /cancel \n" \
-           "Хочешь со мной поговорить? Обратись ко мне через никнейм @naastyyaabot\n" \
+           "Хочешь со мной поговорить? Обратись ко мне через никнейм @naastyyaabot ...\n" \
            "Скажи что хочешь нарисовать, я передам это моей подруге нейросети DaLL E, а она нарисует кодовое слово " \
-           "'Нарисуй: '\n" \
-           "Еще скоро появится команда /dream для генерации изображений в нейросети SD, но пока мой автор ленится\n" \
+           "'Нарисуй: ...'\n" \
+           "Если хочешь отправить картинку моей подруге SD напиши мне 'Представь: ...'\n" \
+           "Ai21 -- дич лютая 'Настя, ..\n" \
            "\n" \
            "Автор: @vistee"
     await message.reply(text, parse_mode=None)
