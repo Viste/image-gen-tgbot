@@ -169,7 +169,7 @@ async def ask21(message: types.Message, state: FSMContext) -> None:
 @router.message(Text.get)
 async def process_ask21(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.result)
-    logging.info("%s", message.text)
+    logging.info("%s", message)
 
 
 @router.message(F.text.startswith("Нарисуй: "))
@@ -190,7 +190,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
 @router.message(DAImage.get)
 async def process_paint(message: types.Message, state: FSMContext) -> None:
     await state.set_state(DAImage.result)
-    logging.info("%s", message.text)
+    logging.info("%s", message)
 
 
 @router.message(F.text.startswith("Представь: "))
@@ -210,7 +210,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
 @router.message(SDImage.get)
 async def process_imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.result)
-    logging.info("%s", message.text)
+    logging.info("%s", message)
 
 
 @router.message(Command(commands="help"))
@@ -229,7 +229,7 @@ async def info(message: types.Message):
 
 @router.message(F.text.startswith("Настя, как дела?"))
 async def how_are_you(message: types.Message):
-    logging.info("%s", message.text)
+    logging.info("%s", message)
     gpt = OpenAI()
     result = await gpt.send_to_gpt(message.text)
     try:
