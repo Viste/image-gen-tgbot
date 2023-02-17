@@ -7,6 +7,7 @@ def setup_routers() -> Router:
 
     router = Router()
     router.message.filter(F.chat.id != config.banned_group)
+    router.message.filter(F.user.id not in config.banned_users)
 
     router.include_router(misc.router)
     router.include_router(admin_handler.router)
