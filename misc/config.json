@@ -9,6 +9,7 @@
   "deepai_api_url": "https://api.deepai.org/api/stable-diffusion",
   "admins": [58800377, 111388938, 350493882],
   "group_main": "-1001620154424",
+  "banned_group": "-1001821769551",
   "remove_joins": "True",
   "lang": "ru",
   "report_mode": "private",
