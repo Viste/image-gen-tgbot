@@ -33,7 +33,7 @@ class OpenAI:
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.Completion().create(engine=model, prompt=data, max_tokens=512, n=1, stop="\n", temperature=0.8)
+                result = openai.Completion().create(engine=model, prompt=data, max_tokens=512, n=1, stop=".", temperature=0.8)
                 return result
             except openai.OpenAIError as err:
                 retries += 1
