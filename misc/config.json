@@ -10,7 +10,7 @@
   "admins": [58800377, 910007939, 350493882, 824834852],
   "group_main": "-1001170569681",
   "banned_group": "-1001821769551",
-  "banned_users": [62520772],
+  "banned_user": [62520772],
   "remove_joins": "True",
   "lang": "ru",
   "report_mode": "private",
