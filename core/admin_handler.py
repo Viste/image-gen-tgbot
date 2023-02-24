@@ -17,7 +17,7 @@ def get_restriction_period(text: str) -> int:
     return 0
 
 
-@router.message(Command(commands=["ro", "nm"]), F.reply_to_message, F.from_user.id.in_(config.admins.keys()))
+@router.message(Command(commands=["ro", "nm"]), F.reply_to_message, F.from_user.id.in_(config.admins))
 async def cmd_ro_or_nomedia(message: types.Message, lang: Lang, bot: Bot):
     if message.reply_to_message.from_user.id in config.admins.keys():
         await message.reply(lang.get("error_restrict_admin"))
