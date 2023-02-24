@@ -130,7 +130,7 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     )
 
 
-@router.message(F.from_user.id.in_(config.banned_user_ids.keys()), F.from_user.username.in_(config.banned_usernames.keys()))
+@router.message(F.from_user.id.in_(config.banned_user_ids.keys()))
 async def banned(message: types.Message) -> None:
     text = "не хочу с тобой разговаривать"
     await message.reply(text, parse_mode=None)
