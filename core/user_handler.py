@@ -130,27 +130,24 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     )
 
 
-@router.message(F.from_user.id.in_(config.banned_user_ids), F.text.startswith("@naastyyaabot"), F.text.startswith("Настя,"), F.text.startswith("Нарисуй: "),
-                F.text.startswith("Представь: "), Command(commands="help"))
-async def banned(message: types.Message) -> None:
-    text = "не хочу с тобой разговаривать"
-    await message.reply(text, parse_mode=None)
-
-
 @router.message(F.text.startswith("@naastyyaabot"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
-    logging.info("%s", message)
-    gpt = OpenAI()
-    trimmed = trim_name(message.text)
-    result = gpt.send_to_gpt(trimmed)
-    try:
-        text = get_from_gpt(result["choices"])
+    if message.from_user.id in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
-    except ValueError as err:
-        logging.info('error: %s', err)
-        text = err
-        await message.reply(text, parse_mode=None)
+    else:
+        logging.info("%s", message)
+        gpt = OpenAI()
+        trimmed = trim_name(message.text)
+        result = gpt.send_to_gpt(trimmed)
+        try:
+            text = get_from_gpt(result["choices"])
+            await message.reply(text, parse_mode=None)
+        except ValueError as err:
+            logging.info('error: %s', err)
+            text = err
+            await message.reply(text, parse_mode=None)
 
 
 @router.message(Text.get)
@@ -162,18 +159,22 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Настя,"))
 async def ask21(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
-    logging.info("%s", message)
-    ai21 = Ai21()
-    trimmed = trims(message.text)
-    result = ai21.send_to_ai21(trimmed)
-    try:
-        print(result)
-        text = result['completions'][0]['data']['text']
+    if message.from_user.id in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
-    except ValueError as err:
-        logging.info('error: %s', err)
-        text = err
-        await message.reply(text, parse_mode=None)
+    else:
+        logging.info("%s", message)
+        ai21 = Ai21()
+        trimmed = trims(message.text)
+        result = ai21.send_to_ai21(trimmed)
+        try:
+            print(result)
+            text = result['completions'][0]['data']['text']
+            await message.reply(text, parse_mode=None)
+        except ValueError as err:
+            logging.info('error: %s', err)
+            text = err
+            await message.reply(text, parse_mode=None)
 
 
 @router.message(Text.get)
@@ -185,17 +186,21 @@ async def process_ask21(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Нарисуй: "))
 async def draw(message: types.Message, state: FSMContext) -> None:
     await state.set_state(DAImage.get)
-    logging.info("%s", message)
-    gpt = OpenAI()
-    trimmed = trim_cmd(message.text)
-    result = gpt.send_to_dalle(trimmed)
-    try:
-        photo = get_from_dalle(result['data'])
-        await message.reply_photo(photo)
-    except ValueError as err:
-        logging.info('error: %s', err)
-        text = err
+    if message.from_user.id in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
+    else:
+        logging.info("%s", message)
+        gpt = OpenAI()
+        trimmed = trim_cmd(message.text)
+        result = gpt.send_to_dalle(trimmed)
+        try:
+            photo = get_from_dalle(result['data'])
+            await message.reply_photo(photo)
+        except ValueError as err:
+            logging.info('error: %s', err)
+            text = err
+            await message.reply(text, parse_mode=None)
 
 
 @router.message(DAImage.get)
@@ -207,16 +212,20 @@ async def process_paint(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Представь: "))
 async def imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.get)
-    logging.info("%s", message)
-    gpt = ClientSD()
-    trimmed = trim_image(message.text)
-    result = gpt.send_sd_img_req(trimmed)
-    try:
-        await message.reply_photo(result['output_url'])
-    except ValueError as err:
-        logging.info('error: %s', err)
-        text = err
+    if message.from_user.id in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
+    else:
+        logging.info("%s", message)
+        gpt = ClientSD()
+        trimmed = trim_image(message.text)
+        result = gpt.send_sd_img_req(trimmed)
+        try:
+            await message.reply_photo(result['output_url'])
+        except ValueError as err:
+            logging.info('error: %s', err)
+            text = err
+            await message.reply(text, parse_mode=None)
 
 
 @router.message(SDImage.get)
@@ -227,31 +236,35 @@ async def process_imagine(message: types.Message, state: FSMContext) -> None:
 
 @router.message(Command(commands="help"))
 async def info(message: types.Message):
-    text = "Бот написан специально для PPRFNK!\n" \
-           "По команде /report сообщу всем админам чата о плохом человеке! \n" \
-           "Если ошибся или что-то пошло не так напиши /cancel \n" \
-           "Хочешь со мной поговорить? Обратись ко мне через никнейм @naastyyaabot ...\n" \
-           "Скажи что хочешь нарисовать, я передам это моей подруге нейросети DaLL E, а она нарисует кодовое слово " \
-           "'Нарисуй: ...'\n" \
-           "Если хочешь отправить картинку моей подруге SD напиши мне 'Представь: ...'\n" \
-           "Ai21 -- дич лютая 'Настя, ..\n" \
-           "\n" \
-           "Автор: @vistee"
-    await message.reply(text, parse_mode=None)
+    if message.from_user.id in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
+        await message.reply(text, parse_mode=None)
+    else:
+        text = "Бот написан специально для PPRFNK!\n" \
+               "По команде /report сообщу всем админам чата о плохом человеке! \n" \
+               "Если ошибся или что-то пошло не так напиши /cancel \n" \
+               "Хочешь со мной поговорить? Обратись ко мне через никнейм @naastyyaabot ...\n" \
+               "Скажи что хочешь нарисовать, я передам это моей подруге нейросети DaLL E, а она нарисует кодовое слово " \
+               "'Нарисуй: ...'\n" \
+               "Если хочешь отправить картинку моей подруге SD напиши мне 'Представь: ...'\n" \
+               "Ai21 -- дич лютая 'Настя, ..\n" \
+               "\n" \
+               "Автор: @vistee"
+        await message.reply(text, parse_mode=None)
 
 
-@router.message(F.text.startswith("Настя, как дела?"))
-async def how_are_you(message: types.Message):
-    logging.info("%s", message)
-    gpt = OpenAI()
-    result = await gpt.send_to_gpt(message.text)
-    try:
-        text = result
-        await message.reply(text, parse_mode=None)
-    except ValueError as err:
-        logging.info('error: %s', err)
-        text = err
-        await message.reply(text, parse_mode=None)
+# @router.message(F.text.startswith("Настя, как дела?"))
+# async def how_are_you(message: types.Message):
+#    logging.info("%s", message)
+#    gpt = OpenAI()
+#    result = await gpt.send_to_gpt(message.text)
+#    try:
+#        text = result
+#        await message.reply(text, parse_mode=None)
+#    except ValueError as err:
+#        logging.info('error: %s', err)
+#        text = err
+#        await message.reply(text, parse_mode=None)
 
 
 async def new_chat_member(message: types.Message):
