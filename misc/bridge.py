@@ -27,13 +27,14 @@ class OpenAI:
     @staticmethod
     def send_to_gpt(data):
         openai.api_key = config.api_key
-        model = "text-davinci-003"
+        model = "gpt-3.5-turbo"
 
         max_retries = 5
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.Completion().create(engine=model, prompt=data, max_tokens=512, n=1, stop="stop", temperature=0.8)
+                result = openai.Completion().create(engine=model, prompt=data, max_tokens=512, n=1, temperature=0.9, frequency_penalty=0.0, presence_penalty=0.6,
+                                                    stop=[" Human:", " AI:"])
                 return result
             except openai.OpenAIError as err:
                 retries += 1
