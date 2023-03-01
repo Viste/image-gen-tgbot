@@ -33,8 +33,9 @@ class OpenAI:
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.Completion().create(engine=model, prompt=data, max_tokens=512, n=1, temperature=0.9, frequency_penalty=0.0, presence_penalty=0.6,
-                                                    stop=[" Human:", " AI:"])
+                result = openai.ChatCompletion().create(model=model, messages=[{"role": "user", "content": data}],
+                                                        max_tokens=512, n=1, temperature=0.9, frequency_penalty=0.0,
+                                                        presence_penalty=0.6, stop=[" Human:", " AI:"])
                 return result
             except openai.OpenAIError as err:
                 retries += 1

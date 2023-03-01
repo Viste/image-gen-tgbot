@@ -85,7 +85,7 @@ def trim_image(text: str) -> str:
 def get_from_gpt(response: List[Dict[str, str]]) -> str:
     result = []
     for message in response:
-        clear_message = message.get("text")
+        clear_message = message.get("content")
         result.append(clear_message)
     return """ """.join(result)
 
