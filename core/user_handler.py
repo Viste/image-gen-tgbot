@@ -142,7 +142,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_name(message.text)
         result = gpt.send_to_gpt(trimmed)
         try:
-            text = get_from_gpt(result.choices[0].message)
+            text = result["choices"][0]["message"]["content"]
             await message.reply(text, parse_mode=None)
         except ValueError as err:
             logging.info('error: %s', err)
