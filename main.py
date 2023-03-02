@@ -29,7 +29,7 @@ async def main():
     )
 
     try:
-        await check_rights_and_permissions(bot, config.group_main)
+        await check_rights_and_permissions(nasty, config.group_main)
     except (TelegramAPIError, PermissionError) as error:
         error_msg = f"Error with main group: {error}"
         try:
