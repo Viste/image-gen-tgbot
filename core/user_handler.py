@@ -165,15 +165,17 @@ async def ask(message: types.Message, state: FSMContext) -> None:
     else:
         logging.info("%s", message)
         gpt = OpenAI()
-        #voice = message.
-        #result = gpt.send_voice(voice)
-        #try:
-        #    text = result["text"]
-        #    await message.reply(text, parse_mode=None)
-        #except ValueError as err:
-        #    logging.info('error: %s', err)
-        #    text = err
-        #   await message.reply(text, parse_mode=None)
+        voice = message.voice.file_id
+        #telegram_voice = await message.voice.get_file()
+        # downloaded_file = await bot.download_file(telegram_voice.file_path)
+        result = gpt.send_voice(voice)
+        try:
+            text = result["text"]
+            await message.reply(text, parse_mode=None)
+        except ValueError as err:
+            logging.info('error: %s', err)
+            text = err
+            await message.reply(text, parse_mode=None)
 
 
 @router.message(Voice.get)
