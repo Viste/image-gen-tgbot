@@ -167,9 +167,12 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         logging.info("%s", message)
         gpt = OpenAI()
         file_id = message.voice.file_id
-        getfile = await nasty.get_file(file_id)
-        downloaded_file = await nasty.download_file(getfile.file_path)
-        wav = convert_oga_to_wav(getfile.file_path, downloaded_file)
+        get_file = await nasty.get_file(file_id)
+        downloaded_file = await nasty.download_file(get_file.file_path)
+        wav = convert_oga_to_wav(get_file.file_path, downloaded_file)
+        print(get_file)
+        print(downloaded_file)
+        print(wav)
         result = gpt.send_voice(wav)
         try:
             text = result["text"]
