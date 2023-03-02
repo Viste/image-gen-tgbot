@@ -170,8 +170,8 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         get_file = await nasty.get_file(file_id)
         downloaded_file = await nasty.download_file(get_file.file_path)
         wav = convert_oga_to_wav(get_file.file_path, downloaded_file)
-        print(wav)
-        result = gpt.send_voice(wav)
+        print(wav.name)
+        result = gpt.send_voice(wav.name)
         try:
             text = result["text"]
             await message.reply(text, parse_mode=None)
