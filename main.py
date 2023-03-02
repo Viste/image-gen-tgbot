@@ -16,7 +16,6 @@ worker = Dispatcher()
 async def set_bot_commands(bot: Bot, main_group_id: int):
     commands = [
         BotCommand(command="report", description="Пожаловаться на сообщение"),
-        BotCommand(command="dream", description="Напиши что хочешь нарисовать? Я передам это нейросети SD"),
         BotCommand(command="help", description="Помощь"),
     ]
     await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=main_group_id))
@@ -34,17 +33,17 @@ async def main():
     except (TelegramAPIError, PermissionError) as error:
         error_msg = f"Error with main group: {error}"
         try:
-            await bot.send_message(config.group_reports, error_msg)
+            await nasty.send_message(config.group_reports, error_msg)
         finally:
             print(error_msg)
             return
 
     try:
-        result = await fetch_admins(bot)
+        result = await fetch_admins(nasty)
     except TelegramAPIError as error:
         error_msg = f"Error fetching main group admins: {error}"
         try:
-            await bot.send_message(config.group_reports, error_msg)
+            await nasty.send_message(config.group_reports, error_msg)
         finally:
             print(error_msg)
             return
@@ -59,9 +58,9 @@ async def main():
     router = setup_routers()
     worker.include_router(router)
     useful_updates = worker.resolve_used_update_types()
-    await set_bot_commands(bot, config.group_main)
+    await set_bot_commands(nasty, config.group_main)
     logging.info("Starting bot")
-    await worker.start_polling(bot, allowed_updates=useful_updates, lang=lang)
+    await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang)
 
 
 if __name__ == '__main__':
