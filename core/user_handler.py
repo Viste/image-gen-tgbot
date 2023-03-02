@@ -7,10 +7,11 @@ from aiogram.exceptions import TelegramAPIError
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 from misc.utils import DeleteMsgCallback, config, ClientSD, trim_image
-from misc.utils import trim_name, trim_cmd, trims, get_from_dalle, get_from_gpt
+from misc.utils import trim_name, trim_cmd, trims, get_from_dalle, convert_oga_to_wav
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.bridge import OpenAI, Ai21
 from misc.language import Lang
+from main import nasty
 
 logger = logging.getLogger("nasty_bot")
 router = Router()
@@ -165,10 +166,10 @@ async def ask(message: types.Message, state: FSMContext) -> None:
     else:
         logging.info("%s", message)
         gpt = OpenAI()
-        voice = message.voice.file_id
-        #telegram_voice = await message.voice.get_file()
-        # downloaded_file = await bot.download_file(telegram_voice.file_path)
-        result = gpt.send_voice(voice)
+        telegram_voice = await message.voice.get_file()
+        downloaded_file = await nasty.download_file(telegram_voice.file_path)
+        wav = convert_oga_to_wav(telegram_voice.file_path, downloaded_file)
+        result = gpt.send_voice(wav)
         try:
             text = result["text"]
             await message.reply(text, parse_mode=None)

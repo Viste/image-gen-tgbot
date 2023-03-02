@@ -9,6 +9,9 @@ from misc.utils import fetch_admins, check_rights_and_permissions
 from misc.utils import config
 from misc.language import Lang
 
+nasty = Bot(token=config.token, parse_mode="HTML")
+worker = Dispatcher()
+
 
 async def set_bot_commands(bot: Bot, main_group_id: int):
     commands = [
@@ -25,9 +28,6 @@ async def main():
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
         stream=sys.stdout,
     )
-
-    bot = Bot(token=config.token, parse_mode="HTML")
-    worker = Dispatcher()
 
     try:
         await check_rights_and_permissions(bot, config.group_main)

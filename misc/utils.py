@@ -2,9 +2,11 @@ from typing import Dict, List, Union
 import json
 import os
 import requests
+from io import BytesIO, BufferedRandom
 from aiogram import Bot, types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import ChatMemberAdministrator, ChatMemberOwner
+from pydub import AudioSegment
 
 
 class JSONObject:
@@ -82,12 +84,13 @@ def trim_image(text: str) -> str:
     return text.strip("\n")
 
 
-def get_from_gpt(response: List[Dict[str, str]]) -> str:
-    result = []
-    for message in response:
-        clear_message = message.get("content")
-        result.append(clear_message)
-    return """ """.join(result)
+def convert_oga_to_wav(filename: str, file: BytesIO) -> BufferedRandom:
+    path = filename.split("/")
+    name = path[-1].split(".oga")
+    converted_path = name[0] + '.wav'
+    segment = AudioSegment.from_ogg(file)
+    wav_file = segment.export(converted_path, format="wav")
+    return wav_file
 
 
 def get_from_dalle(response: List[Dict[str, str]]) -> str:
