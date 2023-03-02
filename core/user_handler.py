@@ -170,8 +170,6 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         get_file = await nasty.get_file(file_id)
         downloaded_file = await nasty.download_file(get_file.file_path)
         wav = convert_oga_to_wav(get_file.file_path, downloaded_file)
-        print(get_file)
-        print(downloaded_file)
         print(wav)
         result = gpt.send_voice(wav)
         try:
@@ -187,6 +185,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
 async def process_ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Voice.result)
     logging.info("%s", message)
+
 
 @router.message(F.text.startswith("Настя,"))
 async def ask21(message: types.Message, state: FSMContext) -> None:
@@ -283,20 +282,6 @@ async def info(message: types.Message):
                "\n" \
                "Автор: @vistee"
         await message.reply(text, parse_mode=None)
-
-
-# @router.message(F.text.startswith("Настя, как дела?"))
-# async def how_are_you(message: types.Message):
-#    logging.info("%s", message)
-#    gpt = OpenAI()
-#    result = await gpt.send_to_gpt(message.text)
-#    try:
-#        text = result
-#        await message.reply(text, parse_mode=None)
-#    except ValueError as err:
-#        logging.info('error: %s', err)
-#        text = err
-#        await message.reply(text, parse_mode=None)
 
 
 async def new_chat_member(message: types.Message):
