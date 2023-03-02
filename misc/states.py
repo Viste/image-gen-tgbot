@@ -19,3 +19,9 @@ class DAImage(StatesGroup):
 class SDImage(StatesGroup):
     get = State()
     result = State()
+
+
+class Voice(StatesGroup):
+    get = State()
+    result = State()
+

@@ -55,3 +55,17 @@ class OpenAI:
                 retries += 1
                 if retries == max_retries:
                     return err
+
+    @staticmethod
+    def send_voice(data):
+        openai.api_key = config.api_key
+        max_retries = 5
+        retries = 0
+        while retries < max_retries:
+            try:
+                result = openai.Audio.transcribe("whisper-1", data, temperature=0.9, response_format="text")
+                return result
+            except openai.OpenAIError as err:
+                retries += 1
+                if retries == max_retries:
+                    return err

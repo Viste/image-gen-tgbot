@@ -8,7 +8,7 @@ from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 from misc.utils import DeleteMsgCallback, config, ClientSD, trim_image
 from misc.utils import trim_name, trim_cmd, trims, get_from_dalle, get_from_gpt
-from misc.states import DAImage, SDImage, Text
+from misc.states import DAImage, SDImage, Text, Voice
 from misc.bridge import OpenAI, Ai21
 from misc.language import Lang
 
@@ -155,6 +155,31 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.result)
     logging.info("%s", message)
 
+
+@router.message(F.content_type.in_({'voice'}))
+async def ask(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Voice.get)
+    if message.from_user.id in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
+        await message.reply(text, parse_mode=None)
+    else:
+        logging.info("%s", message)
+        gpt = OpenAI()
+        #voice = message.
+        #result = gpt.send_voice(voice)
+        #try:
+        #    text = result["text"]
+        #    await message.reply(text, parse_mode=None)
+        #except ValueError as err:
+        #    logging.info('error: %s', err)
+        #    text = err
+        #   await message.reply(text, parse_mode=None)
+
+
+@router.message(Voice.get)
+async def process_ask(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Voice.result)
+    logging.info("%s", message)
 
 @router.message(F.text.startswith("Настя,"))
 async def ask21(message: types.Message, state: FSMContext) -> None:
