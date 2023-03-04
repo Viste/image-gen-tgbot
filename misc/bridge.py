@@ -25,7 +25,7 @@ class Ai21:
 
 class OpenAI:
     @staticmethod
-    def send_to_gpt(data, user):
+    def send_to_gpt(data: str, user: str):
         openai.api_key = config.api_key
         model = "gpt-3.5-turbo"
 
@@ -33,11 +33,12 @@ class OpenAI:
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.ChatCompletion().create(model=model, messages=[
-                                                        {"role": "system", "content": "You are a helpful assistant that helps with music creation in FL Studio"},
-                                                        {"role": "user", "content": data}], user=user,
-                                                        max_tokens=512, n=1, temperature=0.9, frequency_penalty=0.0,
-                                                        presence_penalty=0.6, stop=[" Human:", " AI:"])
+                result = openai.ChatCompletion().create(
+                    model=model, messages=[
+                        # {"role": "system", "content": "You are a helpful assistant that helps with music creation in FL Studio"},
+                        {"role": "system", "content": "You are a teacher in an audio school. Helping students learn FL Studio DAW to write drum and bass"},
+                        {"role": "user", "content": data}],
+                    user=user, max_tokens=512, n=1, temperature=0.9, frequency_penalty=0.0, presence_penalty=0.6, stop=[" Human:", " AI:"])
                 return result
             except openai.OpenAIError as err:
                 retries += 1
@@ -67,7 +68,8 @@ class OpenAI:
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.Audio.transcribe(model=model, file=data, temperature=0.9, response_format="text")
+                file = open(data, "rb")
+                result = openai.Audio.transcribe(model=model, file=file, temperature=0.9, response_format="text")
                 return result
             except openai.OpenAIError as err:
                 retries += 1

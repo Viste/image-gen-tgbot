@@ -142,7 +142,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         logging.info("%s", message)
         gpt = OpenAI()
         trimmed = trim_name(message.text)
-        result = gpt.send_to_gpt(trimmed, who)
+        result = gpt.send_to_gpt(trimmed, str(who))
         try:
             text = result["choices"][0]["message"]["content"]
             await message.reply(text, parse_mode=None)
@@ -168,11 +168,12 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         logging.info("%s", message)
         gpt = OpenAI()
         file_id = message.voice
-        downloaded_file = await nasty.download(file_id)
-        wav = convert_oga_to_wav(downloaded_file.file_path, downloaded_file)
-        print(wav.name)
-        result = gpt.send_voice(wav.name)
+        destination = "/Users/viste/dev/nasty/tmp.ogg"
+        await nasty.download(file_id, destination=destination)
+        converted = convert_oga_to_wav(destination)
+        result = gpt.send_voice(converted)
         try:
+            print(result)
             text = result["text"]
             await message.reply(text, parse_mode=None)
         except ValueError as err:

@@ -83,13 +83,11 @@ def trim_image(text: str) -> str:
     return text.strip("\n")
 
 
-def convert_oga_to_wav(filename: str, file: str):
-    path = filename.split("/")
-    name = path[-1].split(".oga")
-    converted_path = name[0] + '.wav'
-    segment = AudioSegment.from_ogg(file)
-    wav_file = segment.export(converted_path, format="wav", out_f="")
-    return wav_file
+def convert_oga_to_wav(filename: str):
+    dst_wav = "/Users/viste/dev/nasty/tmp.wav"
+    segment = AudioSegment.from_ogg(filename)
+    wav_file = segment.export(dst_wav, format="wav")
+    return dst_wav
 
 
 def get_from_dalle(response: List[Dict[str, str]]) -> str:
