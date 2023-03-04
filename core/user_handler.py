@@ -134,14 +134,15 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("@naastyyaabot"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
-    if message.from_user.id in config.banned_user_ids:
+    who = message.from_user.id
+    if who in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
         gpt = OpenAI()
         trimmed = trim_name(message.text)
-        result = gpt.send_to_gpt(trimmed)
+        result = gpt.send_to_gpt(trimmed, who)
         try:
             text = result["choices"][0]["message"]["content"]
             await message.reply(text, parse_mode=None)
@@ -166,10 +167,9 @@ async def ask(message: types.Message, state: FSMContext) -> None:
     else:
         logging.info("%s", message)
         gpt = OpenAI()
-        file_id = message.voice.file_id
-        get_file = await nasty.get_file(file_id)
-        downloaded_file = await nasty.download_file(get_file.file_path)
-        wav = convert_oga_to_wav(get_file.file_path, downloaded_file)
+        file_id = message.voice
+        downloaded_file = await nasty.download(file_id)
+        wav = convert_oga_to_wav(downloaded_file.file_path, downloaded_file)
         print(wav.name)
         result = gpt.send_voice(wav.name)
         try:

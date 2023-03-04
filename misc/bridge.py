@@ -25,7 +25,7 @@ class Ai21:
 
 class OpenAI:
     @staticmethod
-    def send_to_gpt(data):
+    def send_to_gpt(data, user):
         openai.api_key = config.api_key
         model = "gpt-3.5-turbo"
 
@@ -33,7 +33,9 @@ class OpenAI:
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.ChatCompletion().create(model=model, messages=[{"role": "user", "content": data}],
+                result = openai.ChatCompletion().create(model=model, messages=[
+                                                        {"role": "system", "content": "You are a helpful assistant that helps with music creation in FL Studio"},
+                                                        {"role": "user", "content": data}], user=user,
                                                         max_tokens=512, n=1, temperature=0.9, frequency_penalty=0.0,
                                                         presence_penalty=0.6, stop=[" Human:", " AI:"])
                 return result
@@ -59,11 +61,13 @@ class OpenAI:
     @staticmethod
     def send_voice(data):
         openai.api_key = config.api_key
+        model = "whisper-1"
+
         max_retries = 5
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.Audio.transcribe("whisper-1", data, temperature=0.9, response_format="text")
+                result = openai.Audio.transcribe(model=model, file=data, temperature=0.9, response_format="text")
                 return result
             except openai.OpenAIError as err:
                 retries += 1
