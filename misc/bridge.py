@@ -35,8 +35,10 @@ class OpenAI:
             try:
                 result = openai.ChatCompletion().create(
                     model=model, messages=[
-                        # {"role": "system", "content": "You are a helpful assistant that helps with music creation in FL Studio"},
-                        {"role": "system", "content": "You are a teacher in an audio school. Helping students learn FL Studio DAW to write drum and bass"},
+                        {"role": "system", "content": "You are a teacher in an audio school. that helps with music creation in FL Studio"},
+                        {"role": "system", "content": "You are a teacher in an audio school. that helps with music creation in FL Studio."
+                                                      "Your name is Настя, you're a beautiful Asian girl."
+                                                      "Your character: a nasty conservative."},
                         {"role": "user", "content": data}],
                     user=user, max_tokens=512, n=1, temperature=0.9, frequency_penalty=0.0, presence_penalty=0.6, stop=[" Human:", " AI:"])
                 return result

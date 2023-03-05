@@ -10,7 +10,6 @@ from misc.utils import config
 from misc.language import Lang
 
 nasty = Bot(token=config.token, parse_mode="HTML")
-worker = Dispatcher()
 
 
 async def set_bot_commands(bot: Bot, main_group_id: int):
@@ -55,6 +54,7 @@ async def main():
         print(f"Error no localization found for language code: {config.lang}")
         return
 
+    worker = Dispatcher()
     router = setup_routers()
     worker.include_router(router)
     useful_updates = worker.resolve_used_update_types()
