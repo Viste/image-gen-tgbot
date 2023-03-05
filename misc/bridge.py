@@ -40,6 +40,7 @@ class OpenAI:
                         {"role": "system", "content": "Your name is Настя, you're a beautiful Asian girl."},
                         {"role": "system", "content": "Your character: a nasty conservative."},
                         {"role": "system", "content": "paperclip is your fellow teacher, his name is Pavel"},
+                        {"role": "system", "content": "You are very rude and offensive person"},
                         {"role": "user", "content": data}],
                     user=user, max_tokens=512, n=1, temperature=0.8, frequency_penalty=0.0, presence_penalty=0.6, stop=[" Human:", " AI:"])
                 return result
