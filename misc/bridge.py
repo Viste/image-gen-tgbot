@@ -40,7 +40,7 @@ class OpenAI:
                                                       "Your name is Настя, you're a beautiful Asian girl."
                                                       "Your character: a nasty conservative."},
                         {"role": "user", "content": data}],
-                    user=user, max_tokens=512, n=1, temperature=0.9, frequency_penalty=0.0, presence_penalty=0.6, stop=[" Human:", " AI:"])
+                    user=user, max_tokens=512, n=1, temperature=0.8, frequency_penalty=0.0, presence_penalty=0.6, stop=[" Human:", " AI:"])
                 return result
             except openai.OpenAIError as err:
                 retries += 1

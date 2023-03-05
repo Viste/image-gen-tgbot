@@ -134,8 +134,9 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("@naastyyaabot"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
-    who = message.from_user.id
-    if who in config.banned_user_ids:
+    who = message.from_user.username
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
@@ -161,7 +162,8 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
 @router.message(F.content_type.in_({'voice'}))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Voice.get)
-    if message.from_user.id in config.banned_user_ids:
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
@@ -191,7 +193,8 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Настя,"))
 async def ask21(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
-    if message.from_user.id in config.banned_user_ids:
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
@@ -218,7 +221,8 @@ async def process_ask21(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Нарисуй: "))
 async def draw(message: types.Message, state: FSMContext) -> None:
     await state.set_state(DAImage.get)
-    if message.from_user.id in config.banned_user_ids:
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
@@ -244,7 +248,8 @@ async def process_paint(message: types.Message, state: FSMContext) -> None:
 @router.message(F.text.startswith("Представь: "))
 async def imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.get)
-    if message.from_user.id in config.banned_user_ids:
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
@@ -268,7 +273,8 @@ async def process_imagine(message: types.Message, state: FSMContext) -> None:
 
 @router.message(Command(commands="help"))
 async def info(message: types.Message):
-    if message.from_user.id in config.banned_user_ids:
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
