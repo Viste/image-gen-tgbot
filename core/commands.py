@@ -65,7 +65,8 @@ async def ask(message: types.Message, state: FSMContext) -> None:
 
         print(result["text"])
         try:
-            text = result["text"]
+            text_from_ai = result["text"]
+            text = gpt.send_to_gpt(text_from_ai, uid)
             await message.reply(text, parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
