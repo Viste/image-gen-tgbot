@@ -1,3 +1,4 @@
+"/etc/systemd/system/nastya.service" 18L, 488B                                                                                                                                                   8,72          All
 [Unit]
 Description=Nastya GPT
 After=syslog.target network.target
@@ -5,7 +6,8 @@ After=syslog.target network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/nastya
-ExecStartPre=/home/nastya/bin/celery --app main worker --detach  --pool prefork --loglevel=info
+ExecStartPre=/home/nastya/bin/celery --app main worker --detach -c 4 \
+             --pool prefork --loglevel=info -f /home/nasty/queue.log --autoscale 4 16
 ExecStart=/home/nastya/bin/python main.py
 Environment="PYTHONPATH=/home/nastya/lib/python3.9/site-packages:/usr/lib/python3.9/site-packages/:$PYTHONPATH"
 KillMode=process
