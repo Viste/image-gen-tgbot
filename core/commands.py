@@ -66,7 +66,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         try:
             text_from_ai = result["text"]
             text = gpt.send_to_gpt(text_from_ai, str(uid))
-            await message.reply(f"Голосовое сообщение: {text_from_ai}\n\nОтвет: {text}", parse_mode=None)
+            await message.reply(f"Голосовое сообщение: {text_from_ai}\n\n{text}", parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
         except RuntimeError as err:
