@@ -58,9 +58,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         # process the voice message
         file_info = await nasty.get_file(message.voice.file_id)
         file_data = file_info.file_path
-        downloaded_file = await nasty.download_file(file_data)
-        with open(f"{str(uid)}.ogg", "wb") as new_file:
-            new_file.write(downloaded_file)
+        await nasty.download_file(file_data, f"{str(uid)}.ogg")
         sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
         result = gpt.send_voice(sound.export(f"{str(uid)}.wav", format="wav"))
         try:
