@@ -2,9 +2,9 @@ import ai21
 import openai
 
 from celery import Celery
-from misc.utils import config
+from utils import config
 
-app = Celery('bridge', broker=config.celery_backend)
+app = Celery('chatbot', broker=config.celery_backend)
 
 
 class Ai21:
