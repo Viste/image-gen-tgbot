@@ -13,6 +13,6 @@ async def on_user_join(message: types.Message):
 
 
 @router.message(Command(commands=["report"]))
-@router.message(Command(commands=["ro", "nm"]), F.from_user.id.in_(config.admins.keys()))
+@router.message(Command(commands=["ro", "nm"]), F.from_user.id.in_(config.admins))
 async def no_reply(message: types.Message, lang: Lang):
     await message.reply(lang.get("error_no_reply"))

@@ -20,5 +20,7 @@
   "user": "root",
   "password": "",
   "host": "/run/mariadb/mysql.sock",
-  "dbname": ""
+  "dbname": "",
+  "celery_url": "redis://localhost:6379/0",
+  "celery_backend":  "redis://localhost:6379/0"
 }

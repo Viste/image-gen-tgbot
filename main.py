@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import sys
+from celery import Celery
 from aiogram import Bot, Dispatcher
 from core import setup_routers
 from aiogram.exceptions import TelegramAPIError
@@ -10,6 +11,7 @@ from misc.utils import config
 from misc.language import Lang
 
 nasty = Bot(token=config.token, parse_mode="HTML")
+app = Celery('chatbot', broker=config.celery_backend)
 
 
 async def set_bot_commands(bot: Bot, main_group_id: int):

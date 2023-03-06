@@ -5,7 +5,6 @@ import requests
 from aiogram import Bot, types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import ChatMemberAdministrator, ChatMemberOwner
-from pydub import AudioSegment
 
 
 class JSONObject:
@@ -30,7 +29,7 @@ class ClientSD:
 class DeleteMsgCallback(CallbackData, prefix="delmsg"):
     action: str
     entity_id: int
-    message_ids: str  # Lists are not supported =(
+    message_ids: str
 
 
 async def fetch_admins(bot: Bot) -> Dict:
@@ -81,13 +80,6 @@ def trim_image(text: str) -> str:
     if text.startswith("Представь: "):
         text = text.strip("Представь: ")
     return text.strip("\n")
-
-
-def convert_oga_to_wav(filename: str):
-    dst_wav = "/Users/viste/dev/nasty/tmp.wav"
-    segment = AudioSegment.from_ogg(filename)
-    wav_file = segment.export(dst_wav, format="wav")
-    return dst_wav
 
 
 def get_from_dalle(response: List[Dict[str, str]]) -> str:

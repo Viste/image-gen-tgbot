@@ -1,152 +1,37 @@
 import logging
-from typing import List, Union, Optional
-from aiogram import types, Bot, html, F, Router
-from aiogram.filters.command import Command, CommandObject
+import os
+from aiogram import types, F, Router
+from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.exceptions import TelegramAPIError
-from aiogram.types import Chat, User, ReplyKeyboardRemove
-from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from misc.utils import DeleteMsgCallback, config, ClientSD, trim_image
-from misc.utils import trim_name, trim_cmd, trims, get_from_dalle, convert_oga_to_wav
+from misc.utils import config, ClientSD, trim_image
+from main import nasty
+from misc.utils import trim_name, trim_cmd, trims, get_from_dalle
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.bridge import OpenAI, Ai21
-from misc.language import Lang
-from main import nasty
+from pydub import AudioSegment
 
 logger = logging.getLogger("nasty_bot")
 router = Router()
-
-
-def get_report_chats(bot_id: int) -> List[int]:
-    if config.report_mode == "group":
-        return [config.group_reports]
-    else:
-        recipients = []
-        for admin_id, permissions in config.admins.items():
-            if admin_id != bot_id and permissions.get("can_restrict_members", False) is True:
-                recipients.append(admin_id)
-        return recipients
-
-
-def make_report_message(reported_message: types.Message, comment: Optional[str], lang: Lang):
-    msg = lang.get("report_message").format(
-        time=reported_message.date.strftime(lang.get("report_date_format")),
-        msg_url=reported_message.get_url(force_private=True)
-    )
-    if comment is not None:
-        msg += lang.get("report_note").format(note=html.quote(comment))
-    return msg
-
-
-def make_report_keyboard(entity_id: int, message_ids: str, lang: Lang) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardBuilder()
-    keyboard.button(
-        text=lang.get("action_del_msg"),
-        callback_data=DeleteMsgCallback(
-            action="del",
-            entity_id=entity_id,
-            message_ids=message_ids
-        )
-    )
-    keyboard.button(
-        text=lang.get("action_del_and_ban"),
-        callback_data=DeleteMsgCallback(
-            action="ban",
-            entity_id=entity_id,
-            message_ids=message_ids
-        )
-    )
-    keyboard.adjust(1)
-    return keyboard.as_markup()
-
-
-@router.message(Command(commands="report"), F.reply_to_message)
-async def report(message: types.Message, lang: Lang, bot: Bot, command: CommandObject):
-    replied_msg = message.reply_to_message
-    reported_chat: Union[Chat, User] = replied_msg.sender_chat or replied_msg.from_user
-
-    if isinstance(reported_chat, User) and reported_chat.id in config.admins.keys():
-        await message.reply(lang.get("error_report_admin"))
-        return
-    else:
-        if replied_msg.is_automatic_forward:
-            await message.reply(lang.get("error_cannot_report_linked"))
-            return
-        if reported_chat.id == message.chat.id:
-            await message.reply(lang.get("error_report_admin"))
-            return
-
-    msg = await message.reply(lang.get("report_sent"))
-
-    for report_chat in get_report_chats(bot.id):
-        try:
-            await bot.forward_message(
-                chat_id=report_chat, from_chat_id=message.chat.id,
-                message_id=message.reply_to_message.message_id
-            )
-
-            await bot.send_message(
-                report_chat, text=make_report_message(
-                    message.reply_to_message, command.args, lang),
-                reply_markup=make_report_keyboard(
-                    entity_id=reported_chat.id,
-                    message_ids=f"{message.message_id},{message.reply_to_message.message_id},{msg.message_id}",
-                    lang=lang
-                )
-            )
-        except TelegramAPIError as ex:
-            logger.error(f"[{type(ex).__name__}]: {str(ex)}")
-
-
-@router.message(F.text.startswith("@admin"))
-async def calling_all_units(message: types.Message, lang: Lang, bot: Bot):
-    for chat in get_report_chats(bot.id):
-        await bot.send_message(
-            chat, lang.get("need_admins_attention").format(
-                msg_url=message.get_url(force_private=True))
-        )
-
-
-@router.message(F.sender_chat, lambda x: config.ban_channels is True)
-async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot):
-    if message.is_automatic_forward is None and message.sender_chat.id != message.chat.id:
-        await message.answer(lang.get("channels_not_allowed"))
-        await bot.ban_chat_sender_chat(message.chat.id, message.sender_chat.id)
-        await message.delete()
-
-
-@router.message(Command(commands=["cancel"]))
-@router.message(F.text.casefold() == "cancel")
-async def cancel_handler(message: types.Message, state: FSMContext) -> None:
-    current_state = await state.get_state()
-    logging.info("%s", message)
-    if current_state is None:
-        return
-
-    logging.info("Cancelling state %r", current_state)
-    await state.clear()
-    await message.answer(
-        "Cancelled.",
-        reply_markup=ReplyKeyboardRemove(),
-    )
+gpt = OpenAI()
+ai21 = Ai21()
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
-    who = message.from_user.username
     uid = message.from_user.id
     if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        gpt = OpenAI()
         trimmed = trim_name(message.text)
-        result = gpt.send_to_gpt(trimmed, str(who))
+
+        # Generate response
+        replay_text = gpt.conversation_tracking(trimmed, uid)
+        new_replay_text = "Human: " + trimmed + "\n\n" + "Настя: " + replay_text
         try:
-            text = result["choices"][0]["message"]["content"]
-            await message.reply(text, parse_mode=None)
+            await message.reply(new_replay_text, parse_mode=None)
         except ValueError as err:
             logging.info('error: %s', err)
             text = err
@@ -168,17 +53,21 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        gpt = OpenAI()
-        file_id = message.voice
-        destination = "/Users/viste/dev/nasty/tmp.ogg"
-        await nasty.download(file_id, destination=destination)
-        converted = convert_oga_to_wav(destination)
-        result = gpt.send_voice(converted)
+        # process the voice message
+        file_info = nasty.get_file(message.voice.file_id)
+        file_data = file_info.file_path
+        downloaded_file = await nasty.download_file(file_data)
+        with open(f"{str(uid)}.ogg", "wb") as new_file:
+            new_file.write(downloaded_file)
+        sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
+        result = gpt.send_voice(sound.export(f"{str(uid)}.wav", format="wav"))
         try:
             print(result)
             text = result["text"]
             await message.reply(text, parse_mode=None)
-        except ValueError as err:
+            os.remove(f"{str(uid)}.ogg")
+            os.remove(f"{str(uid)}.wav")
+        except RuntimeError as err:
             logging.info('error: %s', err)
             text = err
             await message.reply(text, parse_mode=None)
@@ -199,7 +88,6 @@ async def ask21(message: types.Message, state: FSMContext) -> None:
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        ai21 = Ai21()
         trimmed = trims(message.text)
         result = ai21.send_to_ai21(trimmed)
         try:
@@ -227,7 +115,6 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        gpt = OpenAI()
         trimmed = trim_cmd(message.text)
         result = gpt.send_to_dalle(trimmed)
         try:
@@ -254,9 +141,9 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        gpt = ClientSD()
+        sd = ClientSD()
         trimmed = trim_image(message.text)
-        result = gpt.send_sd_img_req(trimmed)
+        result = sd.send_sd_img_req(trimmed)
         try:
             await message.reply_photo(result['output_url'])
         except ValueError as err:
@@ -289,7 +176,3 @@ async def info(message: types.Message):
                "\n" \
                "Автор: @vistee"
         await message.reply(text, parse_mode=None)
-
-
-async def new_chat_member(message: types.Message):
-    pass
