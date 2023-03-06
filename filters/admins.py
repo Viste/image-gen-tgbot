@@ -1,5 +1,5 @@
-from aiogram.types import ChatMemberUpdated
 from aiogram.filters import BaseFilter
+from aiogram.types import ChatMemberUpdated
 
 
 class AdminAdded(BaseFilter):

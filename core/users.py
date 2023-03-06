@@ -1,14 +1,15 @@
 import logging
 from typing import List, Union, Optional
+
 from aiogram import types, Bot, html, F, Router
+from aiogram.exceptions import TelegramAPIError
 from aiogram.filters.command import Command, CommandObject
 from aiogram.fsm.context import FSMContext
-from aiogram.exceptions import TelegramAPIError
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from misc.utils import DeleteMsgCallback, config
-from misc.language import Lang
 
+from misc.language import Lang
+from misc.utils import DeleteMsgCallback, config
 
 logger = logging.getLogger("nasty_bot")
 router = Router()

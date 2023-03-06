@@ -1,6 +1,7 @@
-from typing import Dict, List, Union
 import json
 import os
+from typing import Dict, List, Union
+
 import requests
 from aiogram import Bot, types
 from aiogram.filters.callback_data import CallbackData

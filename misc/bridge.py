@@ -1,8 +1,8 @@
-import openai
 import ai21
+import openai
 
-from misc.utils import config
 from main import app
+from misc.utils import config
 
 
 class Ai21:
@@ -49,7 +49,7 @@ class OpenAI:
 
         # Generate response
         gpt = OpenAI()
-        task = gpt.send_to_davinci.app.apply_async(args=[conversation_history])
+        task = gpt.send_to_davinci.apply_async(args=[conversation_history])
         response = task.app.get()
 
         user_responses.append(response)

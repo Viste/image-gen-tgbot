@@ -1,9 +1,11 @@
 import logging
+
 from aiogram import types, Bot, Router
 from aiogram.exceptions import TelegramAPIError
-from misc.utils import config
+
 from misc.language import Lang
 from misc.utils import DeleteMsgCallback
+from misc.utils import config
 
 logger = logging.getLogger("nasty_bot")
 router = Router()

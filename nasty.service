@@ -5,7 +5,7 @@ After=syslog.target network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/nastya
-ExecStartPre=celery --app main worker --loglevel=info
+ExecStartPre=/home/nastya/bin/celery --app main worker --detach  --pool prefork --loglevel=info
 ExecStart=/home/nastya/bin/python main.py
 Environment="PYTHONPATH=/home/nastya/lib/python3.9/site-packages:/usr/lib/python3.9/site-packages/:$PYTHONPATH"
 KillMode=process

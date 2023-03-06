@@ -1,14 +1,16 @@
 import asyncio
 import logging
 import sys
-from celery import Celery
+
 from aiogram import Bot, Dispatcher
-from core import setup_routers
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import BotCommand, BotCommandScopeChat
-from misc.utils import fetch_admins, check_rights_and_permissions
-from misc.utils import config
+from celery import Celery
+
+from core import setup_routers
 from misc.language import Lang
+from misc.utils import config
+from misc.utils import fetch_admins, check_rights_and_permissions
 
 nasty = Bot(token=config.token, parse_mode="HTML")
 app = Celery('chatbot', broker=config.celery_backend)

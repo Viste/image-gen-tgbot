@@ -1,14 +1,16 @@
 import logging
 import os
+
 from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from misc.utils import config, ClientSD, trim_image
-from main import nasty
-from misc.utils import trim_name, trim_cmd, trims, get_from_dalle
-from misc.states import DAImage, SDImage, Text, Voice
-from misc.bridge import OpenAI, Ai21
 from pydub import AudioSegment
+
+from main import nasty
+from misc.bridge import OpenAI, Ai21
+from misc.states import DAImage, SDImage, Text, Voice
+from misc.utils import config, ClientSD, trim_image
+from misc.utils import trim_name, trim_cmd, trims, get_from_dalle
 
 logger = logging.getLogger("nasty_bot")
 router = Router()
