@@ -62,11 +62,10 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
         sound.export(f"{str(uid)}.wav", format="wav")
         result = gpt.send_voice(uid)
-
         print(result["text"])
         try:
             text_from_ai = result["text"]
-            text = gpt.send_to_gpt(text_from_ai, uid)
+            text = gpt.send_to_gpt(text_from_ai, str(uid))
             await message.reply(text, parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
