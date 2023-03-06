@@ -60,9 +60,11 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         file_data = file_info.file_path
         await nasty.download_file(file_data, f"{str(uid)}.ogg")
         sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
-        result = gpt.send_voice(sound.export(f"{str(uid)}.wav", format="wav"))
+        sound.export(f"{str(uid)}.wav", format="wav")
+        result = gpt.send_voice(f"{str(uid)}.wav")
+
+        print(result)
         try:
-            print(result)
             text = result["text"]
             await message.reply(text, parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
