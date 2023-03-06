@@ -49,8 +49,8 @@ class OpenAI:
 
         # Generate response
         gpt = OpenAI()
-        task = gpt.send_to_davinci.apply_async(args=[conversation_history])
-        response = task.get()
+        task = gpt.send_to_davinci.app.apply_async(args=[conversation_history])
+        response = task.app.get()
 
         user_responses.append(response)
         conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
