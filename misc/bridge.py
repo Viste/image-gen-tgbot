@@ -56,8 +56,8 @@ class OpenAI:
         conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
         return response
 
-    @app.task
     @staticmethod
+    @app.task
     def send_to_gpt(data: str, user: str):
         openai.api_key = config.api_key
         model = "gpt-3.5-turbo"
@@ -82,8 +82,8 @@ class OpenAI:
                 if retries == max_retries:
                     return err
 
-    @app.task
     @staticmethod
+    @app.task
     def send_to_davinci(data: str):
         openai.api_key = config.api_key
         model = "text-davinci-003"
