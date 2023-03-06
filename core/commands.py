@@ -61,7 +61,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         await nasty.download_file(file_data, f"{str(uid)}.ogg")
         sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
         sound.export(f"{str(uid)}.wav", format="wav")
-        result = gpt.send_voice(f"{str(uid)}.wav")
+        result = gpt.send_voice(uid)
 
         print(result)
         try:

@@ -120,7 +120,7 @@ class OpenAI:
                     return err
 
     @staticmethod
-    def send_voice(file):
+    def send_voice(uid):
         openai.api_key = config.api_key
         model = "whisper-1"
 
@@ -128,7 +128,8 @@ class OpenAI:
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.Audio.transcribe(f"{file}", "whisper-1", temperature=0.9, response_format="text")
+                audio_file = open(f"{str(uid)}.wav", "rb")
+                result = openai.Audio.transcribe("whisper-1", audio_file, response_format="text", temperature=0.9, language="ru")
                 return result
             except openai.OpenAIError as err:
                 retries += 1
