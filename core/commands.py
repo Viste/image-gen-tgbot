@@ -65,7 +65,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
 
         print(result)
         try:
-            text = result["text"]
+            text = result
             await message.reply(text, parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
