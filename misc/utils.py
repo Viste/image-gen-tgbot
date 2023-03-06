@@ -60,8 +60,8 @@ def trim_message(text: str) -> str:
 
 
 def trim_name(text: str) -> str:
-    if text.startswith("@naastyyaabot"):
-        text = text.strip("@naastyyaabot")
+    if text.startswith("настюх"):
+        text = text.strip("настюх")
     return text.strip("\n")
 
 
