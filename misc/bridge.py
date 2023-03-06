@@ -49,15 +49,15 @@ class OpenAI:
 
         # Generate response
         gpt = OpenAI()
-        task = gpt.send_to_davinci.apply_async(args=[conversation_history])
-        response = task.get()
+        task = gpt.send_to_davinci.app.task.apply_async(args=[conversation_history])
+        response = task.app.task.get()
 
         user_responses.append(response)
         conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
         return response
 
-    @staticmethod
     @app.task
+    @staticmethod
     def send_to_gpt(data: str, user: str):
         openai.api_key = config.api_key
         model = "gpt-3.5-turbo"
@@ -82,8 +82,8 @@ class OpenAI:
                 if retries == max_retries:
                     return err
 
-    @staticmethod
     @app.task
+    @staticmethod
     def send_to_davinci(data: str):
         openai.api_key = config.api_key
         model = "text-davinci-003"
