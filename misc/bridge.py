@@ -129,7 +129,7 @@ class OpenAI:
         while retries < max_retries:
             try:
                 audio_file = open(f"{str(uid)}.wav", "rb")
-                result = openai.Audio.transcribe("whisper-1", audio_file, response_format="text", temperature=0.9, language="ru")
+                result = openai.Audio.transcribe("whisper-1", audio_file, temperature=0.9, language="ru")
                 return result
             except openai.OpenAIError as err:
                 retries += 1
