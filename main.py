@@ -5,7 +5,6 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import BotCommand, BotCommandScopeChat
-from celery import Celery
 
 from core import setup_routers
 from misc.language import Lang
@@ -13,7 +12,6 @@ from misc.utils import config
 from misc.utils import fetch_admins, check_rights_and_permissions
 
 nasty = Bot(token=config.token, parse_mode="HTML")
-app = Celery('chatbot', broker=config.celery_backend)
 
 
 async def set_bot_commands(bot: Bot, main_group_id: int):
