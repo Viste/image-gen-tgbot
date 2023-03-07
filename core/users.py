@@ -11,7 +11,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 from misc.language import Lang
 from misc.utils import DeleteMsgCallback, config
 
-logger = logging.getLogger("nasty_bot")
+logger = logging.getLogger("__name__")
 router = Router()
 
 

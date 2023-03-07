@@ -1,10 +1,51 @@
 import ai21
 import openai
 
-from celery import Celery
+from celery import Celery, shared_task
 from misc.utils import config
 
-app = Celery('chatbot', broker=config.celery_url, backend=config.celery_backend)
+app = Celery('misc.bridge', broker=config.celery_url, backend=config.celery_backend)
+app.autodiscover_tasks()
+app.conf.update(
+    result_expires=3600,
+    result_backend_transport_options={
+      'retry_policy': {'timeout': 5.0},
+    }
+)
+
+
+def conversation_tracking(text_message, user_id):
+    conversations = {}
+
+    # Get the last 10 conversations and responses for this user
+    user_conversations = conversations.get(user_id, {'conversations': [], 'responses': []})
+    user_messages = user_conversations['conversations'][-9:] + [text_message]
+    user_responses = user_conversations['responses'][-9:]
+
+    # Store the updated conversations and responses for this user
+    conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
+
+    # Construct the full conversation history in the "human: bot: " format
+    conversation_history = ""
+    for i in range(min(len(user_messages), len(user_responses))):
+        conversation_history += f"human: {user_messages[i]}\nНастя: {user_responses[i]}\n"
+
+    if conversation_history == "":
+        conversation_history = "human:{}\nНастя:".format(text_message)
+    else:
+        conversation_history += "human:{}\nНастя:".format(text_message)
+
+    # Generate response
+    oai = OpenAI()
+    task = oai.send_to_davinci.apply_async(args=[conversation_history])
+    response = task.get()
+
+    # Add the response to the user's responses
+    user_responses.append(response)
+    # Store the updated conversations and responses for this user
+    conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
+
+    return response
 
 
 class Ai21:
@@ -27,41 +68,10 @@ class Ai21:
 
 
 class OpenAI:
-    @staticmethod
-    def conversation_tracking(text_message, user_id):
-        conversations = {}
-
-        # Get the last 10 conversations and responses for this user
-        user_conversations = conversations.get(user_id, {'conversations': [], 'responses': []})
-        user_messages = user_conversations['conversations'][-9:] + [text_message]
-        user_responses = user_conversations['responses'][-9:]
-
-        # Store the updated conversations and responses for this user
-        conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
-
-        # Construct the full conversation history in the "human: bot: " format
-        conversation_history = ""
-        for i in range(min(len(user_messages), len(user_responses))):
-            conversation_history += f"human: {user_messages[i]}\nНастя: {user_responses[i]}\n"
-
-        if conversation_history == "":
-            conversation_history = "human:{}\nНастя:".format(text_message)
-        else:
-            conversation_history += "human:{}\nНастя:".format(text_message)
-
-        # Generate response
-        gpt = OpenAI()
-        task = gpt.send_to_davinci.apply_async(args=[conversation_history])
-        response = task.get()
-
-        user_responses.append(response)
-        conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
-        return response
+    openai.api_key = config.api_key
 
     @staticmethod
-    @app.task
     def send_to_gpt(data: str, user: str):
-        openai.api_key = config.api_key
         model = "gpt-3.5-turbo"
 
         max_retries = 5
@@ -85,13 +95,12 @@ class OpenAI:
                     return err
 
     @staticmethod
-    @app.task
-    def send_to_davinci(data: str):
-        openai.api_key = config.api_key
+    @shared_task
+    def send_to_davinci(message_text):
         model = "text-davinci-003"
         text = "You are an AI named Настя and you are in a conversation with a human. You can answer questions," \
                "provide information, and help with a wide variety of tasks. You are good at writing clean and standard " \
-               "code in python and C++ and making drum and bass music in FL Studio\n\n" + data
+               "code in python and C++ and making drum and bass music in FL Studio\n\n" + message_text
 
         max_retries = 5
         retries = 0
@@ -107,12 +116,11 @@ class OpenAI:
 
     @staticmethod
     def send_to_dalle(data):
-        openai.api_key = config.api_key
         max_retries = 5
         retries = 0
         while retries < max_retries:
             try:
-                result = openai.Image().create(prompt=data, n=1, size="1024x1024")
+                result = openai.Image().create(prompt="mdjrny-v4 style" + data + "4k resolution", n=1, size="1024x1024")
                 return result
             except openai.OpenAIError as err:
                 retries += 1
@@ -121,9 +129,6 @@ class OpenAI:
 
     @staticmethod
     def send_voice(uid):
-        openai.api_key = config.api_key
-        model = "whisper-1"
-
         max_retries = 5
         retries = 0
         while retries < max_retries:

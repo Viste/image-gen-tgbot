@@ -5,9 +5,9 @@ After=syslog.target network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/nastya
-ExecStartPre=/home/nastya/bin/celery --app misc.bridge worker --detach -c 4 \
-             --pool prefork --loglevel=info -f /home/nastya/queue.log
+ExecStartPre=/home/nastya/bin/celery multi start 10 -A misc.bridge -l INFO -f /home/nastya/queue.log
 ExecStart=/home/nastya/bin/python main.py
+ExecStopPost=/home/nastya/bin/celery multi stop 10 -A misc.bridge -l INFO -f /home/nastya/queue.log
 Environment="PYTHONPATH=/home/nastya/lib/python3.9/site-packages:/usr/lib/python3.9/site-packages/:$PYTHONPATH"
 KillMode=process
 SendSIGKILL=yes

@@ -7,12 +7,12 @@ from aiogram.fsm.context import FSMContext
 from pydub import AudioSegment
 
 from main import nasty
-from misc.bridge import OpenAI, Ai21
+from misc.bridge import OpenAI, Ai21, conversation_tracking
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.utils import config, ClientSD, trim_image
 from misc.utils import trim_name, trim_cmd, trims, get_from_dalle
 
-logger = logging.getLogger("nasty_bot")
+logger = logging.getLogger("__name__")
 router = Router()
 gpt = OpenAI()
 ai21 = Ai21()
@@ -30,7 +30,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_name(message.text)
 
         # Generate response
-        replay_text = gpt.conversation_tracking(trimmed, uid)
+        replay_text = conversation_tracking(trimmed, uid)
         new_replay_text = "Human: " + trimmed + "\n\n" + "Настя: " + replay_text
         try:
             await message.reply(new_replay_text, parse_mode=None)
