@@ -1,6 +1,7 @@
 from celery import Celery
-from misc.utils import config
+
 from misc.tasks import send_davinci
+from misc.utils import config
 
 app = Celery('manager', broker=config.celery_url, backend=config.celery_backend)
 app.autodiscover_tasks()
