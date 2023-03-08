@@ -11,7 +11,7 @@ def send_davinci(message_text: str):
     model = "text-davinci-003"
     text = "You are an AI named Настя and you are in a conversation with a human. You can answer questions," \
            "provide information, and help with a wide variety of tasks. You are good at writing clean and standard " \
-           "code in python and C++ and making drum and bass music in FL Studio\n\n" + message_text
+           "code in python and C++ and making drum and bass music in FL Studio\n\n" + str(message_text)
 
     max_retries = 5
     retries = 0
