@@ -34,7 +34,7 @@ async def set_bot_commands(bot: Bot, main_group_id: int):
     await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=main_group_id))
 
 
-async def conversation_tracking(text_message, user_id):
+def conversation_tracking(text_message, user_id):
     # Get the last 10 conversations and responses for this user
     user_conversations = conversations.get(user_id, {'conversations': [], 'responses': []})
     user_messages = user_conversations['conversations'][-9:] + [text_message]
