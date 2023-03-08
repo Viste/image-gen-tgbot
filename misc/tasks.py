@@ -1,6 +1,6 @@
 import openai
 
-from manager import app
+from celery import shared_task
 from misc.utils import config
 
 openai.api_key = config.api_key
@@ -28,7 +28,7 @@ def send_turbo(data: str, user: str):
                 return err
 
 
-@app.shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=5, retry_jitter=True, retry_kwargs={'max_retries': 5})
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=5, retry_jitter=True, retry_kwargs={'max_retries': 5})
 def send_davinci(message_text):
     model = "text-davinci-003"
     text = "You are an AI named Настя and you are in a conversation with a human. You can answer questions," \
