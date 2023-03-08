@@ -19,7 +19,7 @@ ai21 = Ai21()
 openai = OpenAI()
 
 
-@router.message(F.text.startswith("настюх"))
+@router.message(F.text.startswith("@naastyyaabot"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
     uid = message.from_user.id
