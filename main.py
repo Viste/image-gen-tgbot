@@ -54,7 +54,7 @@ def conversation_tracking(text_message, user_id):
         conversation_history += "human:{}\nНастя:".format(text_message)
 
     # Generate response
-    task = send_davinci.apply_async(message_text=conversation_history)
+    task = send_davinci.apply_async(args=[conversation_history])
     response = task.get()
 
     # Add the response to the user's responses
