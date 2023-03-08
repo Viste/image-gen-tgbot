@@ -6,11 +6,9 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from pydub import AudioSegment
 
-from main import nasty
-from manager import conversation_tracking
-from misc.ai21 import Ai21
+from main import nasty, conversation_tracking
+from misc.ai import Ai21, OpenAI
 from misc.states import DAImage, SDImage, Text, Voice
-from misc.tasks import send_turbo, send_dalle, send_voice
 from misc.utils import config, ClientSD, trim_image
 from misc.utils import trim_name, trim_cmd, trims, get_from_dalle
 
@@ -18,6 +16,7 @@ logger = logging.getLogger("__name__")
 router = Router()
 
 ai21 = Ai21()
+openai = OpenAI()
 
 
 @router.message(F.text.startswith("настюх"))
@@ -63,11 +62,11 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         await nasty.download_file(file_data, f"{str(uid)}.ogg")
         sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
         sound.export(f"{str(uid)}.wav", format="wav")
-        result = send_voice(uid)
+        result = openai.send_voice(uid)
         print(result["text"])
         try:
             text_from_ai = result["text"]
-            text = send_turbo(text_from_ai, str(uid))
+            text = openai.send_turbo(text_from_ai, str(uid))
             await message.reply(f"Голосовое сообщение: {text_from_ai}\n\n{text}", parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
@@ -120,7 +119,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
     else:
         logging.info("%s", message)
         trimmed = trim_cmd(message.text)
-        result = send_dalle(trimmed)
+        result = openai.send_dalle(trimmed)
         try:
             photo = get_from_dalle(result['data'])
             await message.reply_photo(photo)
