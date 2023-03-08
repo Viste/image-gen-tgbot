@@ -1,6 +1,6 @@
 import openai
-
 from celery import shared_task
+
 from misc.utils import config
 
 openai.api_key = config.api_key

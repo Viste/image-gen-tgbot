@@ -3,15 +3,15 @@ import logging
 import sys
 
 from aiogram import Bot, Dispatcher
-from celery import Celery
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import BotCommand, BotCommandScopeChat
+from celery import Celery
 
 from core import setup_routers
 from misc.language import Lang
+from misc.tasks import send_davinci
 from misc.utils import config
 from misc.utils import fetch_admins, check_rights_and_permissions
-from misc.tasks import send_davinci
 
 nasty = Bot(token=config.token, parse_mode="HTML")
 
