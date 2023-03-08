@@ -9,7 +9,7 @@ from celery import Celery
 
 from core import setup_routers
 from misc.language import Lang
-from misc.tasks import send_davinci
+from misc.tasks import get_response
 from misc.utils import config
 from misc.utils import fetch_admins, check_rights_and_permissions
 
@@ -35,27 +35,31 @@ async def set_bot_commands(bot: Bot, main_group_id: int):
 
 
 def conversation_tracking(text_message, user_id):
-    # Get the last 10 conversations and responses for this user
     user_conversations = conversations.get(user_id, {'conversations': [], 'responses': []})
     user_messages = user_conversations['conversations'][-9:] + [text_message]
     user_responses = user_conversations['responses'][-9:]
 
-    # Store the updated conversations and responses for this user
     conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
 
-    # Construct the full conversation history in the "human: bot: " format
-    conversation_history = ""
-    for i in range(min(len(user_messages), len(user_responses))):
-        conversation_history += f"human: {user_messages[i]}\nНастя: {user_responses[i]}\n"
+    conversation_history = []
 
-    if conversation_history == "":
-        conversation_history = "human:{}\nНастя:".format(text_message)
-    else:
-        conversation_history += "human:{}\nНастя:".format(text_message)
+    for i in range(min(len(user_messages), len(user_responses))):
+        conversation_history.append({
+            "role": "user", "content": user_messages[i]
+        })
+        conversation_history.append({
+            "role": "assistant", "content": user_responses[i]
+        })
+
+    # Add last prompt
+    conversation_history.append({
+        "role": "user", "content": text_message
+    })
 
     # Generate response
     print(conversation_history)
-    task = send_davinci.apply_async(args=[conversation_history])
+    # Generate response
+    task = get_response.apply_async(args=[conversation_history])
     response = task.get()
 
     # Add the response to the user's responses
