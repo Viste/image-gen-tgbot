@@ -7,7 +7,8 @@ from aiogram.fsm.context import FSMContext
 from pydub import AudioSegment
 
 from main import nasty
-from misc.bridge import Ai21, conversation_tracking, send_turbo, send_dalle, send_voice
+from misc.tasks import conversation_tracking, send_turbo, send_dalle, send_voice
+from misc.ai21 import Ai21
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.utils import config, ClientSD, trim_image
 from misc.utils import trim_name, trim_cmd, trims, get_from_dalle

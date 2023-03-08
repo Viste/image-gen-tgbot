@@ -1,4 +1,3 @@
-import ai21
 import openai
 
 from celery import Celery, shared_task
@@ -38,7 +37,7 @@ def send_turbo(data: str, user: str):
                 return err
 
 
-@shared_task
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=5, retry_jitter=True, retry_kwargs={'max_retries': 5})
 def send_davinci(message_text):
     model = "text-davinci-003"
     text = "You are an AI named Настя and you are in a conversation with a human. You can answer questions," \
@@ -108,7 +107,7 @@ def conversation_tracking(text_message, user_id):
 
     # Generate response
     task = send_davinci.apply_async(args=[conversation_history])
-    response = task.get()
+    response = task.app.get()
 
     # Add the response to the user's responses
     user_responses.append(response)
@@ -116,22 +115,3 @@ def conversation_tracking(text_message, user_id):
     conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
 
     return response
-
-
-class Ai21:
-    @staticmethod
-    def send_to_ai21(data):
-        ai21.api_key = config.ai21_api_key
-        model = "j1-grande"
-
-        max_retries = 5
-        retries = 0
-        while retries < max_retries:
-            try:
-                result = ai21.Completion.execute(model=model, prompt=data, numResults=1, maxTokens=17,
-                                                 temperature=0.8, topKReturn=0, topP=1,)
-                return result
-            except openai.OpenAIError as err:
-                retries += 1
-                if retries == max_retries:
-                    return err
