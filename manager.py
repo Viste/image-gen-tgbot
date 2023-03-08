@@ -46,3 +46,7 @@ def conversation_tracking(text_message, user_id):
     conversations[user_id] = {'conversations': user_messages, 'responses': user_responses}
 
     return response
+
+
+if __name__ == '__main__':
+    app.start()
