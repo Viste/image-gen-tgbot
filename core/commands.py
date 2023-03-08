@@ -7,14 +7,14 @@ from aiogram.fsm.context import FSMContext
 from pydub import AudioSegment
 
 from main import nasty
-from misc.bridge import OpenAI, Ai21, conversation_tracking
+from misc.bridge import Ai21, conversation_tracking, send_turbo, send_dalle, send_voice
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.utils import config, ClientSD, trim_image
 from misc.utils import trim_name, trim_cmd, trims, get_from_dalle
 
 logger = logging.getLogger("__name__")
 router = Router()
-gpt = OpenAI()
+
 ai21 = Ai21()
 
 
@@ -61,11 +61,11 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         await nasty.download_file(file_data, f"{str(uid)}.ogg")
         sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
         sound.export(f"{str(uid)}.wav", format="wav")
-        result = gpt.send_voice(uid)
+        result = send_voice(uid)
         print(result["text"])
         try:
             text_from_ai = result["text"]
-            text = gpt.send_to_gpt(text_from_ai, str(uid))
+            text = send_turbo(text_from_ai, str(uid))
             await message.reply(f"Голосовое сообщение: {text_from_ai}\n\n{text}", parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
@@ -118,7 +118,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
     else:
         logging.info("%s", message)
         trimmed = trim_cmd(message.text)
-        result = gpt.send_to_dalle(trimmed)
+        result = send_dalle(trimmed)
         try:
             photo = get_from_dalle(result['data'])
             await message.reply_photo(photo)
