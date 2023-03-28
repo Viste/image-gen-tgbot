@@ -6,7 +6,7 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from pydub import AudioSegment
 
-from main import nasty, conversation_tracking
+from main import nasty
 from misc.ai import Ai21, OpenAI
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.utils import config, ClientSD, trim_image
@@ -31,10 +31,9 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_name(message.text)
 
         # Generate response
-        replay_text = conversation_tracking(trimmed, uid)
-        new_replay_text = "Human: " + trimmed + "\n\n" + "Настя: " + replay_text
+        replay_text = openai.send_turbo(trimmed, uid)
         try:
-            await message.reply(new_replay_text, parse_mode=None)
+            await message.reply(replay_text, parse_mode=None)
         except ValueError as err:
             logging.info('error: %s', err)
             text = err
