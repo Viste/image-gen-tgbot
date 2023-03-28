@@ -31,7 +31,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_name(message.text)
 
         # Generate response
-        replay_text = openai.send_turbo(trimmed, uid)
+        replay_text = openai.send_turbo(trimmed)
         try:
             await message.reply(replay_text, parse_mode=None)
         except ValueError as err:

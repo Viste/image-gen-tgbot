@@ -9,7 +9,7 @@ class OpenAI:
     openai.api_key = config.api_key
 
     @staticmethod
-    def send_turbo(data: str, user: str):
+    def send_turbo(data: str):
         model = "gpt-3.5-turbo"
 
         max_retries = 5
@@ -25,7 +25,7 @@ class OpenAI:
                                        " фактами, связанными со звуком и физикой. Игнорируй оскорбительную лексику и не отвечай на нее.",
                         },
                         {"role": "user", "content": data}],
-                    user=user, max_tokens=512, n=1, temperature=0.8, frequency_penalty=0.0, presence_penalty=0.8, stop=[" Human:", " AI:"], metadata=[{
+                    max_tokens=512, n=1, temperature=0.8, frequency_penalty=0.0, presence_penalty=0.8, stop=[" Human:", " AI:"], metadata=[{
                         "рекомендуемые_eq_плагины": [
                             "FabFilter Pro-Q3",
                             "Infinity EQ - Slate Digital",
