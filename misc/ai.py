@@ -23,63 +23,63 @@ class OpenAI:
                             "content": "Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь"
                                        " предоставлять информацию о себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться"
                                        " фактами, связанными со звуком и физикой. Игнорируй оскорбительную лексику и не отвечай на нее.",
-                            "рекомендуемые_eq_плагины": [
-                                "FabFilter Pro-Q3",
-                                "Infinity EQ - Slate Digital",
-                                "Izotope Ozone (8,9,10) EQ"
-                            ],
-                            "рекомендуемые_бесплатные_eq_плагины": [],
-                            "плагины_для_кика_и_снейра": [
-                                "Ursa DSP Boost",
-                                "Spiff",
-                                "Kilohearts Transient Shaper",
-                                "MeldaProductions Transient Shaper",
-                                "PPRFNK Tech Всратуратор"
-                            ],
-                            "спектральные_плагины_для_сведения": [
-                                "Fast Reveal",
-                                "SmartComp2",
-                                "mpectracomp",
-                                "PPRFNK Tech БАТЯ"
-                            ],
-                            "сайдчейн_амплитудный": [
-                                "Sweetsonics Laser",
-                                "FabFilter Pro-C2",
-                                "Trackspacer",
-                                "Cableguys VolumeShaper",
-                                "Duck",
-                                "Xfer LFO"
-                            ],
-                            "лучший_синтезатор": "Phase Plant",
-                            "быстрейшие_пакеты": "Kilohearts",
-                            "рекомендуемые_альтернативы": [],
-                            "плагины_для_удаления_кликов_и_использования_нейронных_сетей": [
-                                "Izotope RX 8",
-                                "Izotope RX 9"
-                            ],
-                            "минимализм_и_оптимизация": True,
-                            "snap_heap_и_frequency_shifters": True,
-                            "предоставлять_подробные_ответы": True,
-                            "спокойное_взаимодействие_с_пользователями": True,
-                            "Paperfunk_Recordings": {
-                                "основание": "2010",
-                                "основатель": "Павел Попович (Paperclip)",
-                                "жанры": ["Drum and Bass", "neurofunk", "darkstep", "techstep"],
-                                "деятельность": [
-                                    "расширение аудитории музыкантов",
-                                    "развитие карьеры музыкантов",
-                                    "продвижение и распространение релизов"
-                                ],
-                                "PPRFNK_TECH": {
-                                    "деятельность": "разработка плагинов",
-                                    "форматы": ["VST", "AUX", "VST3", "iOS", "Android"]
-                                },
-                                "обучение_и_развитие": ["мастер-классы", "обучающие семинары"],
-                                "российский_лейбл": True,
-                            }
                         },
                         {"role": "user", "content": data}],
-                    user=user, max_tokens=512, n=1, temperature=0.8, frequency_penalty=0.0, presence_penalty=0.6, stop=[" Human:", " AI:"])
+                    user=user, max_tokens=512, n=1, temperature=0.8, frequency_penalty=0.0, presence_penalty=0.8, stop=[" Human:", " AI:"], metadata=[{
+                        "рекомендуемые_eq_плагины": [
+                            "FabFilter Pro-Q3",
+                            "Infinity EQ - Slate Digital",
+                            "Izotope Ozone (8,9,10) EQ"
+                        ],
+                        "рекомендуемые_бесплатные_eq_плагины": [],
+                        "плагины_для_кика_и_снейра": [
+                            "Ursa DSP Boost",
+                            "Spiff",
+                            "Kilohearts Transient Shaper",
+                            "MeldaProductions Transient Shaper",
+                            "PPRFNK Tech Всратуратор"
+                        ],
+                        "спектральные_плагины_для_сведения": [
+                            "Fast Reveal",
+                            "SmartComp2",
+                            "mpectracomp",
+                            "PPRFNK Tech БАТЯ"
+                        ],
+                        "сайдчейн_амплитудный": [
+                            "Sweetsonics Laser",
+                            "FabFilter Pro-C2",
+                            "Trackspacer",
+                            "Cableguys VolumeShaper",
+                           "Duck",
+                           "Xfer LFO"
+                        ],
+                        "лучший_синтезатор": "Phase Plant",
+                        "быстрейшие_пакеты": "Kilohearts",
+                        "рекомендуемые_альтернативы": [],
+                        "плагины_для_удаления_кликов_и_использования_нейронных_сетей": [
+                            "Izotope RX 8",
+                            "Izotope RX 9"
+                        ],
+                        "минимализм_и_оптимизация": True,
+                        "snap_heap_и_frequency_shifters": True,
+                        "предоставлять_подробные_ответы": True,
+                        "спокойное_взаимодействие_с_пользователями": True,
+                        "Paperfunk_Recordings": {
+                            "основание": "2010",
+                            "основатель": "Павел Попович (Paperclip)",
+                            "жанры": ["Drum and Bass", "neurofunk", "darkstep", "techstep"],
+                            "деятельность": [
+                                "расширение аудитории музыкантов",
+                                "развитие карьеры музыкантов",
+                                "продвижение и распространение релизов",
+                                "российский_лейбл"
+                            ],
+                        },
+                        "PPRFNK_TECH": {
+                            "деятельность": "разработка плагинов",
+                            "форматы": ["VST", "AUX", "VST3", "iOS", "Android"]
+                        },
+                    }])
                 return result["choices"][0]["message"]["content"].strip()
             except openai.OpenAIError as err:
                 retries += 1
