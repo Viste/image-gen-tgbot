@@ -35,10 +35,10 @@ class OpenAI:
                 message_history.append({"role": "user", "content": f"{query}"})
                 completion = await openai.ChatCompletion.acreate(model=self.model, messages=message_history, **oai_args)
                 message = (completion["choices"][0].get("message").get("content").encode("utf8").decode())
-                self.message_history.append([f"{query}", message])
+                self.dialog_messages.append([f"{query}", message])
                 # only keep 10 history
-                first_history = self.message_history.pop(0)
-                self.message_history = [first_history] + self.message_history[-10:]
+                first_history =  self.dialog_messages.pop(0)
+                self.dialog_messages = [first_history] + self.dialog_messages[-10:]
                 print(message)
                 return message
             except openai.error.InvalidRequestError as e:
