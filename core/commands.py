@@ -7,15 +7,14 @@ from aiogram.fsm.context import FSMContext
 from pydub import AudioSegment
 
 from main import nasty
-from misc.ai import Ai21, OpenAI
+from misc.ai import OpenAI
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.utils import config, ClientSD, trim_image
-from misc.utils import trim_name, trim_cmd, trims, get_from_dalle
+from misc.utils import trim_name, trim_cmd, get_from_dalle
 
 logger = logging.getLogger("__name__")
 router = Router()
 
-ai21 = Ai21()
 openai = OpenAI()
 
 
@@ -81,27 +80,6 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
     logging.info("%s", message)
 
 
-@router.message(F.text.startswith("Настя,"))
-async def ask21(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Text.get)
-    uid = message.from_user.id
-    if uid in config.banned_user_ids:
-        text = "не хочу с тобой разговаривать"
-        await message.reply(text, parse_mode=None)
-    else:
-        logging.info("%s", message)
-        trimmed = trims(message.text)
-        result = ai21.send_to_ai21(trimmed)
-        try:
-            print(result)
-            text = result['completions'][0]['data']['text']
-            await message.reply(text, parse_mode=None)
-        except ValueError as err:
-            logging.info('error: %s', err)
-            text = err
-            await message.reply(text, parse_mode=None)
-
-
 @router.message(Text.get)
 async def process_ask21(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.result)
@@ -120,7 +98,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_cmd(message.text)
         result = openai.send_dalle(trimmed)
         try:
-            photo = get_from_dalle(result['data'])
+            photo = get_from_dalle(result)
             await message.reply_photo(photo)
         except ValueError as err:
             logging.info('error: %s', err)
@@ -170,11 +148,10 @@ async def info(message: types.Message):
         text = "Бот написан специально для PPRFNK!\n" \
                "По команде /report сообщу всем админам чата о плохом человеке! \n" \
                "Если ошибся или что-то пошло не так напиши /cancel \n" \
-               "Хочешь со мной поговорить? Обратись ко мне через никнейм @naastyyaabot ...  ---- пока не работает, вместо этого просто пришли войс я отвечу\n" \
+               "Хочешь со мной поговорить? Обратись ко мне через никнейм @naastyyaabot ...\n" \
                "Скажи что хочешь нарисовать, я передам это моей подруге нейросети DaLL E, а она нарисует кодовое слово " \
                "'Нарисуй: ...'\n" \
                "Если хочешь отправить картинку моей подруге SD напиши мне 'Представь: ...' --- пока не работает меняю api\n" \
-               "Ai21 -- дич лютая 'Настя, ..\n" \
                "\n" \
                "Автор: @vistee"
         await message.reply(text, parse_mode=None)

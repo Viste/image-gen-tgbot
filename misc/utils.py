@@ -65,12 +65,6 @@ def trim_name(text: str) -> str:
     return text.strip("\n")
 
 
-def trims(text: str) -> str:
-    if text.startswith("Настя,"):
-        text = text.strip("Настя,")
-    return text.strip("\n")
-
-
 def trim_cmd(text: str) -> str:
     if text.startswith("Нарисуй: "):
         text = text.strip("Нарисуй: ")
