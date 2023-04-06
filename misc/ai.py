@@ -6,7 +6,7 @@ openai.api_key = config.api_key
 
 oai_args = {
     "temperature": 0.8,
-    "max_tokens": 2048,
+    "max_tokens": 1024,
     "top_p": 1,
     "frequency_penalty": 0,
     "presence_penalty": 0.8,
@@ -37,7 +37,7 @@ class OpenAI:
                 message = (completion["choices"][0].get("message").get("content").encode("utf8").decode())
                 self.dialog_messages.append([f"{query}", message])
                 # only keep 10 history
-                first_history =  self.dialog_messages.pop(0)
+                first_history = self.dialog_messages.pop(0)
                 self.dialog_messages = [first_history] + self.dialog_messages[-10:]
                 print(message)
                 return message
