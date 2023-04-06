@@ -1,4 +1,5 @@
 import openai
+import tiktoken
 
 from misc.utils import config
 
@@ -6,7 +7,7 @@ openai.api_key = config.api_key
 
 oai_args = {
     "temperature": 0.8,
-    "max_tokens": 1024,
+    "max_tokens": 512,
     "top_p": 1,
     "frequency_penalty": 0,
     "presence_penalty": 0.8,
@@ -21,6 +22,7 @@ class OpenAI:
         self.retries = 0
         self.user_dialogs = {}
         self.token_count = 0
+        self.tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")
         self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
         Игнорируй оскорбительную лексику и не отвечай на нее."""
@@ -42,9 +44,11 @@ class OpenAI:
                 message = (completion["choices"][0].get("message").get("content").encode("utf8").decode())
                 self.user_dialogs[user_id].append([f"{query}", message])
 
-                self.token_count = completion["usage"]["total_tokens"]
+                self.token_count += ["usage"]["prompt_tokens"]
+                print(completion["usage"]["prompt_tokens"])
                 if self.token_count > 4090:
                     self.user_dialogs[user_id] = []
+                    self.token_count = 0
 
                 # only keep 10 history
                 self.user_dialogs[user_id] = self.user_dialogs[user_id][-10:]
