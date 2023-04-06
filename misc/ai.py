@@ -3,113 +3,65 @@ import openai
 
 from misc.utils import config
 
+openai.api_key = config.api_key
+
+oai_args = {
+    "temperature": 0.8,
+    "max_tokens": 2048,
+    "top_p": 1,
+    "frequency_penalty": 0,
+    "presence_penalty": 0.8,
+    "stop": None
+}
+
 
 class OpenAI:
+    def __init__(self):
+        self.model = "gpt-3.5-turbo"
+        self.max_retries = 5
+        self.retries = 0
+        self.conversation_history = ""
+        self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
+        себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
+        Игнорируй оскорбительную лексику и не отвечай на нее.
+        
+        <conversation history>
+        
+        User: <user input>
+        Настя:"""
 
-    openai.api_key = config.api_key
-
-    @staticmethod
-    def send_turbo(data: str):
-        model = "gpt-3.5-turbo"
-
-        max_retries = 5
-        retries = 0
-        while retries < max_retries:
+    async def send_turbo(self, user_input):
+        prompt = self.content.replace("<conversation_history>", self.conversation_history).replace("<user input>", user_input)
+        while self.retries < self.max_retries:
             try:
-                result = openai.ChatCompletion().create(
-                    model=model, messages=[
-                        {
-                            "role": "system",
-                            "content": """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь
-                             предоставлять информацию о себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, 
-                             связанными со звуком и физикой. Игнорируй оскорбительную лексику и не отвечай на нее.
-                             "рекомендуемые_eq_плагины": [
-                                 "FabFilter Pro-Q3",
-                                 "Infinity EQ - Slate Digital",
-                                 "Izotope Ozone (8,9,10) EQ"
-                             ],
-                             "рекомендуемые_бесплатные_eq_плагины": [],
-                             "плагины_для_кика_и_снейра": [
-                                 "Ursa DSP Boost",
-                                 "Spiff",
-                                 "Kilohearts Transient Shaper",
-                                 "MeldaProductions Transient Shaper",
-                                 "PPRFNK Tech Всратуратор"
-                             ],
-                             "спектральные_плагины_для_сведения": [
-                                 "Fast Reveal",
-                                 "SmartComp2",
-                                 "mpectracomp",
-                                 "PPRFNK Tech БАТЯ"
-                             ],
-                             "сайдчейн_амплитудный": [
-                                 "Sweetsonics Laser",
-                                 "FabFilter Pro-C2",
-                                 "Trackspacer",
-                                 "Cableguys VolumeShaper",
-                                 "Duck",
-                                 "Xfer LFO"
-                             ],
-                             "лучший_синтезатор": "Phase Plant",
-                             "быстрейшие_пакеты": "Kilohearts",
-                             "рекомендуемые_альтернативы": [],
-                             "плагины_для_удаления_кликов_и_использования_нейронных_сетей": [
-                                 "Izotope RX 8",
-                                 "Izotope RX 9"
-                              ],
-                             "минимализм_и_оптимизация": true,
-                             "snap_heap_и_frequency_shifters":  true,
-                             "предоставлять_подробные_ответы": true,
-                             "спокойное_взаимодействие_с_пользователями": true,
-                             "Paperfunk_Recordings": {
-                                 "основание": "2010",
-                                 "основатель": "Павел Попович (Paperclip)",
-                                 "жанры": ["Drum and Bass", "neurofunk", "darkstep", "techstep"],
-                                 "деятельность": [
-                                     "расширение аудитории музыкантов",
-                                     "развитие карьеры музыкантов",
-                                     "продвижение и распространение релизов"
-                                 ],
-                             },
-                             "PPRFNK_TECH": {
-                                 "деятельность": "разработка плагинов",
-                                 "форматы": ["VST", "AUX", "VST3", "iOS", "Android"]
-                             }
-                             """
-                        },
-                        {"role": "user", "content": data}],
-                    max_tokens=512, n=1, temperature=0.8, frequency_penalty=0.0, presence_penalty=0.8, stop=[" Human:", " AI:"])
-                return result["choices"][0]["message"]["content"].strip()
-            except openai.OpenAIError as err:
-                retries += 1
-                if retries == max_retries:
-                    return err
+                result = await openai.ChatCompletion.acreate(model=self.model, messages=prompt, **oai_args)
+                answer = result.choices[0].message["content"].strip()
+                self.conversation_history += f"User: {user_input}\nНастя: {answer}\n"
+                return answer
+            except openai.error.InvalidRequestError as e:
+                self.retries += 1
+                if self.retries == self.max_retries:
+                    return e
 
-    @staticmethod
-    def send_dalle(data):
-        max_retries = 5
-        retries = 0
-        while retries < max_retries:
+    async def send_dalle(self, data):
+        while self.retries < self.max_retries:
             try:
                 result = openai.Image().create(prompt=data + "4k resolution", n=1, size="1024x1024")
                 return result
             except openai.OpenAIError as err:
-                retries += 1
-                if retries == max_retries:
+                self.retries += 1
+                if self.retries == self.max_retries:
                     return err
 
-    @staticmethod
-    def send_voice(uid):
-        max_retries = 5
-        retries = 0
-        while retries < max_retries:
+    def send_voice(self, uid):
+        while self.retries < self.max_retries:
             try:
                 audio_file = open(f"{str(uid)}.wav", "rb")
                 result = openai.Audio.transcribe("whisper-1", audio_file, temperature=0.9, language="ru")
                 return result
             except openai.OpenAIError as err:
-                retries += 1
-                if retries == max_retries:
+                self.retries += 1
+                if self.retries == self.max_retries:
                     return err
 
 

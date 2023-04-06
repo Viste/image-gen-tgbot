@@ -21,6 +21,7 @@ async def set_bot_commands(bot: Bot, main_group_id: int):
     ]
     await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=main_group_id))
 
+
 async def main():
     logging.basicConfig(
         level=logging.INFO,
