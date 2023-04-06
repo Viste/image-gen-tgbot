@@ -1,5 +1,4 @@
 import openai
-import tiktoken
 
 from misc.utils import config
 
@@ -22,7 +21,6 @@ class OpenAI:
         self.retries = 0
         self.user_dialogs = {}
         self.token_count = 0
-        self.tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")
         self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
         Игнорируй оскорбительную лексику и не отвечай на нее."""
