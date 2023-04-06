@@ -30,7 +30,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_name(message.text)
 
         # Generate response
-        replay_text = openai.send_turbo(trimmed)
+        replay_text = await openai.send_turbo(trimmed)
         try:
             await message.reply(replay_text, parse_mode=None)
         except ValueError as err:
@@ -64,7 +64,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         print(result["text"])
         try:
             text_from_ai = result["text"]
-            text = openai.send_turbo(text_from_ai, str(uid))
+            text = openai.send_turbo(text_from_ai)
             await message.reply(f"Голосовое сообщение: {text_from_ai}\n\n{text}", parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
