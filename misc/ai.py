@@ -23,25 +23,41 @@ class OpenAI:
         self.conversation_history = ""
         self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
-        Игнорируй оскорбительную лексику и не отвечай на нее.
-        
-        <conversation history>
-        
-        User: <user input>
-        Настя:"""
+        Игнорируй оскорбительную лексику и не отвечай на нее."""
 
-    async def send_turbo(self, user_input):
-        prompt = self.content.replace("<conversation_history>", self.conversation_history).replace("<user input>", user_input)
+    def _gen_response(self, message, dialog_messages):
+        prompt = self.content
+
+        messages = [{"role": "system", "content": prompt}]
+        for dialog_message in dialog_messages:
+            messages.append({"role": "user", "content": dialog_message["user"]})
+            messages.append({"role": "assistant", "content": dialog_message["bot"]})
+        messages.append({"role": "user", "content": message})
+
+        return messages
+
+    async def send_turbo(self, message, dialog_messages=[]):
         while self.retries < self.max_retries:
-            try:
-                result = await openai.ChatCompletion.acreate(model=self.model, messages=prompt, **oai_args)
-                answer = result.choices[0].message["content"].strip()
-                self.conversation_history += f"User: {user_input}\nНастя: {answer}\n"
-                return answer
-            except openai.error.InvalidRequestError as e:
-                self.retries += 1
-                if self.retries == self.max_retries:
-                    return e
+            n_dialog_messages_before = len(dialog_messages)
+            answer = None
+            while answer is None:
+                try:
+                    messages = self._gen_response(message, dialog_messages)
+                    result = await openai.ChatCompletion.acreate(model=self.model, messages=messages, **oai_args)
+                    answer = result.choices[0].message["content"].strip()
+                except openai.error.InvalidRequestError as e:
+                    self.retries += 1
+                    if self.retries == self.max_retries:
+                        return e
+                    if len(dialog_messages) == 0:
+                        raise e
+
+                    # forget first message in dialog_messages
+                    dialog_messages = dialog_messages[1:]
+
+            n_first_dialog_messages_removed = n_dialog_messages_before - len(dialog_messages)
+
+            return answer, n_first_dialog_messages_removed
 
     async def send_dalle(self, data):
         while self.retries < self.max_retries:
