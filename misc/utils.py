@@ -53,6 +53,10 @@ async def check_rights_and_permissions(bot: Bot, chat_id: int):
         raise PermissionError("Мне нужны эти права: 'restrict participants' и 'delete messages'")
 
 
+def split_into_chunks(text: str, chunk_size: int = 4096) -> list[str]:
+    return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
+
+
 def trim_message(text: str) -> str:
     if text.startswith("?"):
         text = text.strip("?")

@@ -10,7 +10,7 @@ from main import nasty
 from misc.ai import OpenAI
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.utils import config, ClientSD, trim_image
-from misc.utils import trim_name, trim_cmd, get_from_dalle
+from misc.utils import trim_name, trim_cmd, get_from_dalle, split_into_chunks
 
 logger = logging.getLogger("__name__")
 router = Router()
@@ -30,13 +30,18 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_name(message.text)
 
         # Generate response
-        replay_text = await openai.do_the_work(trimmed, uid)
-        try:
-            await message.reply(replay_text, parse_mode=None)
-        except ValueError as err:
-            logging.info('error: %s', err)
-            text = err
-            await message.reply(text, parse_mode=None)
+        replay_text, total_tokens = await openai.get_chat_response(trimmed, uid)
+        chunks = split_into_chunks(replay_text)
+        for index, chunk in enumerate(chunks):
+            try:
+                if index == 0:
+                    await message.reply(chunk, parse_mode=None)
+            except Exception:
+                try:
+                    await message.reply(chunk, parse_mode=None)
+                except Exception as error:
+                    logging.info('error: %s', error)
+                    await message.reply(error, parse_mode=None)
 
 
 @router.message(Text.get)
