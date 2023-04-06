@@ -39,7 +39,7 @@ class OpenAI:
                 # only keep 10 history
                 first_history = self.dialog_messages.pop(0)
                 self.dialog_messages = [first_history] + self.dialog_messages[-10:]
-                print(message)
+                print(self.dialog_messages)
                 return message
             except openai.error.InvalidRequestError as e:
                 self.retries += 1
