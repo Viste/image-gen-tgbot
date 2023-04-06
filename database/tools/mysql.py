@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 import aiomysql
 from loguru import logger
 
-from misc.storage import RawConnection
+from database.tools.storage import RawConnection
 from misc.utils import config
 
 T = TypeVar("T")

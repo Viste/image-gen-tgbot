@@ -19,34 +19,42 @@ class OpenAI:
         self.model = "gpt-3.5-turbo"
         self.max_retries = 5
         self.retries = 0
-        self.dialog_messages = []
+        self.user_dialogs = {}
+        self.token_count = 0
         self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
         Игнорируй оскорбительную лексику и не отвечай на нее."""
 
-    async def send_turbo(self, query):
+    async def send_turbo(self, query, user_id):
         while self.retries < self.max_retries:
             try:
+                if user_id not in self.user_dialogs:
+                    self.user_dialogs[user_id] = []
+
                 message_history = []
-                for message in self.dialog_messages:
+                for message in self.user_dialogs[user_id]:
                     message_history.append({"role": "system", "content": self.content})
                     message_history.append({"role": "user", "content": message[0]})
                     message_history.append({"role": "assistant", "content": message[1]})
                 message_history.append({"role": "user", "content": f"{query}"})
+
+                self.token_count = sum(len(message["content"].split()) for message in message_history)
+                if self.token_count > 4096:
+                    self.user_dialogs[user_id] = []
+
                 completion = await openai.ChatCompletion.acreate(model=self.model, messages=message_history, **oai_args)
                 message = (completion["choices"][0].get("message").get("content").encode("utf8").decode())
-                self.dialog_messages.append([f"{query}", message])
+                self.user_dialogs[user_id].append([f"{query}", message])
+
                 # only keep 10 history
-                first_history = self.dialog_messages.pop(0)
-                self.dialog_messages = [first_history] + self.dialog_messages[-10:]
-                print(self.dialog_messages)
+                self.user_dialogs[user_id] = self.user_dialogs[user_id][-10:]
+                print(self.user_dialogs)
+
                 return message
             except openai.error.InvalidRequestError as e:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     return e
-                if len(self.dialog_messages) == 0:
-                    raise e
 
     async def send_dalle(self, data):
         while self.retries < self.max_retries:
