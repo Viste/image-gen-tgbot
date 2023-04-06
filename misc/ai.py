@@ -39,7 +39,7 @@ class OpenAI:
                 message_history.append({"role": "user", "content": f"{query}"})
 
                 self.token_count = sum(len(message["content"].split()) for message in message_history)
-                if self.token_count > 4096:
+                if self.token_count > 3096:
                     self.user_dialogs[user_id] = []
 
                 completion = await openai.ChatCompletion.acreate(model=self.model, messages=message_history, **oai_args)

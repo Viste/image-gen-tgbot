@@ -64,7 +64,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         print(result["text"])
         try:
             text_from_ai = result["text"]
-            text = openai.send_turbo(text_from_ai)
+            text = openai.send_turbo(text_from_ai, uid)
             await message.reply(f"Голосовое сообщение: {text_from_ai}\n\n{text}", parse_mode=None)
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
