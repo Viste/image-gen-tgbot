@@ -42,7 +42,7 @@ class OpenAI:
                 message = (completion["choices"][0].get("message").get("content").encode("utf8").decode())
                 self.user_dialogs[user_id].append([f"{query}", message])
 
-                self.token_count += ["usage"]["prompt_tokens"]
+                self.token_count += completion["usage"]["prompt_tokens"]
                 print(completion["usage"]["prompt_tokens"])
                 if self.token_count > 4090:
                     self.user_dialogs[user_id] = []
