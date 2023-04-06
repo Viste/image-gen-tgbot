@@ -25,7 +25,7 @@ class OpenAI:
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
         Игнорируй оскорбительную лексику и не отвечай на нее."""
 
-    async def send_turbo(self, query, user_id):
+    async def do_the_work(self, query, user_id):
         while self.retries < self.max_retries:
             try:
                 if user_id not in self.user_dialogs:
@@ -38,23 +38,25 @@ class OpenAI:
                     message_history.append({"role": "assistant", "content": message[1]})
                 message_history.append({"role": "user", "content": f"{query}"})
 
-                self.token_count = sum(len(message["content"].split()) for message in message_history)
-                if self.token_count > 3096:
-                    self.user_dialogs[user_id] = []
-
                 completion = await openai.ChatCompletion.acreate(model=self.model, messages=message_history, **oai_args)
                 message = (completion["choices"][0].get("message").get("content").encode("utf8").decode())
                 self.user_dialogs[user_id].append([f"{query}", message])
+
+                self.token_count = completion["usage"]["total_tokens"]
+                if self.token_count > 4090:
+                    self.user_dialogs[user_id] = []
 
                 # only keep 10 history
                 self.user_dialogs[user_id] = self.user_dialogs[user_id][-10:]
                 print(self.user_dialogs)
 
-                return message
+                return self.user_dialogs[user_id][-1][1]
             except openai.error.InvalidRequestError as e:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     return e
+                if len(self.user_dialogs[user_id]) == 0:
+                    raise e
 
     async def send_dalle(self, data):
         while self.retries < self.max_retries:
