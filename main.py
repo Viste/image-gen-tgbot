@@ -5,11 +5,15 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import BotCommand, BotCommandScopeChat
+from aiogram.fsm.storage.redis import RedisStorage
 
 from core import setup_routers
 from misc.language import Lang
 from misc.utils import config
 from misc.utils import fetch_admins, check_rights_and_permissions
+from aioredis.client import Redis
+
+redis_client = Redis.from_url("redis://localhost:6379/0")
 
 nasty = Bot(token=config.token, parse_mode="HTML")
 
@@ -56,7 +60,8 @@ async def main():
         print(f"Error no localization found for language code: {config.lang}")
         return
 
-    worker = Dispatcher()
+    storage = RedisStorage(redis=redis_client)
+    worker = Dispatcher(storage=storage)
     router = setup_routers()
     worker.include_router(router)
     useful_updates = worker.resolve_used_update_types()
