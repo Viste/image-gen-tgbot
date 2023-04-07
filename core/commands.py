@@ -58,7 +58,6 @@ async def process_ask(message: types.Message, state: FSMContext) -> None:
             try:
                 if index == 0:
                     await message.reply(chunk, parse_mode=None)
-                    await state.set_state(Text.result)
                     logging.info("%s", message)
             except Exception:
                 try:
