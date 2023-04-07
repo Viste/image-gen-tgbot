@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import BotCommand, BotCommandScopeChat
 from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.fsm.strategy import FSMStrategy
 
 from core import setup_routers
 from misc.language import Lang
@@ -61,7 +62,7 @@ async def main():
         return
 
     storage = RedisStorage(redis=redis_client)
-    worker = Dispatcher(storage=storage)
+    worker = Dispatcher(storage=storage, fsm_strategy=FSMStrategy.GLOBAL_USER)
     router = setup_routers()
     worker.include_router(router)
     useful_updates = worker.resolve_used_update_types()
