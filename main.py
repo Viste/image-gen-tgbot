@@ -62,7 +62,7 @@ async def main():
     useful_updates = worker.resolve_used_update_types()
     await set_bot_commands(nasty, config.group_main)
     logging.info("Starting bot")
-    await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang)
+    await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang, handle_signals=True)
 
 
 if __name__ == '__main__':
