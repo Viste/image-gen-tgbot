@@ -59,7 +59,7 @@ async def cmd_ro_or_nomedia(message: types.Message, lang: Lang, bot: Bot):
         ))
 
 
-@router.message( F.from_user.id.in_(config.admins))
+@router.message(F.from_user.id.in_(config.admins))
 async def usage(message: types.Message):
     text = openai.get_money()
     await message.reply(text, parse_mode=None)
