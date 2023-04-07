@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import types, F, Router
+from aiogram import types, F, Router, flags
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
@@ -13,9 +13,10 @@ logger = logging.getLogger("__name__")
 router = Router()
 
 openai = OpenAI()
+flags = {"action": "typing"}
 
 
-@router.message(F.text.startswith("@naastyyaabot"))
+@router.message(F.text.startswith("@naastyyaabot"), flags=flags)
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
     uid = message.from_user.id
@@ -41,7 +42,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
                     await message.reply(error, parse_mode=None)
 
 
-@router.message(Text.get, F.reply_to_message.from_user.is_bot)
+@router.message(Text.get, F.reply_to_message.from_user.is_bot, flags=flags)
 async def process_ask(message: types.Message) -> None:
     uid = message.from_user.id
     if uid in config.banned_user_ids:

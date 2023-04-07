@@ -57,12 +57,6 @@ def split_into_chunks(text: str, chunk_size: int = 4096) -> list[str]:
     return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
 
 
-def trim_message(text: str) -> str:
-    if text.startswith("?"):
-        text = text.strip("?")
-    return text.strip("\n")
-
-
 def trim_name(text: str) -> str:
     if text.startswith("@naastyyaabot"):
         text = text.strip("@naastyyaabot")

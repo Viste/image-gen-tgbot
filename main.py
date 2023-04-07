@@ -14,7 +14,7 @@ from misc.utils import config
 from misc.utils import fetch_admins, check_rights_and_permissions
 from aioredis.client import Redis
 
-redis_client = Redis.from_url("redis://localhost:6379/0")
+redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
 
 nasty = Bot(token=config.token, parse_mode="HTML")
 

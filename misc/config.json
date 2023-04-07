@@ -31,5 +31,12 @@
   "user": "root",
   "password": "",
   "host": "/run/mariadb/mysql.sock",
-  "dbname": ""
+  "dbname": "nasty",
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "password": null,
+    "db": 0,
+    "conversation": 3
+  }
 }

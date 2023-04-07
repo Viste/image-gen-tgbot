@@ -2,6 +2,7 @@ import json
 import logging
 from calendar import monthrange
 from datetime import date
+from aiogram.fsm.context import FSMContext
 
 import openai
 import requests
@@ -10,6 +11,7 @@ import tiktoken
 from misc.utils import config
 
 openai.api_key = config.api_key
+
 logger = logging.getLogger("__name__")
 
 args = {
@@ -23,7 +25,7 @@ args = {
 
 
 class OpenAI:
-    def __init__(self):
+    def __init__(self, state: FSMContext):
         super().__init__()
         self.model = "gpt-3.5-turbo"
         self.max_retries = 5
@@ -33,12 +35,16 @@ class OpenAI:
         self.n_choices = 1
         self.retries = 0
         self.show_tokens = True
-        self.user_dialogs: dict[int: list] = {}
+        self.state = state
+        # self.user_dialogs: dict[int: list] = {}
+        self.user_dialogs: dict[int: list] = await self.state.get_data()
         self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
         Игнорируй оскорбительную лексику и не отвечай на нее."""
 
     async def get_chat_response(self, user_id: int, query: str) -> tuple[str, str]:
+        self.user_dialogs['user_id'] = user_id
+        self.user_dialogs['query'] = query
         response = await self.__worker(user_id, query)
         answer = ''
 
