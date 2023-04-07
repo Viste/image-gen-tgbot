@@ -3,7 +3,9 @@ import logging
 from calendar import monthrange
 from datetime import date
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.storage import RedisStorage
 
+from main import nasty
 import openai
 import requests
 import tiktoken
@@ -25,7 +27,7 @@ args = {
 
 
 class OpenAI:
-    def __init__(self, state: FSMContext = None):
+    def __init__(self):
         super().__init__()
         self.model = "gpt-3.5-turbo"
         self.max_retries = 5
@@ -35,7 +37,7 @@ class OpenAI:
         self.n_choices = 1
         self.retries = 0
         self.show_tokens = True
-        self.state = state
+        self.state = FSMContext(storage=RedisStorage(), bot=nasty, key="user_id")
         self.user_dialogs: dict[int: list] = {}
         self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
@@ -49,13 +51,13 @@ class OpenAI:
             for index, choice in enumerate(response.choices):
                 content = choice['message']['content'].strip()
                 if index == 0:
-                    self.__add_to_history(user_id, role="assistant", content=content)
+                    await self.__add_to_history(user_id, role="assistant", content=content)
                 answer += f'{index + 1}\u20e3\n'
                 answer += content
                 answer += '\n\n'
         else:
             answer = response.choices[0]['message']['content'].strip()
-            self.__add_to_history(user_id, role="assistant", content=answer)
+            await self.__add_to_history(user_id, role="assistant", content=answer)
 
         if self.show_tokens:
             answer += "\n\n---\n" \
@@ -71,7 +73,7 @@ class OpenAI:
                 if user_id not in self.user_dialogs:
                     self.__reset_chat_history(user_id)
 
-                self.__add_to_history(user_id, role="user", content=query)
+                await self.__add_to_history(user_id, role="user", content=query)
 
                 token_count = self.__count_tokens(self.user_dialogs[user_id])
                 exceeded_max_tokens = token_count + self.config_tokens > self.max_tokens
@@ -83,8 +85,8 @@ class OpenAI:
                         summary = await self.__summarise(self.user_dialogs[user_id][:-1])
                         logging.debug(f'Summary: {summary}')
                         self.__reset_chat_history(user_id)
-                        self.__add_to_history(user_id, role="assistant", content=summary)
-                        self.__add_to_history(user_id, role="user", content=query)
+                        await self.__add_to_history(user_id, role="assistant", content=summary)
+                        await self.__add_to_history(user_id, role="user", content=query)
                     except Exception as e:
                         logging.warning(f'Error while summarising chat history: {str(e)}. Popping elements instead...')
                         self.user_dialogs[user_id] = self.user_dialogs[user_id][-self.max_history_size:]
@@ -126,13 +128,19 @@ class OpenAI:
                 if self.retries == self.max_retries:
                     raise Exception(f'⚠️ Ошибочка вышла ⚠️\n{str(e)}') from e
 
-    def __add_to_history(self, user_id, role, content):
-        self.user_dialogs[user_id].append({"role": role, "content": content})
+    async def __add_to_history(self, user_id, role, content):
+        await self.state.update_data(user_id=user_id, message={'role': role, 'content': content})
+        # self.user_dialogs[user_id].append({"role": role, "content": content})
 
-    def get_stats(self, user_id: int) -> tuple[int, int]:
-        if user_id not in self.user_dialogs:
+    async def get_stats(self, user_id: int) -> tuple[int, int]:
+        user_data = await self.state.get_data()
+        user_id = user_data.get('user_id')
+        message = user_data.get('message')
+        if user_id not in user_data:
             self.__reset_chat_history(user_id)
-        return len(self.user_dialogs[user_id]), self.__count_tokens(self.user_dialogs[user_id])
+
+        return len(message), self.__count_tokens(message)
+        # return len(self.user_dialogs[user_id]), self.__count_tokens(self.user_dialogs[user_id])
 
     def __reset_chat_history(self, user_id, content=''):
         if content == '':
