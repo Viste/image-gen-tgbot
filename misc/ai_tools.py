@@ -3,7 +3,8 @@ import logging
 from calendar import monthrange
 from datetime import date
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.storage import RedisStorage
+from aiogram.fsm.storage.redis import RedisStorage
+from aioredis.client import Redis
 
 from main import nasty
 import openai
@@ -13,6 +14,8 @@ import tiktoken
 from misc.utils import config
 
 openai.api_key = config.api_key
+redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
+
 
 logger = logging.getLogger("__name__")
 
@@ -37,7 +40,8 @@ class OpenAI:
         self.n_choices = 1
         self.retries = 0
         self.show_tokens = True
-        self.state = FSMContext(storage=RedisStorage(), bot=nasty, key="user_id")
+        self.storage = RedisStorage(redis=redis_client)
+        self.state = FSMContext(storage=self.storage, bot=nasty, key="user_id")
         self.user_dialogs: dict[int: list] = {}
         self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
