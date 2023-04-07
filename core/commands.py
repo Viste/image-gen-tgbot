@@ -42,7 +42,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(Text.get, F.reply_to_message)
-async def process_ask(message: types.Message, state: FSMContext) -> None:
+async def process_ask(message: types.Message) -> None:
     uid = message.from_user.id
     if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
