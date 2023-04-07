@@ -25,7 +25,7 @@ args = {
 
 
 class OpenAI:
-    def __init__(self, state: FSMContext):
+    def __init__(self, state: FSMContext = None):
         super().__init__()
         self.model = "gpt-3.5-turbo"
         self.max_retries = 5
