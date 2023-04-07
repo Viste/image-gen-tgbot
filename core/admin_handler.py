@@ -4,11 +4,13 @@ from datetime import timedelta
 from aiogram import types, Bot, Router, F
 from aiogram.filters.command import Command
 
+from misc.ai_tools import OpenAI
 from misc.language import Lang
 from misc.utils import config
 
 restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhd]\b)')
 router = Router()
+openai = OpenAI()
 
 
 def get_restriction_period(text: str) -> int:
@@ -55,3 +57,9 @@ async def cmd_ro_or_nomedia(message: types.Message, lang: Lang, bot: Bot):
         await message.reply(lang.get(str_temporary).format(
             time=restriction_end_date.strftime("%d.%m.%Y %H:%M")
         ))
+
+
+@router.message( F.from_user.id.in_(config.admins))
+async def usage(message: types.Message):
+    text = openai.get_money()
+    await message.reply(text, parse_mode=None)

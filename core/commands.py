@@ -4,7 +4,7 @@ from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
-from misc.ai import OpenAI
+from misc.ai_tools import OpenAI
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.utils import config, ClientSD, trim_image
 from misc.utils import trim_name, trim_cmd, get_from_dalle, split_into_chunks
