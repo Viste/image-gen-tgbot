@@ -24,4 +24,3 @@ class SDImage(StatesGroup):
 class Voice(StatesGroup):
     get = State()
     result = State()
-

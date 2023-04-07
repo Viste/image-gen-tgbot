@@ -16,7 +16,7 @@ class MysqlConnection(RawConnection):
     @staticmethod
     async def __make_request(sql: str, params: Union[tuple, List[tuple]] = None, fetch: bool = False,
                              mult: bool = False, retries_count: int = 5) -> Optional[Union[List[Dict[str, Any]],
-                                                                                           Dict[str, Any]]]:
+    Dict[str, Any]]]:
         if MysqlConnection.connection_pool is None:
             MysqlConnection.connection_pool = await aiomysql.create_pool(unix_socket=config.host, user=config.user,
                                                                          password=config.password, db=config.dbname,

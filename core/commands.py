@@ -1,12 +1,9 @@
 import logging
-import os
 
 from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from pydub import AudioSegment
 
-from main import nasty
 from misc.ai import OpenAI
 from misc.states import DAImage, SDImage, Text, Voice
 from misc.utils import config, ClientSD, trim_image
@@ -48,35 +45,6 @@ async def ask(message: types.Message, state: FSMContext) -> None:
 async def process_ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.result)
     logging.info("%s", message)
-
-
-@router.message(F.content_type.in_({'voice'}))
-async def ask(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Voice.get)
-    uid = message.from_user.id
-    if uid in config.banned_user_ids:
-        text = "не хочу с тобой разговаривать"
-        await message.reply(text, parse_mode=None)
-    else:
-        logging.info("%s", message)
-        # process the voice message
-        file_info = await nasty.get_file(message.voice.file_id)
-        file_data = file_info.file_path
-        await nasty.download_file(file_data, f"{str(uid)}.ogg")
-        sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
-        sound.export(f"{str(uid)}.wav", format="wav")
-        result = openai.send_voice(uid)
-        print(result["text"])
-        try:
-            text_from_ai = result["text"]
-            text = openai.do_the_work(text_from_ai, uid)
-            await message.reply(f"Голосовое сообщение: {text_from_ai}\n\n{text}", parse_mode=None)
-            os.remove(f"{str(uid)}.ogg")
-            os.remove(f"{str(uid)}.wav")
-        except RuntimeError as err:
-            logging.info('error: %s', err)
-            text = err
-            await message.reply(text, parse_mode=None)
 
 
 @router.message(Voice.get)

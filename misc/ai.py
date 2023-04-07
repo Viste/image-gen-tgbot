@@ -1,6 +1,7 @@
+import logging
+
 import openai
 import tiktoken
-import logging
 
 from misc.utils import config
 
@@ -79,7 +80,7 @@ class OpenAI:
         self.user_dialogs[user_id].append({"role": role, "content": content})
 
     async def get_chat_response(self, user_id: int, query: str) -> tuple[str, str]:
-        response = await self.do_the_work(user_id, query)
+        response = await self._do_the_work(user_id, query)
         answer = ''
 
         if len(response.choices) > 1 and self.n_choices > 1:
@@ -102,7 +103,7 @@ class OpenAI:
 
         return answer, response.usage['total_tokens']
 
-    async def do_the_work(self, query, user_id):
+    async def _do_the_work(self, query, user_id):
         while self.retries < self.max_retries:
             try:
                 if user_id not in self.user_dialogs:

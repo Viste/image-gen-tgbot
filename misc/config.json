@@ -7,11 +7,22 @@
   "text_api_url": "https://api.openai.com/v1/completions",
   "dalle_api_url": "https://api.openai.com/v1/images/generations",
   "deepai_api_url": "https://api.deepai.org/api/stable-diffusion",
-  "admins": [58800377, 910007939, 350493882, 824834852],
+  "admins": [
+    58800377,
+    910007939,
+    350493882,
+    824834852
+  ],
   "group_main": "-1001170569681",
   "banned_group": "-1001821769551",
-  "banned_user_ids": [62520772, 903623904, 902416013],
-  "banned_usernames": [""],
+  "banned_user_ids": [
+    62520772,
+    903623904,
+    902416013
+  ],
+  "banned_usernames": [
+    ""
+  ],
   "remove_joins": "True",
   "lang": "ru",
   "report_mode": "private",

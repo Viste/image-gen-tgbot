@@ -1,12 +1,10 @@
 from collections import namedtuple
 
-
 __all__ = [
     'emojies'
 ]
 
 Emoji = namedtuple('Emoji', ['unicode', 'subject', 'name'])
-
 
 emojies = (
     Emoji(unicode=u'\U0001F48D', subject='ring', name='кольцо'),
