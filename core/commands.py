@@ -5,7 +5,7 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
 from misc.ai_tools import OpenAI
-from misc.states import DAImage, SDImage, Text, Voice
+from misc.states import DAImage, SDImage, Text
 from misc.utils import config, ClientSD, trim_image
 from misc.utils import trim_name, trim_cmd, get_from_dalle, split_into_chunks
 
@@ -41,22 +41,31 @@ async def ask(message: types.Message, state: FSMContext) -> None:
                     await message.reply(error, parse_mode=None)
 
 
-@router.message(Text.get)
+@router.message(Text.get, F.reply_to_message)
 async def process_ask(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Text.result)
-    logging.info("%s", message)
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
+        await message.reply(text, parse_mode=None)
+    else:
+        logging.info("%s", message)
+        trimmed = trim_name(message.text)
 
-
-@router.message(Voice.get)
-async def process_ask(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Voice.result)
-    logging.info("%s", message)
-
-
-@router.message(Text.get)
-async def process_ask21(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Text.result)
-    logging.info("%s", message)
+        # Generate response
+        replay_text, total_tokens = await openai.get_chat_response(query=trimmed, user_id=uid)
+        chunks = split_into_chunks(replay_text)
+        for index, chunk in enumerate(chunks):
+            try:
+                if index == 0:
+                    await message.reply(chunk, parse_mode=None)
+                    await state.set_state(Text.result)
+                    logging.info("%s", message)
+            except Exception:
+                try:
+                    await message.reply(chunk, parse_mode=None)
+                except Exception as error:
+                    logging.info('error: %s', error)
+                    await message.reply(error, parse_mode=None)
 
 
 @router.message(F.text.startswith("Нарисуй: "))
