@@ -4,15 +4,15 @@ import sys
 
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramAPIError
-from aiogram.types import BotCommand, BotCommandScopeChat
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
+from aiogram.types import BotCommand, BotCommandScopeChat
+from aioredis.client import Redis
 
 from core import setup_routers
 from misc.language import Lang
 from misc.utils import config
 from misc.utils import fetch_admins, check_rights_and_permissions
-from aioredis.client import Redis
 
 redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
 

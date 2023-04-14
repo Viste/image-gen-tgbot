@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import types, F, Router, flags
+from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
@@ -13,10 +13,9 @@ logger = logging.getLogger("__name__")
 router = Router()
 
 openai = OpenAI()
-flags = {"action": "typing"}
 
 
-@router.message(F.text.startswith("@naastyyaabot"), flags=flags)
+@router.message(F.text.startswith("@naastyyaabot"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
     uid = message.from_user.id
@@ -28,21 +27,23 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_name(message.text)
 
         # Generate response
-        replay_text, total_tokens = await openai.get_chat_response(query=trimmed, user_id=uid)
+        replay_text, total_tokens = await openai.get_chat_response(uid, trimmed)
+
         chunks = split_into_chunks(replay_text)
         for index, chunk in enumerate(chunks):
             try:
                 if index == 0:
                     await message.reply(chunk, parse_mode=None)
-            except Exception:
+            except Exception as err:
                 try:
-                    await message.reply(chunk, parse_mode=None)
+                    logging.info('From try in for index chunks: %s', err)
+                    await message.reply(chunk + err, parse_mode=None)
                 except Exception as error:
-                    logging.info('error: %s', error)
+                    logging.info('Last exception from Core: %s', error)
                     await message.reply(error, parse_mode=None)
 
 
-@router.message(Text.get, F.reply_to_message.from_user.is_bot, flags=flags)
+@router.message(Text.get, F.reply_to_message.from_user.is_bot)
 async def process_ask(message: types.Message) -> None:
     uid = message.from_user.id
     if uid in config.banned_user_ids:
@@ -53,18 +54,18 @@ async def process_ask(message: types.Message) -> None:
         trimmed = trim_name(message.text)
 
         # Generate response
-        replay_text, total_tokens = await openai.get_chat_response(query=trimmed, user_id=uid)
+        replay_text, total_tokens = await openai.get_chat_response(uid, trimmed)
         chunks = split_into_chunks(replay_text)
         for index, chunk in enumerate(chunks):
             try:
                 if index == 0:
                     await message.reply(chunk, parse_mode=None)
-                    logging.info("%s", message)
-            except Exception:
+            except Exception as err:
                 try:
-                    await message.reply(chunk, parse_mode=None)
+                    logging.info('From try in for index chunks: %s', err)
+                    await message.reply(chunk + err, parse_mode=None)
                 except Exception as error:
-                    logging.info('error: %s', error)
+                    logging.info('Last exception from Core: %s', error)
                     await message.reply(error, parse_mode=None)
 
 

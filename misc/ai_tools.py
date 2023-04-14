@@ -2,11 +2,7 @@ import json
 import logging
 from calendar import monthrange
 from datetime import date
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.storage.redis import RedisStorage
-from aioredis.client import Redis
 
-from main import nasty
 import openai
 import requests
 import tiktoken
@@ -14,13 +10,11 @@ import tiktoken
 from misc.utils import config
 
 openai.api_key = config.api_key
-redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
-
 
 logger = logging.getLogger("__name__")
 
 args = {
-    "temperature": 0.8,
+    "temperature": 0.5,
     "max_tokens": 512,
     "top_p": 1,
     "frequency_penalty": 0,
@@ -40,8 +34,6 @@ class OpenAI:
         self.n_choices = 1
         self.retries = 0
         self.show_tokens = True
-        self.storage = RedisStorage(redis=redis_client)
-        self.state = FSMContext(storage=self.storage, bot=nasty, key="user_id")
         self.user_dialogs: dict[int: list] = {}
         self.content = """Ты дружелюбный AI, помогающий пользователям с вопросами по музыкальному производству в любой DAW. Тебя зовут Настя. Ты можешь предоставлять информацию о 
         себе, когда спрашивают. Ты умеешь шутить на профессиональные темы о звуке и звукорежиссуре, а также делиться фактами, связанными со звуком и физикой. 
@@ -55,13 +47,13 @@ class OpenAI:
             for index, choice in enumerate(response.choices):
                 content = choice['message']['content'].strip()
                 if index == 0:
-                    await self.__add_to_history(user_id, role="assistant", content=content)
+                    self.__add_to_history(user_id, role="assistant", content=content)
                 answer += f'{index + 1}\u20e3\n'
                 answer += content
                 answer += '\n\n'
         else:
             answer = response.choices[0]['message']['content'].strip()
-            await self.__add_to_history(user_id, role="assistant", content=answer)
+            self.__add_to_history(user_id, role="assistant", content=answer)
 
         if self.show_tokens:
             answer += "\n\n---\n" \
@@ -77,7 +69,7 @@ class OpenAI:
                 if user_id not in self.user_dialogs:
                     self.__reset_chat_history(user_id)
 
-                await self.__add_to_history(user_id, role="user", content=query)
+                self.__add_to_history(user_id, role="user", content=query)
 
                 token_count = self.__count_tokens(self.user_dialogs[user_id])
                 exceeded_max_tokens = token_count + self.config_tokens > self.max_tokens
@@ -87,64 +79,43 @@ class OpenAI:
                     logging.info(f'Chat history for chat ID {user_id} is too long. Summarising...')
                     try:
                         summary = await self.__summarise(self.user_dialogs[user_id][:-1])
-                        logging.debug(f'Summary: {summary}')
+                        logging.info(f'Summary: {summary}')
                         self.__reset_chat_history(user_id)
-                        await self.__add_to_history(user_id, role="assistant", content=summary)
-                        await self.__add_to_history(user_id, role="user", content=query)
+                        self.__add_to_history(user_id, role="assistant", content=summary)
+                        self.__add_to_history(user_id, role="user", content=query)
+                        logging.info("Dialog From summary: %s", self.user_dialogs[user_id])
                     except Exception as e:
-                        logging.warning(f'Error while summarising chat history: {str(e)}. Popping elements instead...')
+                        logging.info(f'Error while summarising chat history: {str(e)}. Popping elements instead...')
                         self.user_dialogs[user_id] = self.user_dialogs[user_id][-self.max_history_size:]
+                        logging.info("Dialog From summary exception: %s", self.user_dialogs[user_id])
 
                 return await openai.ChatCompletion.acreate(model=self.model, messages=self.user_dialogs[user_id], **args)
 
             except openai.error.RateLimitError as e:
                 self.retries += 1
+                logging.info("Dialog From Ratelim: %s", self.user_dialogs[user_id])
                 if self.retries == self.max_retries:
-                    raise Exception(f'⚠️ OpenAI: Превышены лимиты ⚠️\n{str(e)}') from e
+                    return f'⚠️OpenAI: Превышены лимиты ⚠️\n{str(e)}'
 
-            except openai.error.InvalidRequestError as e:
+            except openai.error.InvalidRequestError as er:
                 self.retries += 1
+                logging.info("Dialog From bad req: %s", self.user_dialogs[user_id])
                 if self.retries == self.max_retries:
-                    raise Exception(f'⚠️ OpenAI: кривой запрос ⚠️\n{str(e)}') from e
+                    return f'⚠️OpenAI: кривой запрос ⚠️\n{str(er)}'
 
-            except Exception as e:
+            except Exception as err:
                 self.retries += 1
+                logging.info("Dialog From custom exception: %s", self.user_dialogs[user_id])
                 if self.retries == self.max_retries:
-                    raise Exception(f'⚠️ Ошибочка вышла ⚠️\n{str(e)}') from e
+                    return f'⚠️Ошибочка вышла ⚠️\n{str(err)}', err
 
-    async def send_dalle(self, data):
-        while self.retries < self.max_retries:
-            try:
-                result = await openai.Image().acreate(prompt=data + "4k resolution", n=1, size="1024x1024")
-                return result.get("data")[0].get("url")
-            except openai.error.RateLimitError as e:
-                self.retries += 1
-                if self.retries == self.max_retries:
-                    raise Exception(f'⚠️ OpenAI: Превышены лимиты ⚠️\n{str(e)}') from e
+    def __add_to_history(self, user_id, role, content):
+        self.user_dialogs[user_id].append({"role": role, "content": content})
 
-            except openai.error.InvalidRequestError as e:
-                self.retries += 1
-                if self.retries == self.max_retries:
-                    raise Exception(f'⚠️ OpenAI: кривой запрос ⚠️\n{str(e)}') from e
-
-            except Exception as e:
-                self.retries += 1
-                if self.retries == self.max_retries:
-                    raise Exception(f'⚠️ Ошибочка вышла ⚠️\n{str(e)}') from e
-
-    async def __add_to_history(self, user_id, role, content):
-        await self.state.update_data(user_id=user_id, message={'role': role, 'content': content})
-        # self.user_dialogs[user_id].append({"role": role, "content": content})
-
-    async def get_stats(self, user_id: int) -> tuple[int, int]:
-        user_data = await self.state.get_data()
-        user_id = user_data.get('user_id')
-        message = user_data.get('message')
-        if user_id not in user_data:
+    def get_stats(self, user_id: int) -> tuple[int, int]:
+        if user_id not in self.user_dialogs:
             self.__reset_chat_history(user_id)
-
-        return len(message), self.__count_tokens(message)
-        # return len(self.user_dialogs[user_id]), self.__count_tokens(self.user_dialogs[user_id])
+        return len(self.user_dialogs[user_id]), self.__count_tokens(self.user_dialogs[user_id])
 
     def __reset_chat_history(self, user_id, content=''):
         if content == '':
@@ -159,7 +130,7 @@ class OpenAI:
         response = await openai.ChatCompletion.acreate(
             model=self.model,
             messages=messages,
-            temperature=0.8
+            temperature=0.2
         )
         return response.choices[0]['message']['content']
 
@@ -201,3 +172,23 @@ class OpenAI:
         billing_data = json.loads(response.text)
         usage_month = billing_data["total_usage"] / 100
         return usage_month
+
+    async def send_dalle(self, data):
+        while self.retries < self.max_retries:
+            try:
+                result = await openai.Image().acreate(prompt=data + "4k resolution", n=1, size="1024x1024")
+                return result.get("data")[0].get("url")
+            except openai.error.RateLimitError as e:
+                self.retries += 1
+                if self.retries == self.max_retries:
+                    raise Exception(f'⚠️ OpenAI: Превышены лимиты ⚠️\n{str(e)}') from e
+
+            except openai.error.InvalidRequestError as e:
+                self.retries += 1
+                if self.retries == self.max_retries:
+                    raise Exception(f'⚠️ OpenAI: кривой запрос ⚠️\n{str(e)}') from e
+
+            except Exception as e:
+                self.retries += 1
+                if self.retries == self.max_retries:
+                    raise Exception(f'⚠️ Ошибочка вышла ⚠️\n{str(e)}') from e
