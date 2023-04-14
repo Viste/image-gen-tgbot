@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from misc.ai_tools import OpenAI
 from misc.states import DAImage, SDImage, Text
 from misc.utils import config, ClientSD, trim_image
-from misc.utils import trim_name, trim_cmd, get_from_dalle, split_into_chunks
+from misc.utils import trim_name, trim_cmd, split_into_chunks
 
 logger = logging.getLogger("__name__")
 router = Router()
@@ -103,9 +103,9 @@ async def draw(message: types.Message, state: FSMContext) -> None:
     else:
         logging.info("%s", message)
         trimmed = trim_cmd(message.text)
-        result = openai.send_dalle(trimmed)
+        result = await openai.send_dalle(trimmed)
         try:
-            photo = await get_from_dalle(result)
+            photo = result
             await message.reply_photo(photo)
         except ValueError as err:
             logging.info('error: %s', err)
