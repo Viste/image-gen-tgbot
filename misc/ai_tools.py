@@ -177,7 +177,7 @@ class OpenAI:
         while self.retries < self.max_retries:
             try:
                 result = await openai.Image().acreate(prompt=data + "4k resolution", n=1, size="1024x1024")
-                return result.get("data")[0].get("url")
+                return result.data[0]['url']
             except openai.error.RateLimitError as e:
                 self.retries += 1
                 if self.retries == self.max_retries:
