@@ -68,7 +68,7 @@ async def process_ask(message: types.Message) -> None:
                     await message.reply(error, parse_mode=None)
 
 
-@router.message(F.reply_to_message.from_user.is_bot)
+@router.message(F.from_user.is_bot)
 async def process_ask(message: types.Message) -> None:
     uid = message.from_user.id
     if uid in config.banned_user_ids:
