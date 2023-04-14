@@ -105,7 +105,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_cmd(message.text)
         result = openai.send_dalle(trimmed)
         try:
-            photo = get_from_dalle(result)
+            photo = await get_from_dalle(result)
             await message.reply_photo(photo)
         except ValueError as err:
             logging.info('error: %s', err)
