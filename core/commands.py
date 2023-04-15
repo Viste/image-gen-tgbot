@@ -15,7 +15,7 @@ router = Router()
 openai = OpenAI()
 
 
-@router.message(F.text.startswith("@naastyyaabot"), F.reply_to_message.from_user.is_bot)
+@router.message(F.text.startswith("@naastyyaabot"))
 async def ask(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Text.get)
     uid = message.from_user.id
@@ -68,31 +68,6 @@ async def process_ask(message: types.Message) -> None:
                     await message.reply(error, parse_mode=None)
 
 
-@router.message(F.from_user.is_bot)
-async def process_ask(message: types.Message) -> None:
-    uid = message.from_user.id
-    if uid in config.banned_user_ids:
-        text = "не хочу с тобой разговаривать"
-        await message.reply(text, parse_mode=None)
-    else:
-        logging.info("%s", message)
-
-        # Generate response
-        replay_text, total_tokens = await openai.get_chat_response(uid, message.text)
-        chunks = split_into_chunks(replay_text)
-        for index, chunk in enumerate(chunks):
-            try:
-                if index == 0:
-                    await message.reply(chunk, parse_mode=None)
-            except Exception as err:
-                try:
-                    logging.info('From try in for index chunks: %s', err)
-                    await message.reply(chunk + err, parse_mode=None)
-                except Exception as error:
-                    logging.info('Last exception from Core: %s', error)
-                    await message.reply(error, parse_mode=None)
-
-
 @router.message(F.text.startswith("Нарисуй: "))
 async def draw(message: types.Message, state: FSMContext) -> None:
     await state.set_state(DAImage.get)
@@ -107,10 +82,14 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         try:
             photo = result
             await message.reply_photo(photo)
-        except ValueError as err:
-            logging.info('error: %s', err)
-            text = err
-            await message.reply(text, parse_mode=None)
+        except Exception as err:
+            try:
+                text = "Не удалось получить картинку. Попробуйте еще раз."
+                logging.info('From try in Picture: %s', err)
+                await message.reply(text + err, parse_mode=None)
+            except Exception as error:
+                logging.info('Last exception from Picture: %s', error)
+                await message.reply(error, parse_mode=None)
 
 
 @router.message(DAImage.get)
