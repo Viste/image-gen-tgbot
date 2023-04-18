@@ -206,7 +206,7 @@ class StableDiffAI:
         self.height = 768
         self.steps = 30
         self.guidance_scale = 7.5
-        self.video_length = 10
+        self.video_length = 3
         self.video_negative = "Low Quality"
         self.scheduler = "UniPCMultistepScheduler"
         self.negatives = "mutated hands, mutated eyes, mutated, duplicate faces, duplicate characters, duplicate, deformed, bad anatomy, dis figured, poorly drawn face, " \

@@ -136,7 +136,7 @@ async def process_imagine(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(F.text.startswith("Замути, "))
-async def imagine(message: types.Message, state: FSMContext) -> None:
+async def video_gen(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Video.get)
     uid = message.from_user.id
     if uid in config.banned_user_ids:
@@ -161,7 +161,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(Video.get)
-async def process_imagine(message: types.Message, state: FSMContext) -> None:
+async def process_video(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Video.result)
     logging.info("%s", message)
 
