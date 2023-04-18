@@ -113,7 +113,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         print(result['generationTime'])
         print(result['meta']['seed'])
         print(result['meta']['model'])
-        text = str(result['generationTime']) + " секунд. Зерно: " + str(result['meta']['seed']) + ", Модель: " + str(result['meta']['model'])
+        text = "Время генерации: " + str(result['generationTime']) + " секунд. Зерно: " + str(result['meta']['seed']) + ", Модель: " + str(result['meta']['model'])
         try:
             photo = result['output'][0]
             await message.reply_photo(photo, caption=text)
