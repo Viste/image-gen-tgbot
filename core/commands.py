@@ -110,12 +110,18 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         logging.info("%s", message)
         trimmed = trim_image(message.text)
         result = await stable_diff_ai.send_sdapi(trimmed)
+        print(result)
         try:
-            await message.reply_photo(result['output'])
-        except ValueError as err:
-            logging.info('error: %s', err)
-            text = err
-            await message.reply(text, parse_mode=None)
+            photo = result['output']
+            await message.reply_photo(photo)
+        except Exception as err:
+            try:
+                text = "Не удалось получить картинку. Попробуйте еще раз."
+                logging.info('From try in SD Picture: %s', err)
+                await message.reply(text + err, parse_mode=None)
+            except Exception as error:
+                logging.info('Last exception from SD Picture: %s', error)
+                await message.reply(error, parse_mode=None)
 
 
 @router.message(SDImage.get)
