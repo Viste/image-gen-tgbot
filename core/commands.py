@@ -85,9 +85,9 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             await message.reply_photo(photo)
         except Exception as err:
             try:
-                text = "Не удалось получить картинку. Попробуйте еще раз."
+                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
                 logging.info('From try in Picture: %s', err)
-                await message.reply(text + err, parse_mode=None)
+                await message.reply(text + result, parse_mode=None)
             except Exception as error:
                 logging.info('Last exception from Picture: %s', error)
                 await message.reply(error, parse_mode=None)
@@ -121,7 +121,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
             await message.reply_photo(photo, caption=text)
         except Exception as err:
             try:
-                text = "Не удалось получить картинку. Попробуйте еще раз."
+                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
                 logging.info('From try in SD Picture: %s', err)
                 await message.answer(text + result['output'][0], parse_mode=None)
             except Exception as error:
@@ -152,7 +152,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
             await message.reply_video(video)
         except Exception as err:
             try:
-                text = "Не удалось получить картинку. Попробуйте еще раз."
+                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
                 logging.info('From try in SD Picture: %s', err)
                 await message.reply(text + result['output'][0], parse_mode=None)
             except Exception as error:
