@@ -2,7 +2,6 @@ import json
 import os
 from typing import Dict, List, Union
 
-import requests
 from aiogram import Bot, types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import ChatMemberAdministrator, ChatMemberOwner
@@ -15,16 +14,6 @@ class JSONObject:
 
 cfg_file = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r', encoding='utf8')
 config = json.loads(cfg_file.read(), object_hook=JSONObject)
-
-
-class ClientSD:
-    @staticmethod
-    def send_sd_img_req(data: str):
-        req = requests.post(config.deepai_api_url,
-                            data={"text": data, "grid_size": 1, "width": 768, "height": 768},
-                            headers={'api-key': config.deepai_api_key})
-        result = req.json()
-        return result
 
 
 class DeleteMsgCallback(CallbackData, prefix="delmsg"):

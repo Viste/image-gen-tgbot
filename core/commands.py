@@ -4,15 +4,16 @@ from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
-from misc.ai_tools import OpenAI
+from misc.ai_tools import OpenAI, StableDiffAI
 from misc.states import DAImage, SDImage, Text
-from misc.utils import config, ClientSD, trim_image
+from misc.utils import config, trim_image
 from misc.utils import trim_name, trim_cmd, split_into_chunks
 
 logger = logging.getLogger("__name__")
 router = Router()
 
 openai = OpenAI()
+stable_diff_ai = StableDiffAI()
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
@@ -107,11 +108,10 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        sd = ClientSD()
         trimmed = trim_image(message.text)
-        result = sd.send_sd_img_req(trimmed)
+        result = await stable_diff_ai.send_sdapi(trimmed)
         try:
-            await message.reply_photo(result['output_url'])
+            await message.reply_photo(result['output'])
         except ValueError as err:
             logging.info('error: %s', err)
             text = err

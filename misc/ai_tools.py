@@ -3,6 +3,7 @@ import logging
 from calendar import monthrange
 from datetime import date
 
+import aiohttp
 import openai
 import requests
 import tiktoken
@@ -192,3 +193,38 @@ class OpenAI:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     raise Exception(f'⚠️ Ошибочка вышла ⚠️\n{str(e)}') from e
+
+
+class StableDiffAI:
+    def __init__(self):
+        super().__init__()
+        self.key = "XHjUJejpMEQ31CB72jS1i6ig3S5wIwxpzkw3OJbmvF3KcNLru2zWbeEcK5Wn"
+        self.url = "https://stablediffusionapi.com/api/v3/text2img"
+        self.samples = 1
+        self.width = 768
+        self.height = 768
+        self.steps = 30
+        self.guidance_scale = 7.5
+        self.negatives = "mutated hands, mutated eyes, mutated, duplicate faces, duplicate characters, duplicate, deformed, bad anatomy, dis figured, poorly drawn face, " \
+                         "mutation, mutated, extra limb, ugly, poorly drawn hands, missing limbs, disconnected limbs, malformed hands, blurry, (((mutated hands and fingers))), " \
+                         "watermark, oversaturated, distorted hands, amputation, missing hands, obese, double hands"
+
+    @staticmethod
+    async def send_sdapi(self, prompt):
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.key}"
+            }
+            data = {
+                "key": self.key,
+                "prompt": prompt,
+                "negative_prompt": self.negatives,
+                "samples": self.samples,
+                "width": self.width,
+                "height": self.height,
+                "guidance_scale": self.guidance_scale,
+                "num_inference_steps": self.steps,
+            }
+            async with session.post(self.url, headers=headers, json=data) as resp:
+                return await resp.json()
