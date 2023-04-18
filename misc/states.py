@@ -15,6 +15,6 @@ class SDImage(StatesGroup):
     result = State()
 
 
-class Voice(StatesGroup):
+class Video(StatesGroup):
     get = State()
     result = State()

@@ -5,8 +5,8 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
 from misc.ai_tools import OpenAI, StableDiffAI
-from misc.states import DAImage, SDImage, Text
-from misc.utils import config, trim_image
+from misc.states import DAImage, SDImage, Text, Video
+from misc.utils import config, trim_image, trim_video
 from misc.utils import trim_name, trim_cmd, split_into_chunks
 
 logger = logging.getLogger("__name__")
@@ -132,6 +132,37 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
 @router.message(SDImage.get)
 async def process_imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.result)
+    logging.info("%s", message)
+
+
+@router.message(F.text.startswith("Замути, "))
+async def imagine(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Video.get)
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
+        await message.reply(text, parse_mode=None)
+    else:
+        logging.info("%s", message)
+        trimmed = trim_video(message.text)
+        result = await stable_diff_ai.send_sd_video(trimmed)
+        print(result)
+        try:
+            video = result['output'][0]
+            await message.reply_video(video)
+        except Exception as err:
+            try:
+                text = "Не удалось получить картинку. Попробуйте еще раз."
+                logging.info('From try in SD Picture: %s', err)
+                await message.answer(text + result['output'][0], parse_mode=None)
+            except Exception as error:
+                logging.info('Last exception from SD Picture: %s', error)
+                await message.answer(error, parse_mode=None)
+
+
+@router.message(Video.get)
+async def process_imagine(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Video.result)
     logging.info("%s", message)
 
 

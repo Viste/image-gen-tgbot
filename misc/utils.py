@@ -64,6 +64,12 @@ def trim_image(text: str) -> str:
     return text.strip("\n")
 
 
+def trim_video(text: str) -> str:
+    if text.startswith("Замути, "):
+        text = text.strip("Замути, ")
+    return text.strip("\n")
+
+
 def get_from_dalle(response: List[Dict[str, str]]) -> str:
     result = []
     for message in response:
