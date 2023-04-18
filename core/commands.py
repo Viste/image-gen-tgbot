@@ -80,6 +80,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         logging.info("%s", message)
         trimmed = trim_cmd(message.text)
         result = await openai.send_dalle(trimmed)
+        print(result)
         try:
             photo = result
             await message.reply_photo(photo)

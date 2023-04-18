@@ -216,8 +216,7 @@ class StableDiffAI:
     async def send_sdapi(self, prompt):
         async with aiohttp.ClientSession() as session:
             headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.key}"
+                "Content-Type": "application/json"
             }
             data = {
                 "key": self.key,
@@ -235,8 +234,7 @@ class StableDiffAI:
     async def send_sd_video(self, prompt):
         async with aiohttp.ClientSession() as session:
             headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.key}"
+                "Content-Type": "application/json"
             }
             data = {
                 "key": self.key,
