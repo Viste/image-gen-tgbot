@@ -209,7 +209,6 @@ class StableDiffAI:
                          "mutation, mutated, extra limb, ugly, poorly drawn hands, missing limbs, disconnected limbs, malformed hands, blurry, (((mutated hands and fingers))), " \
                          "watermark, oversaturated, distorted hands, amputation, missing hands, obese, double hands"
 
-    @staticmethod
     async def send_sdapi(self, prompt):
         async with aiohttp.ClientSession() as session:
             headers = {
