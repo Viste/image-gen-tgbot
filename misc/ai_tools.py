@@ -200,11 +200,15 @@ class StableDiffAI:
         super().__init__()
         self.key = "XHjUJejpMEQ31CB72jS1i6ig3S5wIwxpzkw3OJbmvF3KcNLru2zWbeEcK5Wn"
         self.url = "https://stablediffusionapi.com/api/v3/text2img"
+        self.video_url = "https://stablediffusionapi.com/api/v5/text2video"
         self.samples = 1
         self.width = 768
         self.height = 768
         self.steps = 30
         self.guidance_scale = 7.5
+        self.video_length = 10
+        self.video_negative = "Low Quality"
+        self.scheduler = "UniPCMultistepScheduler"
         self.negatives = "mutated hands, mutated eyes, mutated, duplicate faces, duplicate characters, duplicate, deformed, bad anatomy, dis figured, poorly drawn face, " \
                          "mutation, mutated, extra limb, ugly, poorly drawn hands, missing limbs, disconnected limbs, malformed hands, blurry, (((mutated hands and fingers))), " \
                          "watermark, oversaturated, distorted hands, amputation, missing hands, obese, double hands"
@@ -226,4 +230,20 @@ class StableDiffAI:
                 "num_inference_steps": self.steps,
             }
             async with session.post(self.url, headers=headers, json=data) as resp:
+                return await resp.json()
+
+    async def send_sd_video(self, prompt):
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.key}"
+            }
+            data = {
+                "key": self.key,
+                "prompt": prompt,
+                "negative_prompt": self.video_negative,
+                "scheduler": self.scheduler,
+                "seconds": self.video_length,
+            }
+            async with session.post(self.video_url, headers=headers, json=data) as resp:
                 return await resp.json()
