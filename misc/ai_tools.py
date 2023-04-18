@@ -204,7 +204,7 @@ class StableDiffAI:
         self.samples = 1
         self.width = 768
         self.height = 768
-        self.steps = 30
+        self.steps = 50
         self.guidance_scale = 7.5
         self.video_length = 3
         self.video_negative = "Low Quality"
