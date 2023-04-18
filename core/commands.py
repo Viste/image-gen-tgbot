@@ -123,10 +123,10 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз."
                 logging.info('From try in SD Picture: %s', err)
-                await message.reply(text + err, parse_mode=None)
+                await message.answer(text + result['output'][0], parse_mode=None)
             except Exception as error:
                 logging.info('Last exception from SD Picture: %s', error)
-                await message.reply(error, parse_mode=None)
+                await message.answer(error, parse_mode=None)
 
 
 @router.message(SDImage.get)
