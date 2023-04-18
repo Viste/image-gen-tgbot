@@ -110,9 +110,9 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         logging.info("%s", message)
         trimmed = trim_image(message.text)
         result = await stable_diff_ai.send_sdapi(trimmed)
-        print(result[0])
+        print(result['output'])
         try:
-            photo = result[0]['output']
+            photo = result['output'][0]
             await message.reply_photo(photo)
         except Exception as err:
             try:
