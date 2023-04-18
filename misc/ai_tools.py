@@ -198,7 +198,7 @@ class OpenAI:
 class StableDiffAI:
     def __init__(self):
         super().__init__()
-        self.key = "rHq08m1DH3v9vMbDfxH7rGKmFGEgbzRo1WIeJO0zgIEtKb0UllhcJBl3t44R"
+        self.key = "FiQkHMY1PoOIdBOFIRwIqsXrkUHNXDkMtvDyOvSCTlKqq9QSjVEtnftH4qKP"
         self.url = "https://stablediffusionapi.com/api/v3/text2img"
         self.video_url = "https://stablediffusionapi.com/api/v5/text2video"
         self.samples = 1
