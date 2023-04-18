@@ -110,8 +110,10 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         logging.info("%s", message)
         trimmed = trim_image(message.text)
         result = await stable_diff_ai.send_sdapi(trimmed)
-        print(result['output'])
-        text = result['generationTime'] + " секунд. Зерно: " + result['meta']['seed'] + ", Модель: " + result['meta']['model']
+        print(result['generationTime'])
+        print(result['meta']['seed'])
+        print(result['meta']['model'])
+        text = str(result['generationTime']) + " секунд. Зерно: " + str(result['meta']['seed']) + ", Модель: " + str(result['meta']['model'])
         try:
             photo = result['output'][0]
             await message.reply_photo(photo, caption=text)
