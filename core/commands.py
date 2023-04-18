@@ -111,9 +111,10 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         trimmed = trim_image(message.text)
         result = await stable_diff_ai.send_sdapi(trimmed)
         print(result['output'])
+        text = result['generationTime'] + " секунд. Зерно: " + result['meta']['seed'] + ", Модель: " + result['meta']['model']
         try:
             photo = result['output'][0]
-            await message.reply_photo(photo)
+            await message.reply_photo(photo, caption=text)
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз."
