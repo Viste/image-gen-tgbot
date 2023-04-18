@@ -88,7 +88,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
                 logging.info('From try in Picture: %s', err)
-                await message.reply(text + result, parse_mode=None)
+                await message.reply(text, parse_mode=None)
             except Exception as error:
                 logging.info('Last exception from Picture: %s', error)
                 await message.reply(error, parse_mode=None)
