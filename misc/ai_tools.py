@@ -178,6 +178,9 @@ class OpenAI:
         while self.retries < self.max_retries:
             try:
                 result = await openai.Image().acreate(prompt=data + "4k resolution", n=1, size="1024x1024")
+                if 'data' not in result or len(result['data']) == 0:
+                    logging.error(f'No response from GPT: {str(result)}')
+                    raise Exception("⚠️ Ошибочка вышла ⚠️ попробуй еще")
                 return result.data[0]['url']
             except openai.error.RateLimitError as e:
                 self.retries += 1
