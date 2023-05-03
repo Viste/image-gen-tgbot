@@ -49,7 +49,7 @@ async def post_images(session):
         url_list.append(url)
 
     if len(url_list) == 10:
-        media = [InputMediaPhoto(image_url) for image_url in url_list]
+        media = [InputMediaPhoto(url) for url in url_list]
         await nasty.send_media_group(chat_id=config.p_channel, media=media)
 
 

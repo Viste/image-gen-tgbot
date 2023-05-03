@@ -22,7 +22,6 @@ async def delete_nearest_date(session: AsyncSession, date_id: int):
         logging.info("No date found with the given id")
 
 
-
 async def get_nearest_date(session: AsyncSession):
     now = datetime.now()
     stmt = select(Dates).order_by(func.abs(Dates.date - now))
