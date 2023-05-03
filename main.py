@@ -121,10 +121,14 @@ async def main():
     await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang, handle_signals=True)
 
 
+async def main_coro():
+    main_task = asyncio.create_task(main())
+    scheduler_task = asyncio.create_task(run_scheduler())
+    await asyncio.gather(main_task, scheduler_task)
+
+
 if __name__ == '__main__':
     try:
-        tasks = [asyncio.create_task(main()), asyncio.create_task(run_scheduler())]
-
-        asyncio.run(asyncio.gather(*tasks))
+        asyncio.run(main_coro())
     except (KeyboardInterrupt, SystemExit):
         logging.error("Bot stopped!")
