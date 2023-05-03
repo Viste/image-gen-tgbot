@@ -179,9 +179,11 @@ async def main():
     await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang, handle_signals=True)
 
 
-async def shutdown(sign, loop):
+async def shutdown(sign, loop, scheduler_task):
     logging.info(f"Received exit signal {sign.name}...")
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+
+    scheduler_task.cancel()
 
     for task in tasks:
         task.cancel()
@@ -191,18 +193,20 @@ async def shutdown(sign, loop):
     loop.stop()
 
 
-def handle_signals(loop):
+def handle_signals(loop, scheduler_task):
     signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
     for sig in signals:
-        loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(shutdown(s, loop)))
+        loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(shutdown(s, loop, scheduler_task)))
 
 
 async def main_coro():
     loop = asyncio.get_event_loop()
-    handle_signals(loop)
 
     main_task = asyncio.create_task(main())
     scheduler_task = asyncio.create_task(run_scheduler_wrapper())
+
+    handle_signals(loop, scheduler_task)
+
     await asyncio.gather(main_task, scheduler_task)
 
 
