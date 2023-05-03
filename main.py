@@ -62,6 +62,18 @@ async def cron_task(session: AsyncSession):
         logging.info("From cron after post")
 
 
+async def run_scheduler():
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(cron_task_wrapper, 'interval', minutes=5)
+    scheduler.start()
+
+    while True:
+        try:
+            await asyncio.sleep(3600)
+        except asyncio.CancelledError:
+            break
+
+
 async def main():
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
@@ -111,10 +123,7 @@ async def main():
 
 if __name__ == '__main__':
     try:
-        scheduler = AsyncIOScheduler()
-        scheduler.add_job(cron_task_wrapper, 'interval', minutes=5)
-        scheduler.start()
-
-        asyncio.run(main())
+        tasks = [main(), run_scheduler()]
+        asyncio.run(asyncio.gather(*tasks))
     except (KeyboardInterrupt, SystemExit):
         logging.error("Bot stopped!")
