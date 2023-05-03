@@ -1,33 +1,34 @@
+import logging
 from datetime import datetime
 
-from sqlalchemy import func, select, text
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Dates, Woman
 from tools.ai_tools import OpenAI, StableDiffAI
 
+logger = logging.getLogger("__name__")
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
 
 
-async def delete_nearest_date(session: AsyncSession):
-    now = datetime.now()
-    stmt = select(Dates).order_by(func.abs(func.timestampdiff(text("SECOND"), Dates.date, now)))
-    result = await session.execute(stmt)
-    nearest_date = result.scalars().first()
-    theme = nearest_date.theme
-    await session.delete(nearest_date)
-    await session.commit()
-
-    print(f"Nearest date: {nearest_date.date}, type: {type(nearest_date.date)}")
-
-    return {'date': nearest_date.date, 'theme': theme}
+async def delete_nearest_date(session: AsyncSession, date_id: int):
+    nearest_date = await session.query(Dates).filter(Dates.id == date_id).first()
+    if nearest_date:
+        await session.delete(nearest_date)
+        await session.commit()
+        logging.info(f"Deleted date: {nearest_date.date}, type: {type(nearest_date.date)}")
+    else:
+        logging.info("No date found with the given id")
 
 
 async def get_nearest_date(session: AsyncSession):
     now = datetime.now()
     nearest_date = await session.query(Dates).order_by(func.abs(Dates.date - now)).first()
-    return nearest_date if nearest_date else None
+    if nearest_date:
+        return {'id': nearest_date.id, 'date': nearest_date.date, 'theme': nearest_date.theme}
+    else:
+        return None
 
 
 async def get_random_prompts(session: AsyncSession):

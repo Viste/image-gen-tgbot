@@ -13,7 +13,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from core import setup_routers
-from core.nedworker import get_random_prompts, delete_nearest_date
+from core.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date
 from middlewares.database import DbSessionMiddleware
 from tools.ai_tools import StableDiffAI
 from tools.language import Lang
@@ -54,15 +54,18 @@ async def post_images(session):
 
 
 async def cron_task(session: AsyncSession):
-    result = await delete_nearest_date(session)
+    result = await get_nearest_date(session)
     scheduled_date = result['date']
     scheduled_theme = result['theme']
+    scheduled_id = result['id']
+
     print(scheduled_date)
     print(scheduled_theme)
-    # TODO: use theme returned from delete_nearest_date
+    # TODO use theme returned from get_nearest_date
     print("From cron task before IF")
     if scheduled_date <= datetime.now():
         await post_images(session)
+        await delete_nearest_date(session, scheduled_id['id'])
         print("From cron after post")
 
 
