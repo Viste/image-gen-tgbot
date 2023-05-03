@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import aiocron
 from aiogram.types import InputMediaPhoto
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,12 +46,3 @@ async def post_images(session):
     if len(url_list) == 10:
         media = [InputMediaPhoto(image_url) for image_url in url_list]
         await nasty.send_media_group(chat_id=config.p_channel, media=media)
-
-
-@aiocron.crontab('*/5 * * * *')
-async def cron_task(session: AsyncSession):
-    scheduled_date, scheduled_theme = await delete_nearest_date(session)
-    # TODO: use theme returned from delete_nearest_date
-
-    if scheduled_date <= datetime.now():
-        await post_images(session)

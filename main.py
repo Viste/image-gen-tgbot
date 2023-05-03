@@ -1,17 +1,19 @@
 import asyncio
 import logging
 import sys
+from datetime import datetime
 
+import aiocron
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramAPIError
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.types import BotCommand, BotCommandScopeChat
 from aioredis.client import Redis
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from core import setup_routers
-from core.nedworker import cron_task
+from core.nedworker import post_images, delete_nearest_date
 from middlewares.database import DbSessionMiddleware
 from tools.language import Lang
 from tools.utils import config
@@ -20,6 +22,15 @@ from tools.utils import fetch_admins, check_rights_and_permissions
 engine = create_async_engine(url=config.db_url, echo=True)
 redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
 nasty = Bot(token=config.token, parse_mode="HTML")
+
+
+@aiocron.crontab('*/5 * * * *')
+async def cron_task(session: AsyncSession):
+    scheduled_date, scheduled_theme = await delete_nearest_date(session)
+    # TODO: use theme returned from delete_nearest_date
+
+    if scheduled_date <= datetime.now():
+        await post_images(session)
 
 
 async def set_bot_commands(bot: Bot, main_group_id: int):
