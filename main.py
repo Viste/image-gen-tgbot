@@ -54,7 +54,9 @@ async def post_images(session):
 
 
 async def cron_task(session: AsyncSession):
-    scheduled_date, scheduled_theme = await delete_nearest_date(session)
+    result = await delete_nearest_date(session)
+    scheduled_date = result['date']
+    scheduled_theme = result['theme']
     print(scheduled_date)
     print(scheduled_theme)
     # TODO: use theme returned from delete_nearest_date
