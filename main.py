@@ -100,12 +100,12 @@ async def main():
     useful_updates = worker.resolve_used_update_types()
     await set_bot_commands(nasty, config.group_main)
     logging.info("Starting bot")
-    asyncio.ensure_future(cron_task())
     await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang, handle_signals=True)
 
 
 if __name__ == '__main__':
     try:
         asyncio.run(main())
+        asyncio.ensure_future(cron_task())
     except (KeyboardInterrupt, SystemExit):
         logging.error("Bot stopped!")
