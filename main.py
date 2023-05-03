@@ -9,7 +9,6 @@ from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.types import BotCommand, BotCommandScopeChat, InputMediaPhoto
 from aioredis.client import Redis
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from artint.oairaw import OAI
@@ -93,16 +92,31 @@ async def cron_task(session: AsyncSession):
         print("From cron after post")
 
 
-async def run_scheduler():
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(cron_task_wrapper, 'interval', minutes=5)
-    scheduler.start()
+async def run_scheduler_wrapper():
+    session_maker = async_sessionmaker(engine, expire_on_commit=False)
+    async with session_maker() as session:
+        await run_scheduler(session)
 
+
+async def run_scheduler(session: AsyncSession):
     while True:
         try:
-            await asyncio.sleep(3600)
+            nearest_date = await get_nearest_date(session)
+            if nearest_date:
+                now = datetime.now()
+                if now >= nearest_date['date']:
+                    await cron_task_wrapper()
+                    await asyncio.sleep(60)
+                else:
+                    sleep_time = (nearest_date['date'] - now).total_seconds()
+                    await asyncio.sleep(sleep_time)
+            else:
+                await asyncio.sleep(3600)
         except asyncio.CancelledError:
             break
+        except Exception as e:
+            logging.error(f"Error in run_scheduler: {e}")
+            await asyncio.sleep(60)
 
 
 async def main():
@@ -154,7 +168,7 @@ async def main():
 
 async def main_coro():
     main_task = asyncio.create_task(main())
-    scheduler_task = asyncio.create_task(run_scheduler())
+    scheduler_task = asyncio.create_task(run_scheduler_wrapper())
     await asyncio.gather(main_task, scheduler_task)
 
 
