@@ -34,6 +34,12 @@ async def set_bot_commands(bot: Bot, main_group_id: int):
     await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=main_group_id))
 
 
+async def cron_task_wrapper():
+    session_maker = async_sessionmaker(engine, expire_on_commit=False)
+    async with session_maker() as session:
+        await cron_task(session)
+
+
 async def post_images(session):
     random_prompts = await get_random_prompts(session)
 
@@ -106,7 +112,7 @@ async def main():
 
 if __name__ == '__main__':
     try:
-        asyncio.ensure_future(cron_task())
+        asyncio.ensure_future(cron_task_wrapper())
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logging.error("Bot stopped!")
