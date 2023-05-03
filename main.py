@@ -8,13 +8,14 @@ from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramAPIError
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
-from aiogram.types import BotCommand, BotCommandScopeChat
+from aiogram.types import BotCommand, BotCommandScopeChat, InputMediaPhoto
 from aioredis.client import Redis
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from core import setup_routers
-from core.nedworker import post_images, delete_nearest_date
+from core.nedworker import get_random_prompts, delete_nearest_date
 from middlewares.database import DbSessionMiddleware
+from tools.ai_tools import StableDiffAI
 from tools.language import Lang
 from tools.utils import config
 from tools.utils import fetch_admins, check_rights_and_permissions
@@ -22,6 +23,20 @@ from tools.utils import fetch_admins, check_rights_and_permissions
 engine = create_async_engine(url=config.db_url, echo=True)
 redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
 nasty = Bot(token=config.token, parse_mode="HTML")
+stable_diff_ai = StableDiffAI()
+
+
+async def post_images(session):
+    random_prompts = await get_random_prompts(session)
+
+    url_list = []
+    for prompt in random_prompts:
+        url = await stable_diff_ai.gen_ned_img(prompt)
+        url_list.append(url)
+
+    if len(url_list) == 10:
+        media = [InputMediaPhoto(image_url) for image_url in url_list]
+        await nasty.send_media_group(chat_id=config.p_channel, media=media)
 
 
 @aiocron.crontab('*/5 * * * *')

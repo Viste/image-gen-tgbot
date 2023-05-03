@@ -1,13 +1,10 @@
 from datetime import datetime
 
-from aiogram.types import InputMediaPhoto
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Dates, Woman
-from main import nasty
 from tools.ai_tools import OpenAI, StableDiffAI
-from tools.utils import config
 
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
@@ -33,16 +30,3 @@ async def get_random_prompts(session: AsyncSession):
         session.query(Woman.prompt).order_by(func.rand()).limit(10)
     )
     return random_prompts.scalars().all()
-
-
-async def post_images(session):
-    random_prompts = await get_random_prompts(session)
-
-    url_list = []
-    for prompt in random_prompts:
-        url = await stable_diff_ai.gen_ned_img(prompt)
-        url_list.append(url)
-
-    if len(url_list) == 10:
-        media = [InputMediaPhoto(image_url) for image_url in url_list]
-        await nasty.send_media_group(chat_id=config.p_channel, media=media)
