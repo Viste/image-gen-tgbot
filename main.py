@@ -26,6 +26,14 @@ nasty = Bot(token=config.token, parse_mode="HTML")
 stable_diff_ai = StableDiffAI()
 
 
+async def set_bot_commands(bot: Bot, main_group_id: int):
+    commands = [
+        BotCommand(command="report", description="Пожаловаться на сообщение"),
+        BotCommand(command="help", description="Помощь"),
+    ]
+    await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=main_group_id))
+
+
 async def post_images(session):
     random_prompts = await get_random_prompts(session)
 
@@ -47,14 +55,6 @@ async def cron_task(session: AsyncSession):
     if scheduled_date <= datetime.now():
         await post_images(session)
         logging.info("From cron after post")
-
-
-async def set_bot_commands(bot: Bot, main_group_id: int):
-    commands = [
-        BotCommand(command="report", description="Пожаловаться на сообщение"),
-        BotCommand(command="help", description="Помощь"),
-    ]
-    await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=main_group_id))
 
 
 async def main():
@@ -106,7 +106,7 @@ async def main():
 
 if __name__ == '__main__':
     try:
-        asyncio.run(main())
         asyncio.ensure_future(cron_task())
+        asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logging.error("Bot stopped!")
