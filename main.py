@@ -46,13 +46,16 @@ async def generate_url_list(session):
     random_prompts = await get_random_prompts(session)
 
     url_list = []
-    for prompt in random_prompts:
+    prompt_index = 0
+    while len(url_list) < 10 and prompt_index < len(random_prompts):
+        prompt = random_prompts[prompt_index]
         try:
             url = await stable_diff_ai.gen_ned_img(prompt)
             url_list.append(url)
         except IndexError as e:
             print(f"Error generating image URL for prompt '{prompt}': {e}")
-            continue
+        finally:
+            prompt_index += 1
 
     print(url_list)
     return url_list
@@ -60,7 +63,7 @@ async def generate_url_list(session):
 
 async def send_media_group(url_list):
     prompt = "Make a beautiful description for the post in the public telegram, the post attached 10 pictures of beautiful girls. the maximum length of 1024 characters"
-    result = oai.get_synopsis(prompt)
+    result = await oai.get_synopsis(prompt)
     print(result)
     if len(url_list) == 10:
         media = [InputMediaPhoto(media=url, caption=result) for url in url_list]
@@ -86,7 +89,7 @@ async def cron_task(session: AsyncSession):
     print("From cron task before IF")
     if scheduled_date <= datetime.now():
         await post_images(session)
-        await delete_nearest_date(session, scheduled_id['id'])
+        await delete_nearest_date(session, scheduled_id)
         print("From cron after post")
 
 
