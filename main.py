@@ -123,7 +123,8 @@ async def main():
 
 if __name__ == '__main__':
     try:
-        tasks = [main(), run_scheduler()]
-        asyncio.run(asyncio.gather(tasks))
+        tasks = [asyncio.create_task(main()), asyncio.create_task(run_scheduler())]
+
+        asyncio.run(asyncio.gather(*tasks))
     except (KeyboardInterrupt, SystemExit):
         logging.error("Bot stopped!")
