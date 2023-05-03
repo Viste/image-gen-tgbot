@@ -18,6 +18,9 @@ async def delete_nearest_date(session: AsyncSession):
     theme = nearest_date.theme
     await session.delete(nearest_date)
     await session.commit()
+
+    print(f"Nearest date: {nearest_date.date}, type: {type(nearest_date.date)}")
+
     return {'date': nearest_date.date, 'theme': theme}
 
 
