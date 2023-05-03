@@ -55,13 +55,15 @@ async def post_images(session):
 
 async def cron_task(session: AsyncSession):
     scheduled_date, scheduled_theme = await delete_nearest_date(session)
+    print(scheduled_date)
+    print(scheduled_theme)
     # TODO: use theme returned from delete_nearest_date
-    logging.info("From cron task before IF")
+    print("From cron task before IF")
     scheduled_date_object = datetime.strptime(scheduled_date, "%Y-%m-%d %H:%M:%S")
 
     if scheduled_date_object <= datetime.now():
         await post_images(session)
-        logging.info("From cron after post")
+        print("From cron after post")
 
 
 async def run_scheduler():
