@@ -93,9 +93,20 @@ async def cron_task(session: AsyncSession):
 
 
 async def run_scheduler_wrapper():
-    session_maker = async_sessionmaker(engine, expire_on_commit=False)
-    async with session_maker() as session:
-        await run_scheduler(session)
+    while True:
+        try:
+            session_maker = async_sessionmaker(engine, expire_on_commit=False)
+            async with session_maker() as session:
+                await run_scheduler(session)
+        except (KeyboardInterrupt, SystemExit):
+            break
+        except Exception as e:
+            logging.error(f"Error in run_scheduler_wrapper: {e}")
+            try:
+                await session.rollback()
+            except Exception as rollback_error:
+                logging.error(f"Error rolling back transaction: {rollback_error}")
+            await asyncio.sleep(60)
 
 
 async def run_scheduler(session: AsyncSession):
