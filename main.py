@@ -12,10 +12,11 @@ from aioredis.client import Redis
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
+from artint.oairaw import OAI
+from artint.stadif import StableDiffAI
 from core import setup_routers
 from core.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date
 from middlewares.database import DbSessionMiddleware
-from tools.ai_tools import StableDiffAI
 from tools.language import Lang
 from tools.utils import config
 from tools.utils import fetch_admins, check_rights_and_permissions
@@ -24,6 +25,7 @@ engine = create_async_engine(url=config.db_url, echo=True)
 redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
 nasty = Bot(token=config.token, parse_mode="HTML")
 stable_diff_ai = StableDiffAI()
+oai = OAI()
 
 
 async def set_bot_commands(bot: Bot, main_group_id: int):
@@ -40,7 +42,7 @@ async def cron_task_wrapper():
         await cron_task(session)
 
 
-async def post_images(session):
+async def generate_url_list(session):
     random_prompts = await get_random_prompts(session)
 
     url_list = []
@@ -48,9 +50,23 @@ async def post_images(session):
         url = await stable_diff_ai.gen_ned_img(prompt)
         url_list.append(url)
 
+    print(url_list)
+    return url_list
+
+
+async def send_media_group(url_list):
+    prompt = "Make a beautiful description for the post in the public telegram, the post attached 10 pictures of beautiful girls. the maximum length of 1024 characters"
+    result = oai.get_synopsis(prompt)
     if len(url_list) == 10:
-        media = [InputMediaPhoto(url) for url in url_list]
+        media = [InputMediaPhoto(media=url, caption=result) for url in url_list]
         await nasty.send_media_group(chat_id=config.p_channel, media=media)
+    else:
+        print("The number of URLs is not equal to 10.")
+
+
+async def post_images(session):
+    url_list = await generate_url_list(session)
+    await send_media_group(url_list)
 
 
 async def cron_task(session: AsyncSession):

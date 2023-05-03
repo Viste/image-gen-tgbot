@@ -4,8 +4,9 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from artint.conversation import OpenAI
+from artint.stadif import StableDiffAI
 from database.models import Dates, Woman
-from tools.ai_tools import OpenAI, StableDiffAI
 
 logger = logging.getLogger("__name__")
 openai = OpenAI()

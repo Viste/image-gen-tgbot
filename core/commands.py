@@ -4,7 +4,8 @@ from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
-from tools.ai_tools import OpenAI, StableDiffAI
+from artint.conversation import OpenAI
+from artint.stadif import StableDiffAI
 from tools.states import DAImage, SDImage, Text, Video
 from tools.utils import config, trim_image, trim_video
 from tools.utils import trim_name, trim_cmd, split_into_chunks
