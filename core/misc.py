@@ -1,8 +1,8 @@
 from aiogram import types, Router, F
 from aiogram.filters.command import Command
 
-from misc.language import Lang
-from misc.utils import config
+from tools.language import Lang
+from tools.utils import config
 
 router = Router()
 router.message.filter(~F.reply_to_message)

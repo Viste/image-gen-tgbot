@@ -1,7 +1,7 @@
 from aiogram import types, Router
 
 from filters.admins import AdminAdded, AdminRemoved
-from misc.utils import config
+from tools.utils import config
 
 router = Router()
 

@@ -1,6 +1,6 @@
 from aiogram import Router, F
 
-from misc.utils import config
+from tools.utils import config
 
 
 def setup_routers() -> Router:

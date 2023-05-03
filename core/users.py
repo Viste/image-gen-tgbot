@@ -8,8 +8,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Chat, User, ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 
-from misc.language import Lang
-from misc.utils import DeleteMsgCallback, config
+from tools.language import Lang
+from tools.utils import DeleteMsgCallback, config
 
 logger = logging.getLogger("__name__")
 router = Router()

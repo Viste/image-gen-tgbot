@@ -1,12 +1,9 @@
 {
   "token": "5465711164:AAFaQ96qy1jIQzv_gedubu6nI7bbkAqx6BY",
-  "api_key": "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",
-  "ai21_api_key": "yGuLTAAj9XdRiiWTBb5VOMOt7nPvYBKc",
-  "deepai_api_key": "ef6809c3-2c0d-4f67-aacb-98aee3dd208b",
-  "sd_fa_api_key": "XHjUJejpMEQ31CB72jS1i6ig3S5wIwxpzkw3OJbmvF3KcNLru2zWbeEcK5Wn",
-  "text_api_url": "https://api.openai.com/v1/completions",
-  "dalle_api_url": "https://api.openai.com/v1/images/generations",
-  "deepai_api_url": "https://api.deepai.org/api/stable-diffusion",
+  "api_key": "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",
+  "sd_api_key": "8qFH2nbFLRIYqqN8XepZ0WUzCqurgC1mqL7GfembPvANEG9QK24EO2L2lAlu",
+  "sd_api_url": "https://stablediffusionapi.com/api/v3/text2img",
+  "post_channel": "-1001537420102",
   "admins": [
     58800377,
     910007939,
@@ -28,10 +25,7 @@
   "report_mode": "private",
   "group_reports": "",
   "ban_channels": "True",
-  "user": "root",
-  "password": "",
-  "host": "/run/mariadb/mysql.sock",
-  "dbname": "nasty",
+  "db_url": "mariadb+aiomysql://cyber:password@127.0.0.1/nastya",
   "redis": {
     "host": "localhost",
     "port": 6379,

@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery
 from aiogram.utils.chat_action import ChatActionSender
 from aiogram.utils.i18n import gettext as _
 
-from misc.utils import DeleteMsgCallback
+from tools.utils import DeleteMsgCallback
 
 
 class ActionMiddleware(BaseMiddleware):

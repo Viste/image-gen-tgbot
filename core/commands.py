@@ -4,10 +4,10 @@ from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
-from misc.ai_tools import OpenAI, StableDiffAI
-from misc.states import DAImage, SDImage, Text, Video
-from misc.utils import config, trim_image, trim_video
-from misc.utils import trim_name, trim_cmd, split_into_chunks
+from tools.ai_tools import OpenAI, StableDiffAI
+from tools.states import DAImage, SDImage, Text, Video
+from tools.utils import config, trim_image, trim_video
+from tools.utils import trim_name, trim_cmd, split_into_chunks
 
 logger = logging.getLogger("__name__")
 router = Router()
@@ -110,7 +110,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
     else:
         logging.info("%s", message)
         trimmed = trim_image(message.text)
-        result = await stable_diff_ai.send_sdapi(trimmed)
+        result = await stable_diff_ai.send2sdapi(trimmed)
         print(result)
         text = "⏳Время генерации: " + str(result['generationTime']) \
                + " секунд. 🌾Зерно: " \
@@ -146,7 +146,7 @@ async def video_gen(message: types.Message, state: FSMContext) -> None:
     else:
         logging.info("%s", message)
         trimmed = trim_video(message.text)
-        result = await stable_diff_ai.send_sd_video(trimmed)
+        result = await stable_diff_ai.send2sd_video(trimmed)
         print(result)
         try:
             video = result['output'][0]
@@ -177,10 +177,9 @@ async def info(message: types.Message):
         text = "Бот написан специально для PPRFNK!\n" \
                "По команде /report сообщу всем админам чата о плохом человеке! \n" \
                "Если ошибся или что-то пошло не так напиши /cancel \n" \
-               "Хочешь со мной поговорить? Обратись ко мне через никнейм @naastyyaabot ...\n" \
-               "Скажи что хочешь нарисовать, я передам это моей подруге нейросети DaLL E, а она нарисует кодовое слово " \
-               "'Нарисуй: ...'\n" \
-               "Если хочешь отправить картинку моей подруге SD напиши мне 'Представь: ...' --- пока не работает меняю api\n" \
+               "Хочешь со мной поговорить? Обратись ко мне через никнейм @naastyyaabot ... дальше просто отвечай на реплаям\n" \
+               "Рисую через DaLLE2 по команде 'Нарисуй: ...'\n" \
+               "Если хочешь картинку из SD напиши мне 'Представь: ...'\n" \
                "\n" \
                "Автор: @vistee"
         await message.reply(text, parse_mode=None)

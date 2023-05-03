@@ -4,9 +4,9 @@ from datetime import timedelta
 from aiogram import types, Bot, Router, F
 from aiogram.filters.command import Command
 
-from misc.ai_tools import OpenAI
-from misc.language import Lang
-from misc.utils import config
+from tools.ai_tools import OpenAI
+from tools.language import Lang
+from tools.utils import config
 
 restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhd]\b)')
 router = Router()
