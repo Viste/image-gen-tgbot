@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import signal
 import sys
 from datetime import datetime
 
@@ -177,7 +178,28 @@ async def main():
     await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang, handle_signals=True)
 
 
+async def shutdown(signal, loop):
+    logging.info(f"Received exit signal {signal.name}...")
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+
+    for task in tasks:
+        task.cancel()
+
+    logging.info("Cancelling outstanding tasks")
+    await asyncio.gather(*tasks, return_exceptions=True)
+    loop.stop()
+
+
+def handle_signals(loop):
+    signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+    for sig in signals:
+        loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(shutdown(s, loop)))
+
+
 async def main_coro():
+    loop = asyncio.get_event_loop()
+    handle_signals(loop)
+
     main_task = asyncio.create_task(main())
     scheduler_task = asyncio.create_task(run_scheduler_wrapper())
     await asyncio.gather(main_task, scheduler_task)
