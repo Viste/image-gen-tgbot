@@ -66,7 +66,7 @@ async def send_media_group(url_list):
     result = await oai.get_synopsis(prompt)
     print(result)
     if len(url_list) == 10:
-        media = [InputMediaPhoto(media=url, caption=result) for url in url_list]
+        media = [InputMediaPhoto(media=url, caption=result if i == 0 else None) for i, url in enumerate(url_list)]
         await nasty.send_media_group(chat_id=config.post_channel, media=media)
     else:
         print("The number of URLs is not equal to 10.")

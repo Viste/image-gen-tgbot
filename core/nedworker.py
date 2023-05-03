@@ -14,7 +14,10 @@ stable_diff_ai = StableDiffAI()
 
 
 async def delete_nearest_date(session: AsyncSession, date_id: int):
-    nearest_date = await session.query(Dates).filter(Dates.id == date_id).first()
+    stmt = select(Dates).where(Dates.id == date_id)
+    result = await session.execute(stmt)
+    nearest_date = result.scalars().first()
+
     if nearest_date:
         await session.delete(nearest_date)
         await session.commit()
