@@ -3,13 +3,13 @@ import logging
 import sys
 from datetime import datetime
 
-import aiocron
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramAPIError
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.types import BotCommand, BotCommandScopeChat, InputMediaPhoto
 from aioredis.client import Redis
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from core import setup_routers
@@ -53,7 +53,6 @@ async def post_images(session):
         await nasty.send_media_group(chat_id=config.p_channel, media=media)
 
 
-@aiocron.crontab('*/5 * * * *')
 async def cron_task(session: AsyncSession):
     scheduled_date, scheduled_theme = await delete_nearest_date(session)
     # TODO: use theme returned from delete_nearest_date
@@ -112,7 +111,10 @@ async def main():
 
 if __name__ == '__main__':
     try:
-        asyncio.ensure_future(cron_task_wrapper())
+        scheduler = AsyncIOScheduler()
+        scheduler.add_job(cron_task_wrapper, 'interval', minutes=5)
+        scheduler.start()
+
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logging.error("Bot stopped!")
