@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Dates, Woman
@@ -12,7 +12,7 @@ stable_diff_ai = StableDiffAI()
 
 async def delete_nearest_date(session: AsyncSession):
     now = datetime.now()
-    stmt = select(Dates).order_by(func.abs(Dates.date - now))
+    stmt = select(Dates).order_by(func.abs(func.timestampdiff(text("SECOND"), Dates.date, now)))
     result = await session.execute(stmt)
     nearest_date = result.scalars().first()
     theme = nearest_date.theme
