@@ -11,6 +11,7 @@ from aioredis.client import Redis
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from core import setup_routers
+from core.nedworker import cron_task
 from middlewares.database import DbSessionMiddleware
 from tools.language import Lang
 from tools.utils import config
@@ -73,6 +74,7 @@ async def main():
     useful_updates = worker.resolve_used_update_types()
     await set_bot_commands(nasty, config.group_main)
     logging.info("Starting bot")
+    asyncio.ensure_future(cron_task())
     await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang, handle_signals=True)
 
 
