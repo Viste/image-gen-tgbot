@@ -123,6 +123,7 @@ async def run_scheduler(session: AsyncSession):
                     sleep_time = (nearest_date['date'] - now).total_seconds()
                     await asyncio.sleep(sleep_time)
             else:
+                logging.info("Table is empty. No nearest date found.")
                 await asyncio.sleep(3600)
         except asyncio.CancelledError:
             break
@@ -178,8 +179,8 @@ async def main():
     await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang, handle_signals=True)
 
 
-async def shutdown(signal, loop):
-    logging.info(f"Received exit signal {signal.name}...")
+async def shutdown(sign, loop):
+    logging.info(f"Received exit signal {sign.name}...")
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
 
     for task in tasks:
