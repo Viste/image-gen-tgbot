@@ -47,8 +47,12 @@ async def generate_url_list(session):
 
     url_list = []
     for prompt in random_prompts:
-        url = await stable_diff_ai.gen_ned_img(prompt)
-        url_list.append(url)
+        try:
+            url = await stable_diff_ai.gen_ned_img(prompt)
+            url_list.append(url)
+        except IndexError as e:
+            print(f"Error generating image URL for prompt '{prompt}': {e}")
+            continue
 
     print(url_list)
     return url_list
@@ -57,6 +61,7 @@ async def generate_url_list(session):
 async def send_media_group(url_list):
     prompt = "Make a beautiful description for the post in the public telegram, the post attached 10 pictures of beautiful girls. the maximum length of 1024 characters"
     result = oai.get_synopsis(prompt)
+    print(result)
     if len(url_list) == 10:
         media = [InputMediaPhoto(media=url, caption=result) for url in url_list]
         await nasty.send_media_group(chat_id=config.p_channel, media=media)
