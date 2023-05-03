@@ -22,9 +22,12 @@ async def delete_nearest_date(session: AsyncSession, date_id: int):
         logging.info("No date found with the given id")
 
 
+
 async def get_nearest_date(session: AsyncSession):
     now = datetime.now()
-    nearest_date = await session.query(Dates).order_by(func.abs(Dates.date - now)).first()
+    stmt = select(Dates).order_by(func.abs(Dates.date - now))
+    result = await session.execute(stmt)
+    nearest_date = result.scalars().first()
     if nearest_date:
         return {'id': nearest_date.id, 'date': nearest_date.date, 'theme': nearest_date.theme}
     else:
