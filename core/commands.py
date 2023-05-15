@@ -1,3 +1,4 @@
+import html
 import logging
 
 from aiogram import types, F, Router
@@ -5,16 +6,18 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
 from artint.conversation import OpenAI
+from artint.midj import ImageGenerator
 from artint.stadif import StableDiffAI
-from tools.states import DAImage, SDImage, Text, Video
-from tools.utils import config, trim_image, trim_video
-from tools.utils import trim_name, trim_cmd, split_into_chunks
+from tools.states import DAImage, SDImage, Text, MJImage
+from tools.utils import config, load_params, split_into_chunks
 
 logger = logging.getLogger("__name__")
 router = Router()
 
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
+params = load_params("params.json")
+image_generator = ImageGenerator("params.json", 0)
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
@@ -26,15 +29,16 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        trimmed = trim_name(message.text)
+        text = html.escape(message.text)
+        escaped_text = text.strip('@naastyyaabot ')
 
         # Generate response
-        replay_text, total_tokens = await openai.get_chat_response(uid, trimmed)
+        replay_text, total_tokens = await openai.get_chat_response(uid, escaped_text)
 
         chunks = split_into_chunks(replay_text)
-        for index, chunk in enumerate(chunks):
+        for i, chunk in enumerate(chunks):
             try:
-                if index == 0:
+                if i == 0:
                     await message.reply(chunk, parse_mode=None)
             except Exception as err:
                 try:
@@ -57,9 +61,9 @@ async def process_ask(message: types.Message) -> None:
         # Generate response
         replay_text, total_tokens = await openai.get_chat_response(uid, message.text)
         chunks = split_into_chunks(replay_text)
-        for index, chunk in enumerate(chunks):
+        for i, chunk in enumerate(chunks):
             try:
-                if index == 0:
+                if i == 0:
                     await message.reply(chunk, parse_mode=None)
             except Exception as err:
                 try:
@@ -79,8 +83,9 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        trimmed = trim_cmd(message.text)
-        result = await openai.send_dalle(trimmed)
+        text = html.escape(message.text)
+        escaped_text = text.strip('Нарисуй: ')
+        result = await openai.send_dalle(escaped_text)
         print(result)
         try:
             photo = result
@@ -101,6 +106,38 @@ async def process_paint(message: types.Message, state: FSMContext) -> None:
     logging.info("%s", message)
 
 
+@router.message(F.text.startswith("Отобрази: "))
+async def draw(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(MJImage.get)
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
+        await message.reply(text, parse_mode=None)
+    else:
+        logging.info("%s", message)
+        text = html.escape(message.text)
+        escaped_text = text.strip('Отобрази: ')
+        scaled_url = await image_generator.generate_image(escaped_text)
+        print(scaled_url)
+        try:
+            photo = scaled_url
+            await message.reply_photo(photo)
+        except Exception as err:
+            try:
+                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
+                logging.info('From try in Picture: %s', err)
+                await message.reply(text, parse_mode=None)
+            except Exception as error:
+                logging.info('Last exception from Picture: %s', error)
+                await message.reply(error, parse_mode=None)
+
+
+@router.message(MJImage.get)
+async def process_imagine(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(MJImage.result)
+    logging.info("%s", message)
+
+
 @router.message(F.text.startswith("Представь: "))
 async def imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.get)
@@ -110,8 +147,9 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         await message.reply(text, parse_mode=None)
     else:
         logging.info("%s", message)
-        trimmed = trim_image(message.text)
-        result = await stable_diff_ai.send2sdapi(trimmed)
+        text = html.escape(message.text)
+        escaped_text = text.strip('Представь: ')
+        result = await stable_diff_ai.send2sdapi(escaped_text)
         print(result)
         text = "⏳Время генерации: " + str(result['generationTime']) \
                + " секунд. 🌾Зерно: " \
@@ -134,37 +172,6 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
 @router.message(SDImage.get)
 async def process_imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.result)
-    logging.info("%s", message)
-
-
-@router.message(F.text.startswith("Замути, "))
-async def video_gen(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Video.get)
-    uid = message.from_user.id
-    if uid in config.banned_user_ids:
-        text = "не хочу с тобой разговаривать"
-        await message.reply(text, parse_mode=None)
-    else:
-        logging.info("%s", message)
-        trimmed = trim_video(message.text)
-        result = await stable_diff_ai.send2sd_video(trimmed)
-        print(result)
-        try:
-            video = result['output'][0]
-            await message.reply_video(video)
-        except Exception as err:
-            try:
-                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
-                logging.info('From try in SD Picture: %s', err)
-                await message.reply(text + result['output'][0], parse_mode=None)
-            except Exception as error:
-                logging.info('Last exception from SD Picture: %s', error)
-                await message.answer(error, parse_mode=None)
-
-
-@router.message(Video.get)
-async def process_video(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(Video.result)
     logging.info("%s", message)
 
 

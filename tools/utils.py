@@ -16,6 +16,12 @@ cfg_file = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r', enc
 config = json.loads(cfg_file.read(), object_hook=JSONObject)
 
 
+def load_params(file_path):
+    with open(file_path, "r") as json_file:
+        params = json.load(json_file)
+    return params
+
+
 class DeleteMsgCallback(CallbackData, prefix="delmsg"):
     action: str
     entity_id: int
@@ -44,30 +50,6 @@ async def check_rights_and_permissions(bot: Bot, chat_id: int):
 
 def split_into_chunks(text: str, chunk_size: int = 4096) -> list[str]:
     return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
-
-
-def trim_name(text: str) -> str:
-    if text.startswith("@naastyyaabot"):
-        text = text.strip("@naastyyaabot")
-    return text.strip("\n")
-
-
-def trim_cmd(text: str) -> str:
-    if text.startswith("Нарисуй: "):
-        text = text.strip("Нарисуй: ")
-    return text.strip("\n")
-
-
-def trim_image(text: str) -> str:
-    if text.startswith("Представь: "):
-        text = text.strip("Представь: ")
-    return text.strip("\n")
-
-
-def trim_video(text: str) -> str:
-    if text.startswith("Замути, "):
-        text = text.strip("Замути, ")
-    return text.strip("\n")
 
 
 def get_from_dalle(response: List[Dict[str, str]]) -> str:

@@ -21,7 +21,7 @@ from tools.language import Lang
 from tools.utils import config
 from tools.utils import fetch_admins, check_rights_and_permissions
 
-engine = create_async_engine(url=config.db_url, echo=True)
+engine = create_async_engine(url=config.db_url, echo=True, pool_size=50, max_overflow=30, pool_timeout=30, pool_recycle=3600)
 redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
 nasty = Bot(token=config.token, parse_mode="HTML")
 stable_diff_ai = StableDiffAI()
@@ -136,7 +136,7 @@ async def main():
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.ERROR,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
         stream=sys.stdout,
     )
