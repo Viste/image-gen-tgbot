@@ -113,14 +113,17 @@ async def run_scheduler_wrapper():
 async def run_scheduler(session: AsyncSession):
     while True:
         try:
+            logging.info("Checking for nearest date...")
             nearest_date = await get_nearest_date(session)
             if nearest_date:
                 now = datetime.now()
                 if now >= nearest_date['date']:
+                    logging.info("Nearest date found, running cron_task_wrapper...")
                     await cron_task_wrapper()
                     await asyncio.sleep(60)
                 else:
                     sleep_time = (nearest_date['date'] - now).total_seconds()
+                    logging.info(f"Sleeping for {sleep_time} seconds...")
                     await asyncio.sleep(sleep_time)
             else:
                 logging.info("Table is empty or no dates in future or past. Sleeping for 24 hours.")
