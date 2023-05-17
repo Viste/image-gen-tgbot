@@ -136,7 +136,7 @@ async def main():
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
     logging.basicConfig(
-        level=logging.ERROR,
+        level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
         stream=sys.stdout,
     )
@@ -207,15 +207,11 @@ async def main_coro():
 
     handle_signals(loop, scheduler_task)
 
-    try:
-        await main_task
-    except Exception as exc:
-        logging.error(f"Main task raised an exception: {exc}")
+    results = await asyncio.gather(main_task, scheduler_task, return_exceptions=True)
 
-    try:
-        await scheduler_task
-    except Exception as exc:
-        logging.error(f"Scheduler task raised an exception: {exc}")
+    for task, result in zip([main_task, scheduler_task], results):
+        if isinstance(result, Exception):
+            logging.error(f"Task {task} raised an exception: {result}")
 
     for task in [main_task, scheduler_task]:
         if not task.done():
