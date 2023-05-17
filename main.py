@@ -207,7 +207,7 @@ async def main_coro():
 
     handle_signals(loop, scheduler_task)
 
-    done, pending = await asyncio.wait([main_task, scheduler_task], return_when=asyncio.FIRST_EXCEPTION)
+    done, pending = await asyncio.wait([scheduler_task, main_task], return_when=asyncio.FIRST_EXCEPTION)
 
     for task in pending:
         task.cancel()
