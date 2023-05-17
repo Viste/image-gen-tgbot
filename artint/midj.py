@@ -27,6 +27,7 @@ class ImageGenerator:
             if not self.receiver.df.empty:
                 latest_image = self.receiver.df.iloc[-1]
                 if "timestamp" in latest_image and parse(latest_image["timestamp"]) > self.receiver.latest_image_timestamp:
+                    print("Image received:", latest_image)
                     break
 
         # Extract the required part from the URL
@@ -40,10 +41,11 @@ class ImageGenerator:
 
         # Wait for the scaled image URL
         while True:
-            await asyncio.sleep(300)  # Wait for 300 seconds before checking for new messages
+            await asyncio.sleep(240)  # Wait for 5 seconds before checking for new messages
             self.receiver.collecting_results()
             scaled_image = self.receiver.df.loc[message_id]
             if scaled_image["is_downloaded"]:
+                print("Scaled image received:", scaled_image)
                 scaled_url = scaled_image["url"]
                 break
 
