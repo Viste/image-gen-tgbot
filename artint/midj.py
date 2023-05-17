@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from dateutil.parser import parse
@@ -21,7 +22,7 @@ class ImageGenerator:
 
         # Wait for the result from Midjourney
         while True:
-            # await asyncio.sleep(5)  # Wait for 5 seconds before checking for new messages
+            await asyncio.sleep(5)  # Wait for 5 seconds before checking for new messages
             self.receiver.collecting_results()
             if not self.receiver.df.empty:
                 latest_image = self.receiver.df.iloc[-1]
@@ -39,7 +40,7 @@ class ImageGenerator:
 
         # Wait for the scaled image URL
         while True:
-            # await asyncio.sleep(5)  # Wait for 5 seconds before checking for new messages
+            await asyncio.sleep(5)  # Wait for 5 seconds before checking for new messages
             self.receiver.collecting_results()
             scaled_image = self.receiver.df.loc[message_id]
             if scaled_image["is_downloaded"]:

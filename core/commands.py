@@ -16,7 +16,7 @@ router = Router()
 
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
-params = load_params("params.json")
+params = load_params("../tools/params.json")
 image_generator = ImageGenerator("params.json", 0)
 
 
