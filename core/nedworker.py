@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from artint.conversation import OpenAI
@@ -29,7 +29,7 @@ async def delete_nearest_date(session: AsyncSession, date_id: int):
 async def get_nearest_date(session: AsyncSession):
     logging.info("Executing get_nearest_date...")
     now = datetime.now()
-    stmt = select(Dates).order_by(func.abs(Dates.date - now))
+    stmt = select(Dates).order_by(func.abs(func.timestampdiff(text('SECOND'), Dates.date, now)))
     result = await session.execute(stmt)
     nearest_date = result.scalars().first()
     if nearest_date:
