@@ -40,6 +40,7 @@ class Receiver:
         self.awaiting_list = pd.DataFrame(columns=['prompt', 'status'])
         print("COLLECTING RESULT")
         for message in message_list:
+            print("Processing message:", message)
 
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
 
