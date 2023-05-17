@@ -43,6 +43,9 @@ class Receiver:
             print("Processing message:", message)
 
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
+                if 'timestamp' not in message:
+                    print("Skipping message due to missing timestamp")
+                    continue
 
                 if len(message['attachments']) > 0:
 
