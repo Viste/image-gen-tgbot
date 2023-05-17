@@ -27,13 +27,16 @@ async def delete_nearest_date(session: AsyncSession, date_id: int):
 
 
 async def get_nearest_date(session: AsyncSession):
+    logging.info("Executing get_nearest_date...")
     now = datetime.now()
     stmt = select(Dates).order_by(func.abs(Dates.date - now))
     result = await session.execute(stmt)
     nearest_date = result.scalars().first()
     if nearest_date:
+        logging.info(f"Nearest date found: {nearest_date}")
         return {'id': nearest_date.id, 'date': nearest_date.date, 'theme': nearest_date.theme}
     else:
+        logging.info("No nearest date found.")
         return None
 
 
