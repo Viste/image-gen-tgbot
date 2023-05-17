@@ -123,8 +123,8 @@ async def run_scheduler(session: AsyncSession):
                     sleep_time = (nearest_date['date'] - now).total_seconds()
                     await asyncio.sleep(sleep_time)
             else:
-                logging.info("Table is empty. No nearest date found.")
-                await asyncio.sleep(3600)
+                logging.info("Table is empty or no dates in future or past. Sleeping for 24 hours.")
+                await asyncio.sleep(86400)
         except asyncio.CancelledError:
             break
         except Exception as e:
