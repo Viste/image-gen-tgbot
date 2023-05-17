@@ -207,7 +207,15 @@ async def main_coro():
 
     handle_signals(loop, scheduler_task)
 
-    await asyncio.gather(main_task, scheduler_task, return_exceptions=True)
+    done, pending = await asyncio.wait([main_task, scheduler_task], return_when=asyncio.FIRST_EXCEPTION)
+
+    for task in pending:
+        task.cancel()
+
+    for task in done:
+        exc = task.exception()
+        if exc:
+            logging.error(f"Task raised an exception: {exc}")
 
 
 if __name__ == '__main__':
