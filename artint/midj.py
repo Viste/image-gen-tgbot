@@ -22,10 +22,11 @@ class ImageGenerator:
 
         # Wait for the result from Midjourney
         while True:
-            await asyncio.sleep(180)  # Wait for 180 seconds before checking for new messages
+            await asyncio.sleep(120)  # Wait for 180 seconds before checking for new messages
             logging.info("We are in loop")
             self.receiver.collecting_results()
-            logging.info("PRINTING: %s", self.receiver.df.iloc)
+            logging.info("PRINTING Iloc \n", self.receiver.df.iloc)
+            logging.info("PRINTING Index \n", self.receiver.df.index)
             logging.info("results collected")
             if not self.receiver.df.empty:
                 latest_image = self.receiver.df.iloc[-1]
