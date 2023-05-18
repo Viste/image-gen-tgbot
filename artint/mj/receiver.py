@@ -19,7 +19,7 @@ class Receiver:
         self.index = index
         self.sender_initializer()
         self.latest_image_timestamp = datetime.now(timezone.utc) - timedelta(minutes=10)
-        self.df = pd.DataFrame(columns=['prompt', 'url', 'filename', 'is_downloaded'])
+        self.df = pd.DataFrame(columns=['prompt', 'url', 'filename', 'timestamp', 'is_downloaded'])
 
     def sender_initializer(self):
 
