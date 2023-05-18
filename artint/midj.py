@@ -29,7 +29,7 @@ class ImageGenerator:
                     latest_image = self.receiver.df.iloc[-1]
                     logging.info(f"Latest image timestamp: {latest_image['timestamp']}")
                     logging.info(f"Receiver latest image timestamp: {self.receiver.latest_image_timestamp}")
-                    if latest_image["timestamp"] > self.receiver.latest_image_timestamp:
+                    if latest_image["timestamp"] >= self.receiver.latest_image_timestamp:
                         logging.info("Breaking the loop")
                         break
                     else:
