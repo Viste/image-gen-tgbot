@@ -51,6 +51,8 @@ class Upscaler:
                                     headers=header) as req:
                 while req.status != 204:
                     logger.info(f"Upscale request status code: {req.status}")
+                    response_text = await req.text()
+                    logger.info(f"Upscale request response: {response_text}")
                     async with session.post('https://discord.com/api/v9/interactions',
                                             json=payload,
                                             headers=header) as req:
