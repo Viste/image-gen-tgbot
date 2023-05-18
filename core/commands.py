@@ -1,5 +1,6 @@
 import html
 import logging
+import random
 
 from aiogram import types, F, Router
 from aiogram.filters.command import Command
@@ -20,7 +21,7 @@ params = load_params("params.json")
 params_file = "params.json"
 
 # Create a list of ImageGenerator instances for each channel
-image_generator = [ImageGenerator(params_file, i) for i in range(10)]
+image_generators = [ImageGenerator(params_file, i) for i in range(10)]
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
@@ -120,6 +121,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         logging.info("%s", message)
         text = html.escape(message.text)
         escaped_text = text.strip('Отобрази: ')
+        image_generator = random.choice(image_generators)
         scaled_url = await image_generator.generate_image(escaped_text)
         print(scaled_url)
         try:
