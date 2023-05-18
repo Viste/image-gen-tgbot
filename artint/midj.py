@@ -28,6 +28,7 @@ class ImageGenerator:
             logging.info("results collected")
             if not self.receiver.df.empty:
                 latest_image = self.receiver.df.iloc[-1]
+                print("PRINTING: %s", self.receiver.df.iloc[-1])
                 if "timestamp" in latest_image and parse(latest_image["timestamp"]) > self.receiver.latest_image_timestamp:
                     print("Image received:", latest_image)
                     break
