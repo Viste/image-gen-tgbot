@@ -1,8 +1,6 @@
 import asyncio
 import logging
 
-from dateutil.parser import parse
-
 from artint.mj.receiver import Receiver
 from artint.mj.sender import Sender
 from artint.mj.upscaler import Upscaler
@@ -30,7 +28,7 @@ class ImageGenerator:
             if not self.receiver.df.empty:
                 print("PRINTING: %s", self.receiver.df.iloc)
                 latest_image = self.receiver.df.iloc[-1]
-                if "timestamp" in self.receiver.df.columns and parse(latest_image["timestamp"]) > self.receiver.latest_image_timestamp:
+                if "timestamp" in self.receiver.df.columns and latest_image["timestamp"] > self.receiver.latest_image_timestamp:
                     print("Image received:", latest_image)
                     break
                 else:
