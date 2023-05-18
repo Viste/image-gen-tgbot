@@ -60,6 +60,8 @@ class Receiver:
 
             # Process the message
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
+                # Update the latest_image_timestamp
+                self.latest_image_timestamp = max(self.latest_image_timestamp, message_timestamp)
                 if len(message['attachments']) > 0:
                     if (message['attachments'][0]['filename'][-4:] == '.png') or ('(Open on website for full quality)' in message['content']):
                         message_id = message['id']
