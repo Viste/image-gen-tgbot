@@ -52,12 +52,6 @@ class Receiver:
                 print("Skipping message due to older timestamp")
                 continue
 
-            # Check if the message has already been processed
-            message_id = message['id']
-            if message_id in self.df.index:
-                print(f"Skipping message {message_id} as it has already been processed")
-                continue
-
             # Process the message
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
                 if len(message['attachments']) > 0:

@@ -27,7 +27,7 @@ class ImageGenerator:
             if not self.receiver.df.empty:
                 print("PRINTING: %s", self.receiver.df.iloc[-1])
                 latest_image = self.receiver.df.iloc[-1]
-                if "timestamp" in self.receiver.df.iloc[-1] and latest_image["timestamp"]:
+                if "timestamp" in self.receiver.df.iloc[-1]:  # and parse(latest_image["timestamp"]):
                     print("Image received:", latest_image)
                     break
                 else:
