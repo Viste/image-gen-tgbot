@@ -45,39 +45,49 @@ class Receiver:
         current_timestamp = datetime.now(timezone.utc)
 
         any_message_processed = False
+        most_recent_message_timestamp = datetime.now(timezone.utc) - timedelta(minutes=10)
+        most_recent_message = None
+
         for message in message_list:
             message_timestamp = datetime.fromisoformat(message["timestamp"].rstrip("Z"))
 
             # Check if the message is not older than 10 minutes
             if (current_timestamp - message_timestamp) <= timedelta(minutes=10):
                 any_message_processed = True
+                # Update the most recent message if the current message is more recent
+                if message_timestamp > most_recent_message_timestamp:
+                    most_recent_message_timestamp = message_timestamp
+                    most_recent_message = message
+
             # Process the message
-            if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
-                message_timestamp = message["timestamp"]
-                if len(message['attachments']) > 0:
-                    if (message['attachments'][0]['filename'][-4:] == '.png') or ('(Open on website for full quality)' in message['content']):
-                        message_id = message['id']
-                        prompt = message['content'].split('**')[1].split(' --')[0]
-                        url = message['attachments'][0]['url']
-                        filename = message['attachments'][0]['filename']
+            if (most_recent_message['author']['username'] == 'Midjourney Bot') and ('**' in most_recent_message['content']):
+                message_timestamp = most_recent_message["timestamp"]
+                if len(most_recent_message['attachments']) > 0:
+                    if (most_recent_message['attachments'][0]['filename'][-4:] == '.png') or ('(Open on website for full quality)' in most_recent_message['content']):
+                        message_id = most_recent_message['id']
+                        prompt = most_recent_message['content'].split('**')[1].split(' --')[0]
+                        url = most_recent_message['attachments'][0]['url']
+                        filename = most_recent_message['attachments'][0]['filename']
                         if message_id not in self.df.index:
                             self.df.loc[message_id] = [prompt, url, filename, message_timestamp, 0]
-                            self.latest_image_timestamp = message["timestamp"]
+                            self.latest_image_timestamp = most_recent_message["timestamp"]
+                        else:
+                            self.df.loc[message_id, "is_downloaded"] = 1
 
                     else:
-                        message_id = message['id']
-                        prompt = message['content'].split('**')[1].split(' --')[0]
-                        if ('(fast)' in message['content']) or ('(relaxed)' in message['content']):
+                        message_id = most_recent_message['id']
+                        prompt = most_recent_message['content'].split('**')[1].split(' --')[0]
+                        if ('(fast)' in most_recent_message['content']) or ('(relaxed)' in most_recent_message['content']):
                             try:
-                                status = re.findall("(\w*%)", message['content'])[0]
+                                status = re.findall("(\w*%)", most_recent_message['content'])[0]
                             except:
                                 status = 'unknown status'
                         self.awaiting_list.loc[message_id] = [prompt, status]
 
                 else:
-                    message_id = message['id']
-                    prompt = message['content'].split('**')[1].split(' --')[0]
-                    if '(Waiting to start)' in message['content']:
+                    message_id = most_recent_message['id']
+                    prompt = most_recent_message['content'].split('**')[1].split(' --')[0]
+                    if '(Waiting to start)' in most_recent_message['content']:
                         status = 'Waiting to start'
                     self.awaiting_list.loc[message_id] = [prompt, status]
 
