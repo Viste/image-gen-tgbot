@@ -33,23 +33,22 @@ class ImageGenerator:
                         logging.info("Breaking the loop")
                         break
                     else:
-                        print("No new image found. Continuing the loop.")
+                        logging.info("No new image found. Continuing the loop.")
                 else:
-                    print("DataFrame is empty. Continuing the loop.")
+                    logging.info("DataFrame is empty. Continuing the loop.")
             except Exception as e:
                 logging.error(f"An error occurred: {e}")
-                print("An error occurred. Continuing the loop.")
-            finally:
-                await asyncio.sleep(5)  # Add a small delay before the next iteration
+                logging.info("An error occurred. Continuing the loop.")  # Add a small delay before the next iteration
 
         # Extract the required part from the URL
         url = latest_image["url"]
         message_id = latest_image.name
         paperclip_part = url.split("/")[-1]
 
-        # Pass the extracted part to the upscaler
         number = 3  # Choose the number of the image to upscale (1, 2, 3, or 4)
+        logging.info("Sending upscale request")
         await self.upscaler.send(message_id, number, paperclip_part)
+        logging.info("Upscale request sent")
 
         # Wait for the scaled image URL
         while True:
