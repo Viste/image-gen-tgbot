@@ -31,6 +31,7 @@ class ImageGenerator:
                     logging.info(f"Receiver latest image timestamp: {self.receiver.latest_image_timestamp}")
                     if latest_image["timestamp"] >= self.receiver.latest_image_timestamp:
                         logging.info("Breaking the loop")
+                        logging.info("Container content: %s", latest_image)
                         break
                     else:
                         logging.info("No new image found. Continuing the loop.")

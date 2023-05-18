@@ -45,6 +45,7 @@ class Upscaler:
                    "message_id": message_id,
                    "data": {"component_type": 2, "custom_id": f"MJ::JOB::upsample::{number}::{uuid}"}}
 
+        logger.info(f"Upscale request payload: {payload}")
         async with aiohttp.ClientSession() as session:
             async with session.post('https://discord.com/api/v9/interactions',
                                     json=payload,
