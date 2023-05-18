@@ -71,8 +71,12 @@ class Receiver:
                         if message_id not in self.df.index:
                             self.df.loc[message_id] = [prompt, url, filename, message_timestamp, 0]
                             self.latest_image_timestamp = most_recent_message["timestamp"]
-                        else:
-                            self.df.loc[message_id, "is_downloaded"] = 1
+                        elif "Image #3" in message['content']:
+                            # Find the original message_id based on the prompt
+                            original_message_id = self.df[self.df['prompt'] == prompt].index[0]
+                            # Update the is_downloaded value to 1 and store the scaled image's message_id
+                            self.df.loc[original_message_id, "is_downloaded"] = 1
+                            self.df.loc[original_message_id, "scaled_message_id"] = message_id
 
                     else:
                         message_id = most_recent_message['id']
