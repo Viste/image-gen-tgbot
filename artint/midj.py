@@ -64,6 +64,7 @@ class ImageGenerator:
 
         # Wait for the scaled image URL
         while True:
+            logging.info("We are in upscale loop")
             await asyncio.sleep(240)  # Wait for 5 seconds before checking for new messages
             logging.info("In upscale loop")
             await self.receiver.collecting_results()
