@@ -27,11 +27,12 @@ class ImageGenerator:
             if not self.receiver.df.empty:
                 latest_image = self.receiver.df.iloc[-1]
                 if latest_image["timestamp"]:
+                    logging.info("img found %s", latest_image)
                     break
                 else:
-                    print("No new image found. Continuing the loop.")
+                    logging.info("No new image found. Continuing the loop.")
             else:
-                print("DataFrame is empty. Continuing the loop.")
+                logging.info("DataFrame is empty. Continuing the loop.")
 
         # Extract the required part from the URL
         url = latest_image["url"]
@@ -50,7 +51,7 @@ class ImageGenerator:
             logging.info("Result received")
             scaled_image = self.receiver.df.loc[message_id]
             if scaled_image["is_downloaded"]:
-                print("Scaled image received:", scaled_image)
+                logging.info("Scaled image received:", scaled_image)
                 scaled_url = scaled_image["url"]
                 break
 
