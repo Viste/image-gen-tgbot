@@ -22,7 +22,7 @@ class ImageGenerator:
         # Wait for the result from Midjourney
         while True:
             try:
-                await asyncio.sleep(480)  # Wait for 180 seconds before checking for new messages
+                await asyncio.sleep(360)  # Wait for 180 seconds before checking for new messages
                 logging.info("We are in loop")
                 await self.receiver.collecting_results()
                 logging.info("results collected")
@@ -71,7 +71,7 @@ class ImageGenerator:
             logging.info("Result received")
             scaled_image = self.receiver.df.loc[message_id]
             logging.info(f"Container: {self.receiver.df.loc[message_id]}")
-            if scaled_image["is_downloaded"]:
+            if scaled_image:
                 logging.info("Scaled image received:", scaled_image)
                 scaled_url = scaled_image["url"]
                 break
