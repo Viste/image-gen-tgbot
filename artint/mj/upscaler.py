@@ -37,16 +37,16 @@ class Upscaler:
     async def send(self, message_id, number, uuid):
         header = {'authorization': self.authorization}
         payload = {
-            "type": 3,
-            "application_id": "936929561302675456",
-            "guild_id": "1107590351218294876",
-            "channel_id": "1107591970173493268",
-            "message_flags": 0,
-            "message_id": "1108632106411773963",
-            "session_id": "5ef23bcd47a40dd780f60007ce12acc7",
-            "data": {
+            'type': 3,
+            'application_id': self.application_id,
+            'guild_id': self.guild_id,
+            'channel_id': self.channelid[self.index],
+            'session_id': self.session_id,
+            'message_flags': 0,
+            'message_id': message_id,
+            'data': {
                 "component_type": 2,
-                "custom_id": "MJ::JOB::upsample::3::26adba4f-a22d-4269-ade0-d53152b421e8"
+                "custom_id": f"MJ::JOB::upsample::{number}::{uuid}"
             }
         }
 

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 
 from artint.mj.receiver import Receiver
 from artint.mj.sender import Sender
@@ -42,9 +43,19 @@ class ImageGenerator:
                 logging.info("An error occurred. Continuing the loop.")  # Add a small delay before the next iteration
 
         # Extract the required part from the URL
+        # Extract the required part from the URL
         url = latest_image["url"]
         message_id = latest_image.name
-        paperclip_part = url.split("/")[-1]
+        filename = latest_image["filename"]
+
+        # Extract the UUID part from the filename
+        uuid_pattern = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+        uuid_match = re.search(uuid_pattern, filename)
+        if uuid_match:
+            paperclip_part = uuid_match.group(0)
+        else:
+            logging.error("UUID not found in the filename")
+            return None
 
         number = 3  # Choose the number of the image to upscale (1, 2, 3, or 4)
         logging.info("Sending upscale request")
