@@ -25,8 +25,8 @@ class ImageGenerator:
             await asyncio.sleep(180)  # Wait for 180 seconds before checking for new messages
             logging.info("We are in loop")
             self.receiver.collecting_results()
+            logging.info("PRINTING: %s", self.receiver.df.iloc)
             logging.info("results collected")
-            print("PRINTING: %s", self.receiver.df.iloc[-1])
             if not self.receiver.df.empty:
                 latest_image = self.receiver.df.iloc[-1]
                 print("PRINTING: %s", self.receiver.df.iloc[-1])
