@@ -26,6 +26,7 @@ class ImageGenerator:
             logging.info("We are in loop")
             self.receiver.collecting_results()
             logging.info("results collected")
+            print("PRINTING: %s", self.receiver.df.iloc[-1])
             if not self.receiver.df.empty:
                 latest_image = self.receiver.df.iloc[-1]
                 print("PRINTING: %s", self.receiver.df.iloc[-1])

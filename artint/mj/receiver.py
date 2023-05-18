@@ -15,7 +15,6 @@ class Receiver:
         self.headers = None
         self.authorization = None
         self.channelid = None
-        self.latest_image_id = None
         self.params = params
         self.index = index
         self.sender_initializer()
@@ -31,20 +30,13 @@ class Receiver:
         self.authorization = params['authorization']
         self.headers = {'authorization': self.authorization}
 
-    def retrieve_messages(self, after_id=None):
-        url = f'https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}'
-        if after_id:
-            url += f'&after={after_id}'
-        r = requests.get(url, headers=self.headers)
+    def retrieve_messages(self):
+        r = requests.get(f'https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}', headers=self.headers)
         jsonn = json.loads(r.text)
         return jsonn
 
     def collecting_results(self):
-        if self.latest_image_id:
-            message_list = self.retrieve_messages(after_id=self.latest_image_id)
-        else:
-            message_list = self.retrieve_messages()
-
+        message_list = self.retrieve_messages()
         self.awaiting_list = pd.DataFrame(columns=['prompt', 'status'])
         print("COLLECTING RESULT")
         for message in message_list:
@@ -69,7 +61,6 @@ class Receiver:
                         if id not in self.df.index:
                             self.df.loc[message_id] = [prompt, url, filename, 0]
                             self.latest_image_timestamp = parse(message["timestamp"])
-                            self.latest_image_id = message_id
 
                     else:
                         message_id = message['id']
