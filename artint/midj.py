@@ -26,7 +26,7 @@ class ImageGenerator:
             logging.info("results collected")
             if not self.receiver.df.empty:
                 latest_image = self.receiver.df.iloc[-1]
-                if latest_image["timestamp"] > self.receiver.latest_image_timestamp:
+                if latest_image["timestamp"]:
                     break
                 else:
                     print("No new image found. Continuing the loop.")
