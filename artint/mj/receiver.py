@@ -42,7 +42,15 @@ class Receiver:
         message_list = await self.retrieve_messages()
         self.awaiting_list = pd.DataFrame(columns=['prompt', 'status'])
         logging.info("COLLECTING RESULT")
+        current_timestamp = datetime.now(timezone.utc)
+
+        any_message_processed = False
         for message in message_list:
+            message_timestamp = datetime.fromisoformat(message["timestamp"].rstrip("Z"))
+
+            # Check if the message is not older than 10 minutes
+            if (current_timestamp - message_timestamp) <= timedelta(minutes=10):
+                any_message_processed = True
             # Process the message
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
                 message_timestamp = message["timestamp"]
@@ -72,3 +80,7 @@ class Receiver:
                     if '(Waiting to start)' in message['content']:
                         status = 'Waiting to start'
                     self.awaiting_list.loc[message_id] = [prompt, status]
+
+            if not any_message_processed:
+                logging.info("All messages are outdated. Breaking the loop.")
+                return
