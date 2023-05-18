@@ -20,19 +20,27 @@ class ImageGenerator:
 
         # Wait for the result from Midjourney
         while True:
-            await asyncio.sleep(120)  # Wait for 180 seconds before checking for new messages
-            logging.info("We are in loop")
-            await self.receiver.collecting_results()
-            logging.info("results collected")
-            if not self.receiver.df.empty:
-                latest_image = self.receiver.df.iloc[-1]
-                if latest_image["timestamp"]:
-                    logging.info("img found %s", latest_image)
-                    break
+            try:
+                await asyncio.sleep(120)  # Wait for 180 seconds before checking for new messages
+                logging.info("We are in loop")
+                await self.receiver.collecting_results()
+                logging.info("results collected")
+                if not self.receiver.df.empty:
+                    latest_image = self.receiver.df.iloc[-1]
+                    logging.info(f"Latest image timestamp: {latest_image['timestamp']}")
+                    logging.info(f"Receiver latest image timestamp: {self.receiver.latest_image_timestamp}")
+                    if latest_image["timestamp"] > self.receiver.latest_image_timestamp:
+                        logging.info("Breaking the loop")
+                        break
+                    else:
+                        print("No new image found. Continuing the loop.")
                 else:
-                    logging.info("No new image found. Continuing the loop.")
-            else:
-                logging.info("DataFrame is empty. Continuing the loop.")
+                    print("DataFrame is empty. Continuing the loop.")
+            except Exception as e:
+                logging.error(f"An error occurred: {e}")
+                print("An error occurred. Continuing the loop.")
+            finally:
+                await asyncio.sleep(5)  # Add a small delay before the next iteration
 
         # Extract the required part from the URL
         url = latest_image["url"]
