@@ -42,13 +42,16 @@ class Receiver:
         for message in message_list:
             print("Processing message:", message)
 
+            if 'timestamp' not in message:
+                print("Skipping message due to missing timestamp")
+                continue
+
+            message_timestamp = parse(message["timestamp"])
+            if message_timestamp <= self.latest_image_timestamp:
+                print("Skipping message due to older timestamp")
+                continue
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
-                if 'timestamp' not in message:
-                    print("Skipping message due to missing timestamp")
-                    continue
-
                 if len(message['attachments']) > 0:
-
                     if (message['attachments'][0]['filename'][-4:] == '.png') or ('(Open on website for full quality)' in message['content']):
                         message_id = message['id']
                         prompt = message['content'].split('**')[1].split(' --')[0]
