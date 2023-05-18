@@ -1,5 +1,6 @@
 import json
 import logging
+import secrets
 
 import aiohttp
 
@@ -35,10 +36,11 @@ class Upscaler:
 
     # noinspection PyAssignmentToLoopOrWithParameter
     async def send(self, message_id, number, uuid):
+        nonce = secrets.token_hex(16)
         header = {'authorization': self.authorization}
         payload = {
             'type': 3,
-            'nonce': message_id,
+            'nonce': nonce,
             'guild_id': self.guild_id,
             'application_id': self.application_id,
             'channel_id': self.channelid[self.index],
@@ -60,9 +62,7 @@ class Upscaler:
                     logger.info(f"Upscale request status code: {req.status}")
                     response_text = await req.text()
                     logger.info(f"Upscale request response: {response_text}")
-                    async with session.post('https://discord.com/api/v9/interactions',
-                                            json=payload,
-                                            headers=header) as req:
+                    async with session.post('https://discord.com/api/v9/interactions', json=payload, headers=header) as req:
                         pass
 
         logging.info('Upscale request for message_id [{}] and number [{}] successfully sent!'.format(message_id, number))
