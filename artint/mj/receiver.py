@@ -1,9 +1,12 @@
 import json
+import logging
 import re
 from datetime import datetime, timezone, timedelta
 
 import aiohttp
 import pandas as pd
+
+logger = logging.getLogger("__name__")
 
 
 class Receiver:
@@ -38,7 +41,7 @@ class Receiver:
     async def collecting_results(self):
         message_list = await self.retrieve_messages()
         self.awaiting_list = pd.DataFrame(columns=['prompt', 'status'])
-        print("COLLECTING RESULT")
+        logging.info("COLLECTING RESULT")
         for message in message_list:
             # Process the message
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):

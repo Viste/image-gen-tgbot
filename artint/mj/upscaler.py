@@ -1,6 +1,9 @@
 import json
+import logging
 
 import aiohttp
+
+logger = logging.getLogger("__name__")
 
 
 class Upscaler:
@@ -47,9 +50,10 @@ class Upscaler:
                                     json=payload,
                                     headers=header) as req:
                 while req.status != 204:
+                    logger.info(f"Upscale request status code: {req.status}")
                     async with session.post('https://discord.com/api/v9/interactions',
                                             json=payload,
                                             headers=header) as req:
                         pass
 
-        print('Upscale request for message_id [{}] and number [{}] successfully sent!'.format(message_id, number))
+        logging.info('Upscale request for message_id [{}] and number [{}] successfully sent!'.format(message_id, number))

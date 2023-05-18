@@ -1,7 +1,10 @@
 import json
+import logging
 
 import aiohttp
 from aiohttp import ClientResponse
+
+logger = logging.getLogger("__name__")
 
 
 class Sender:
@@ -67,4 +70,4 @@ class Sender:
                     async with session.post('https://discord.com/api/v9/interactions', json=payload, headers=header) as req:
                         pass
 
-        print('prompt [{}] successfully sent!'.format(prompt))
+        logging.info('prompt [{}] successfully sent!'.format(prompt))
