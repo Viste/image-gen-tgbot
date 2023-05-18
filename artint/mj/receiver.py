@@ -4,7 +4,6 @@ from datetime import datetime, timezone, timedelta
 
 import aiohttp
 import pandas as pd
-from dateutil.parser import parse
 
 
 class Receiver:
@@ -43,7 +42,7 @@ class Receiver:
         for message in message_list:
             # Process the message
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
-                message_timestamp = parse(message["timestamp"])
+                message_timestamp = message["timestamp"]
                 if len(message['attachments']) > 0:
                     if (message['attachments'][0]['filename'][-4:] == '.png') or ('(Open on website for full quality)' in message['content']):
                         message_id = message['id']
@@ -52,7 +51,7 @@ class Receiver:
                         filename = message['attachments'][0]['filename']
                         if message_id not in self.df.index:
                             self.df.loc[message_id] = [prompt, url, filename, message_timestamp, 0]
-                            self.latest_image_timestamp = parse(message["timestamp"])
+                            self.latest_image_timestamp = message["timestamp"]
 
                     else:
                         message_id = message['id']
