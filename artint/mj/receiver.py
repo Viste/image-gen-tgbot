@@ -68,8 +68,9 @@ class Receiver:
                         prompt = message['content'].split('**')[1].split(' --')[0]
                         url = message['attachments'][0]['url']
                         filename = message['attachments'][0]['filename']
+                        timestamp = message['timestamp']
                         if id not in self.df.index:
-                            self.df.loc[message_id] = [prompt, url, filename, 0]
+                            self.df.loc[message_id] = [prompt, url, filename, timestamp, 0]
                             self.latest_image_timestamp = parse(message["timestamp"])
 
                     else:
