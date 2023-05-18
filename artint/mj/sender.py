@@ -1,6 +1,7 @@
 import json
 
-import requests
+import aiohttp
+from aiohttp import ClientResponse
 
 
 class Sender:
@@ -39,7 +40,8 @@ class Sender:
         self.id = params['id']
         self.flags = params['flags']
 
-    def send(self, prompt):
+    # noinspection PyAssignmentToLoopOrWithParameter
+    async def send(self, prompt):
         header = {
             'authorization': self.authorization
         }
@@ -58,8 +60,11 @@ class Sender:
                        'attachments': []}
                    }
 
-        r = requests.post('https://discord.com/api/v9/interactions', json=payload, headers=header)
-        while r.status_code != 204:
-            r = requests.post('https://discord.com/api/v9/interactions', json=payload, headers=header)
+        async with aiohttp.ClientSession() as session:
+            req: ClientResponse
+            async with session.post('https://discord.com/api/v9/interactions', json=payload, headers=header) as req:
+                while req.status != 204:
+                    async with session.post('https://discord.com/api/v9/interactions', json=payload, headers=header) as req:
+                        pass
 
         print('prompt [{}] successfully sent!'.format(prompt))

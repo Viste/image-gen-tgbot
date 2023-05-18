@@ -1,6 +1,6 @@
 import json
 
-import requests
+import aiohttp
 
 
 class Upscaler:
@@ -30,7 +30,8 @@ class Upscaler:
         self.id = params['id']
         self.flags = params['flags']
 
-    def send(self, message_id, number, uuid):
+    # noinspection PyAssignmentToLoopOrWithParameter
+    async def send(self, message_id, number, uuid):
         header = {'authorization': self.authorization}
         payload = {'type': 3,
                    'application_id': self.application_id,
@@ -41,12 +42,14 @@ class Upscaler:
                    "message_id": message_id,
                    "data": {"component_type": 2, "custom_id": f"MJ::JOB::upsample::{number}::{uuid}"}}
 
-        r = requests.post('https://discord.com/api/v9/interactions',
-                          json=payload,
-                          headers=header)
-        while r.status_code != 204:
-            r = requests.post('https://discord.com/api/v9/interactions',
-                              json=payload,
-                              headers=header)
+        async with aiohttp.ClientSession() as session:
+            async with session.post('https://discord.com/api/v9/interactions',
+                                    json=payload,
+                                    headers=header) as req:
+                while req.status != 204:
+                    async with session.post('https://discord.com/api/v9/interactions',
+                                            json=payload,
+                                            headers=header) as req:
+                        pass
 
         print('Upscale request for message_id [{}] and number [{}] successfully sent!'.format(message_id, number))

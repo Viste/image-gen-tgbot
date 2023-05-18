@@ -1,6 +1,8 @@
 import asyncio
 import logging
 
+from dateutil.parser import parse
+
 from artint.mj.receiver import Receiver
 from artint.mj.sender import Sender
 from artint.mj.upscaler import Upscaler
@@ -16,19 +18,17 @@ class ImageGenerator:
 
     async def generate_image(self, prompt):
         # Send the prompt to Midjourney
-        self.sender.send(prompt)
+        await self.sender.send(prompt)
 
         # Wait for the result from Midjourney
         while True:
             await asyncio.sleep(120)  # Wait for 180 seconds before checking for new messages
             logging.info("We are in loop")
-            self.receiver.collecting_results()
+            await self.receiver.collecting_results()
             logging.info("results collected")
             if not self.receiver.df.empty:
-                print("PRINTING: %s", self.receiver.df.iloc[-1])
                 latest_image = self.receiver.df.iloc[-1]
-                if "timestamp" in self.receiver.df.iloc[-1]:  # and parse(latest_image["timestamp"]):
-                    print("Image received:", latest_image)
+                if parse(latest_image["timestamp"]) > self.receiver.latest_image_timestamp:
                     break
                 else:
                     print("No new image found. Continuing the loop.")
@@ -42,13 +42,13 @@ class ImageGenerator:
 
         # Pass the extracted part to the upscaler
         number = 3  # Choose the number of the image to upscale (1, 2, 3, or 4)
-        self.upscaler.send(message_id, number, paperclip_part)
+        await self.upscaler.send(message_id, number, paperclip_part)
 
         # Wait for the scaled image URL
         while True:
             await asyncio.sleep(240)  # Wait for 5 seconds before checking for new messages
             logging.info("In upscale loop")
-            self.receiver.collecting_results()
+            await self.receiver.collecting_results()
             logging.info("Result received")
             scaled_image = self.receiver.df.loc[message_id]
             if scaled_image["is_downloaded"]:

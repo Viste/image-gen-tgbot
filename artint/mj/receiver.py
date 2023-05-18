@@ -2,8 +2,8 @@ import json
 import re
 from datetime import datetime, timezone, timedelta
 
+import aiohttp
 import pandas as pd
-import requests
 from dateutil.parser import parse
 
 
@@ -30,30 +30,20 @@ class Receiver:
         self.authorization = params['authorization']
         self.headers = {'authorization': self.authorization}
 
-    def retrieve_messages(self):
-        r = requests.get(f'https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}', headers=self.headers)
-        jsonn = json.loads(r.text)
+    async def retrieve_messages(self):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f'https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}', headers=self.headers) as resp:
+                jsonn = await resp.json()
         return jsonn
 
-    def collecting_results(self):
-        message_list = self.retrieve_messages()
+    async def collecting_results(self):
+        message_list = await self.retrieve_messages()
         self.awaiting_list = pd.DataFrame(columns=['prompt', 'status'])
         print("COLLECTING RESULT")
         for message in message_list:
-            print("Processing message:", message)
-            if 'timestamp' not in message:
-                print("Skipping message due to missing timestamp")
-                continue
-            if message['author']['username'] != 'Midjourney Bot':
-                print("Skipping message due to different author")
-                continue
-            message_timestamp = parse(message["timestamp"])
-            if message_timestamp <= self.latest_image_timestamp:
-                print("Skipping message due to older timestamp")
-                continue
-
             # Process the message
             if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
+                message_timestamp = parse(message["timestamp"])
                 if len(message['attachments']) > 0:
                     if (message['attachments'][0]['filename'][-4:] == '.png') or ('(Open on website for full quality)' in message['content']):
                         message_id = message['id']
