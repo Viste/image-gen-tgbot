@@ -41,11 +41,12 @@ class Receiver:
         print("COLLECTING RESULT")
         for message in message_list:
             print("Processing message:", message)
-
             if 'timestamp' not in message:
                 print("Skipping message due to missing timestamp")
                 continue
-
+            if message['author']['username'] != 'Midjourney Bot':
+                print("Skipping message due to different author")
+                continue
             message_timestamp = parse(message["timestamp"])
             if message_timestamp <= self.latest_image_timestamp:
                 print("Skipping message due to older timestamp")
