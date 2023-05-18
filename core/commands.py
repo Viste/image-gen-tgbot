@@ -17,7 +17,10 @@ router = Router()
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
 params = load_params("params.json")
-image_generator = ImageGenerator("params.json", 0)
+params_file = "params.json"
+
+# Create a list of ImageGenerator instances for each channel
+image_generator = [ImageGenerator(params_file, i) for i in range(10)]
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
