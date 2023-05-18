@@ -36,14 +36,20 @@ class Upscaler:
     # noinspection PyAssignmentToLoopOrWithParameter
     async def send(self, message_id, number, uuid):
         header = {'authorization': self.authorization}
-        payload = {'type': 3,
-                   'application_id': self.application_id,
-                   'guild_id': self.guild_id,
-                   'channel_id': self.channelid[self.index],
-                   'session_id': self.session_id,
-                   "message_flags": 0,
-                   "message_id": message_id,
-                   "data": {"component_type": 2, "custom_id": f"MJ::JOB::upsample::{number}::{uuid}"}}
+        payload = {
+            'type': 3,
+            'nonce': message_id,
+            'guild_id': self.guild_id,
+            'application_id': self.application_id,
+            'channel_id': self.channelid[self.index],
+            'message_flags': 0,
+            'message_id': message_id,
+            'session_id': self.session_id,
+            'data': {
+                "component_type": 2,
+                "custom_id": f"MJ::JOB::upsample::{number}::{uuid}"
+            }
+        }
 
         logger.info(f"Upscale request payload: {payload}")
         async with aiohttp.ClientSession() as session:
