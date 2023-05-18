@@ -70,6 +70,7 @@ class ImageGenerator:
             await self.receiver.collecting_results()
             logging.info("Result received")
             scaled_image = self.receiver.df.loc[message_id]
+            logging.info(f"Container: {self.receiver.df.loc[message_id]}")
             if scaled_image["is_downloaded"]:
                 logging.info("Scaled image received:", scaled_image)
                 scaled_url = scaled_image["url"]
