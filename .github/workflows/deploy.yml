@@ -1,0 +1,19 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ 'master' ]
+  pull_request:
+    branches: [ 'master' ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Stop nastya bot
+        run: systemctl stop nastya
+      - name: Pull nastya source
+        run: cd /opt/nastya && git pull
+      - name: Start nastya bot
+        run: systemctl start nastya
