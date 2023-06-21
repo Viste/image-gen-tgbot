@@ -11,8 +11,9 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Stop nasty
+      - name: Stop nastya bot
         run: systemctl stop nasty && kill -s 9 $(pidof /home/nastya/bin/python)
-      - name: Start nasty
+      - name: Pull nastya source
+        run: cd /opt/nastya && git pull
+      - name: Start nastya bot
         run: systemctl start nasty
