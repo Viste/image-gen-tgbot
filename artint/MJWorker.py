@@ -11,7 +11,7 @@ from dateutil.parser import parse
 logger = logging.getLogger(__name__)
 
 
-class MidjourneyBot:
+class Midjourney:
     def __init__(self, params, index):
         self.params = params
         self.index = index
@@ -119,11 +119,10 @@ class MidjourneyBot:
         async with aiohttp.ClientSession() as session:
             max_retries = 10
             for _ in range(max_retries):
-                async with aiohttp.ClientSession() as session:
-                    async with session.post('https://discord.com/api/v9/interactions', json=payload,
-                                            headers=header) as resp:
-                        if resp.status == 204:
-                            pass
+                async with session.post('https://discord.com/api/v9/interactions', json=payload,
+                                        headers=header) as resp:
+                    if resp.status == 204:
+                        pass
             else:
                 logging.info(f'Failed to send prompt after {max_retries} retries')
         logging.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')

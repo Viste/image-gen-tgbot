@@ -1,14 +1,22 @@
 import logging
+import random
 
 from aiogram import types, Bot, Router
 from aiogram.exceptions import TelegramAPIError
 
+from artint.MJWorker import Midjourney
 from tools.language import Lang
 from tools.utils import DeleteMsgCallback
-from tools.utils import config
+from tools.utils import config, load_params
 
 logger = logging.getLogger("nasty_bot")
 router = Router()
+
+params = load_params("params.json")
+params_file = "params.json"
+
+# Create a list of ImageGenerator instances for each channel
+image_generators = [Midjourney(params_file, i) for i in range(10)]
 
 
 @router.callback_query(DeleteMsgCallback.filter())
@@ -42,3 +50,15 @@ async def delmsg_callback(call: types.CallbackQuery, callback_data: DeleteMsgCal
         await call.answer()
     else:
         await call.answer(show_alert=True, text=lang.get("action_deleted_partially"))
+
+
+@router.callback_query(lambda c: c.data and c.data.startswith('upscale:'))
+async def process_callback(call: types.CallbackQuery):
+    _, message_id, number, uuid = call.data.split(":")
+    image_generator = random.choice(image_generators)
+    try:
+        result = await image_generator.send_upscale_request(message_id, number, uuid)
+        await call.message.answer(result)
+        await call.answer()
+    except Exception as e:
+        await call.answer(show_alert=True, text=f"{e}")

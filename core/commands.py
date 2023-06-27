@@ -5,9 +5,10 @@ import random
 from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
+from artint.MJWorker import Midjourney
 from artint.conversation import OpenAI
-from artint.mj.worker import MidjourneyBot
 from artint.stadif import StableDiffAI
 from tools.states import DAImage, SDImage, Text, MJImage
 from tools.utils import config, load_params, split_into_chunks
@@ -21,7 +22,7 @@ params = load_params("params.json")
 params_file = "params.json"
 
 # Create a list of ImageGenerator instances for each channel
-image_generators = [MidjourneyBot(params_file, i) for i in range(10)]
+image_generators = [Midjourney(params_file, i) for i in range(10)]
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
@@ -47,10 +48,10 @@ async def ask(message: types.Message, state: FSMContext) -> None:
             except Exception as err:
                 try:
                     logging.info('From try in for index chunks: %s', err)
-                    await message.reply(chunk + err, parse_mode=None)
+                    await message.reply(chunk + str(err), parse_mode=None)
                 except Exception as error:
                     logging.info('Last exception from Core: %s', error)
-                    await message.reply(error, parse_mode=None)
+                    await message.reply(str(error), parse_mode=None)
 
 
 @router.message(Text.get, F.reply_to_message.from_user.is_bot)
@@ -72,10 +73,10 @@ async def process_ask(message: types.Message) -> None:
             except Exception as err:
                 try:
                     logging.info('From try in for index chunks: %s', err)
-                    await message.reply(chunk + err, parse_mode=None)
+                    await message.reply(chunk + str(err), parse_mode=None)
                 except Exception as error:
                     logging.info('Last exception from Core: %s', error)
-                    await message.reply(error, parse_mode=None)
+                    await message.reply(str(error), parse_mode=None)
 
 
 @router.message(F.text.startswith("Нарисуй: "))
@@ -101,7 +102,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
                 await message.reply(text, parse_mode=None)
             except Exception as error:
                 logging.info('Last exception from Picture: %s', error)
-                await message.reply(error, parse_mode=None)
+                await message.reply(str(error), parse_mode=None)
 
 
 @router.message(DAImage.get)
@@ -122,11 +123,19 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         text = html.escape(message.text)
         escaped_text = text.strip('Отобрази: ')
         image_generator = random.choice(image_generators)
-        url = await image_generator.get_images(escaped_text)
-        print(url)
+        resp = await image_generator.get_images(escaped_text)
+        print(resp)
         try:
-            photo = url
+            photo = resp['url'][0]
+            uuid = resp['uuid'][0]
+            message_id = resp['message_id'][0]
+            builder = ReplyKeyboardBuilder()
+            for i in range(1, 5):
+                builder.add(types.KeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}"))
+            builder.adjust(4)
             await message.reply_photo(photo)
+            await message.reply("какое изображение будет увеличивать?:",
+                                reply_markup=builder.as_markup(resize_keyboard=True))
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
@@ -134,7 +143,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
                 await message.reply(text, parse_mode=None)
             except Exception as error:
                 logging.info('Last exception from Picture: %s', error)
-                await message.reply(error, parse_mode=None)
+                await message.reply(str(error), parse_mode=None)
 
 
 @router.message(MJImage.get)
@@ -171,7 +180,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
                 await message.answer(text + result['output'][0], parse_mode=None)
             except Exception as error:
                 logging.info('Last exception from SD Picture: %s', error)
-                await message.answer(error, parse_mode=None)
+                await message.answer(str(error), parse_mode=None)
 
 
 @router.message(SDImage.get)
