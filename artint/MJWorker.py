@@ -78,7 +78,7 @@ class Midjourney:
             for _ in range(max_retries):
                 async with session.post('https://discord.com/api/v9/interactions', json=payload,
                                         headers=header) as resp:
-                    logger.info(f'Received response: {resp}')
+                    logger.info(f'Received response: {resp.text}')
                     if resp.status == 204:
                         logging.info(f'prompt {prompt} successfully sent!')
                         break
@@ -106,7 +106,7 @@ class Midjourney:
             for _ in range(max_retries):
                 async with session.post('https://discord.com/api/v9/interactions', json=payload,
                                         headers=header) as resp:
-                    logger.info(f'Received response: {resp}')
+                    logger.info(f'Received response: {resp.text}')
                     if resp.status == 204:
                         logging.info(
                             f'Upscale request for message_id {message_id} and number {number} successfully sent!')
