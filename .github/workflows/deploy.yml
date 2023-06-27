@@ -11,9 +11,12 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Stop nastya bot
-        run: systemctl stop nastya
-      - name: Pull nastya source
-        run: cd /opt/nastya && git pull
-      - name: Start nastya bot
-        run: systemctl start nastya
+      - uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Stop Nastya bot
+        run: systemctl stop cyberpaper
+      - name: Pull Nastya source
+        run: cd /opt/nastya && rm tools/config.json params.json artint/params.json && git pull && cp ../nastya_params.json params.json && cp ../nastya_params.json artint/params.json && cp ../nastya.json  tools/config.json
+      - name: Start Nastya  bot
+        run: systemctl start cyberpaper
