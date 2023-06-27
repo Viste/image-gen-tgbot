@@ -30,7 +30,6 @@ class MidjourneyBot:
         self.session_id = params['session_id']
         self.version = params['version']
         self.id = params['id']
-        self.flags = params['flags']
 
     async def retrieve_messages(self):
         async with aiohttp.ClientSession() as session:
@@ -87,7 +86,7 @@ class MidjourneyBot:
                    'data': {
                        'version': self.version, 'id': self.id, 'name': 'imagine', 'type': 1,
                        'options': [{
-                           'type': 3, 'name': 'prompt', 'value': str(prompt) + ' ' + self.flags[self.flag]
+                           'type': 3, 'name': 'prompt', 'value': str(prompt) + ' '
                        }], 'attachments': []}
                    }
         async with aiohttp.ClientSession() as session:
