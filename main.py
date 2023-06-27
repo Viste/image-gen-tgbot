@@ -203,17 +203,18 @@ async def main_coro():
     loop = asyncio.get_event_loop()
 
     main_task = asyncio.create_task(main())
-    scheduler_task = asyncio.create_task(run_scheduler_wrapper())
+    await main_task
 
+    scheduler_task = asyncio.create_task(run_scheduler_wrapper())
     handle_signals(loop, scheduler_task)
 
-    results = await asyncio.gather(main_task, scheduler_task, return_exceptions=True)
+    results = await asyncio.gather(scheduler_task, return_exceptions=True)
 
-    for task, result in zip([main_task, scheduler_task], results):
+    for task, result in zip([scheduler_task], results):
         if isinstance(result, Exception):
             logging.error(f"Task {task} raised an exception: {result}")
 
-    for task in [main_task, scheduler_task]:
+    for task in [scheduler_task]:
         if not task.done():
             task.cancel()
 
