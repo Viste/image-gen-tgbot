@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from artint.oairaw import OAI
 from artint.stadif import StableDiffAI
 from core import setup_routers
-from core.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date
+from database.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date
 from middlewares.database import DbSessionMiddleware
 from tools.language import Lang
 from tools.utils import config
