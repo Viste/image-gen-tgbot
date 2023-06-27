@@ -34,9 +34,10 @@ class Receiver:
 
     async def retrieve_messages(self):
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}', headers=self.headers) as resp:
-                jsonn = await resp.json()
-        return jsonn
+            async with session.get(f'https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}',
+                                   headers=self.headers) as resp:
+                result = await resp.json()
+        return result
 
     async def collecting_results(self):
         message_list = await self.retrieve_messages()
