@@ -1,14 +1,13 @@
 import asyncio
 import json
 import logging
-import re
 from datetime import datetime, timezone, timedelta
 
 import aiohttp
-import pandas as pd
 from dateutil.parser import parse
 
 logger = logging.getLogger(__name__)
+
 
 
 class Midjourney:
@@ -17,7 +16,7 @@ class Midjourney:
         self.index = index
         self.sender_initializer()
         self.latest_image_timestamp = datetime.now(timezone.utc) - timedelta(days=1)
-        self.df = pd.DataFrame(columns=['prompt', 'url', 'filename', 'uuid'])
+        self.images = []
 
     def sender_initializer(self):
         with open(self.params, "r") as json_file:
@@ -33,18 +32,20 @@ class Midjourney:
 
     async def retrieve_messages(self):
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}',
+            async with session.get('https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}',
                                    headers=self.headers) as resp:
+                logger.info(
+                    f'Sending GET request to https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}')
                 try:
                     result = await resp.text()
+                    logger.info(f'Received response: {result}')
                     return json.loads(result)
                 except json.JSONDecodeError:
-                    logging.info("Error: Invalid JSON response")
+                    logger.error("Error: Invalid JSON response")
                     return []
 
     async def collecting_results(self):
         message_list = await self.retrieve_messages()
-        self.awaiting_list = pd.DataFrame(columns=['prompt', 'status'])
         for message in message_list:
             try:
                 if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
@@ -56,24 +57,8 @@ class Midjourney:
                             url = message['attachments'][0]['url']
                             filename = message['attachments'][0]['filename']
                             uuid = filename.split('_')[-1].split('.')[0]
-                            if id not in self.df.index:
-                                self.df.loc[id] = [prompt, url, filename, uuid]
-                                self.latest_image_timestamp = parse(message["timestamp"])
-                        else:
-                            id = message['id']
-                            prompt = message['content'].split('**')[1].split(' --')[0]
-                            if ('(fast)' in message['content']) or ('(relaxed)' in message['content']):
-                                try:
-                                    status = re.findall("(\w*%)", message['content'])[0]
-                                except IndexError:
-                                    status = 'unknown status'
-                            self.awaiting_list.loc[id] = [prompt, status]
-                    else:
-                        id = message['id']
-                        prompt = message['content'].split('**')[1].split(' --')[0]
-                        if '(Waiting to start)' in message['content']:
-                            status = 'Waiting to start'
-                        self.awaiting_list.loc[id] = [prompt, status]
+                            self.images.append({'id': id, 'prompt': prompt, 'url': url, 'uuid': uuid})
+                            self.latest_image_timestamp = parse(message["timestamp"])
             except KeyError:
                 logging.info("Error: Message does not contain expected elements")
 
@@ -86,7 +71,7 @@ class Midjourney:
                    'data': {
                        'version': self.version, 'id': self.id, 'name': 'imagine', 'type': 1,
                        'options': [{
-                           'type': 3, 'name': 'prompt', 'value': str(prompt) + ' '
+                           'type': 3, 'name': 'prompt', 'value': str(prompt)
                        }], 'attachments': []}
                    }
         async with aiohttp.ClientSession() as session:
@@ -94,17 +79,18 @@ class Midjourney:
             for _ in range(max_retries):
                 async with session.post('https://discord.com/api/v9/interactions', json=payload,
                                         headers=header) as resp:
+                    logger.info(f'Received response: {resp}')
                     if resp.status == 204:
                         logging.info(f'prompt {prompt} successfully sent!')
                         break
                     else:
-                        logging.info(f'Failed to send upscale request after {max_retries} retries')
+                        logging.info(f'Failed to send prompt request after {max_retries} retries')
                 await asyncio.sleep(3)
 
     async def get_images(self, prompt):
         await self.send_prompt(prompt)
         await self.collecting_results()
-        return self.df.reset_index().rename(columns={'index': 'message_id'})
+        return self.images
 
     async def send_upscale_request(self, message_id, number, uuid):
         header = {'authorization': self.authorization}
@@ -121,10 +107,12 @@ class Midjourney:
             for _ in range(max_retries):
                 async with session.post('https://discord.com/api/v9/interactions', json=payload,
                                         headers=header) as resp:
+                    logger.info(f'Received response: {resp}')
                     if resp.status == 204:
-                        pass
+                        logging.info(
+                            f'Upscale request for message_id {message_id} and number {number} successfully sent!')
             else:
-                logging.info(f'Failed to send prompt after {max_retries} retries')
+                logging.info(f'Failed to send upscale request after {max_retries} retries')
         logging.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
 
     async def upscale(self, message_id, number, uuid):
@@ -144,8 +132,8 @@ class Midjourney:
             wait_time += 1
 
         if current_image_timestamp and current_image_timestamp > initial_image_timestamp:
-            latest_image_id = self.df.index[-1]
-            latest_image_url = self.df.loc[latest_image_id].url
+            latest_image = self.images[-1]
+            latest_image_url = latest_image['url']
         else:
             latest_image_url = None
         return latest_image_url
