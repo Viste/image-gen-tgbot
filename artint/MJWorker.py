@@ -9,7 +9,6 @@ from dateutil.parser import parse
 logger = logging.getLogger(__name__)
 
 
-
 class Midjourney:
     def __init__(self, params, index):
         self.params = params
