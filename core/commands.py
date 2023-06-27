@@ -7,7 +7,7 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
 from artint.conversation import OpenAI
-from artint.midj import ImageGenerator
+from artint.mj.worker import MidjourneyBot
 from artint.stadif import StableDiffAI
 from tools.states import DAImage, SDImage, Text, MJImage
 from tools.utils import config, load_params, split_into_chunks
@@ -21,7 +21,7 @@ params = load_params("params.json")
 params_file = "params.json"
 
 # Create a list of ImageGenerator instances for each channel
-image_generators = [ImageGenerator(params_file, i) for i in range(10)]
+image_generators = [MidjourneyBot(params_file, i) for i in range(10)]
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
@@ -122,10 +122,10 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         text = html.escape(message.text)
         escaped_text = text.strip('Отобрази: ')
         image_generator = random.choice(image_generators)
-        scaled_url = await image_generator.generate_image(escaped_text)
-        print(scaled_url)
+        url = await image_generator.get_images(escaped_text)
+        print(url)
         try:
-            photo = scaled_url
+            photo = url
             await message.reply_photo(photo)
         except Exception as err:
             try:

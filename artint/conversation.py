@@ -11,7 +11,7 @@ from tools.utils import config
 
 openai.api_key = config.api_key
 
-logger = logging.getLogger("__name__")
+logger = logging.getLogger(__name__)
 
 args = {
     "temperature": 0.0,
