@@ -46,7 +46,7 @@ class Midjourney:
             async with session.get('https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}',
                                    headers=headers) as resp:
                 logger.info(
-                    f'Sending GET request to https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}')
+                    f'Sending GET request to https://discord.com/api/v10/channels/{self.channelid[self.index]}/messages?limit={10}')
                 try:
                     result = await resp.text()
                     logger.info(f'Received response: {result}')
