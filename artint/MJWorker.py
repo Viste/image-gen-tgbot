@@ -11,28 +11,40 @@ logger = logging.getLogger(__name__)
 
 class Midjourney:
     def __init__(self, params, index):
+        self.latest_image_timestamp = datetime.now(timezone.utc) - timedelta(days=1)
+        self.images = []
+        self.id = None
+        self.application_id = None
+        self.guild_id = None
+        self.session_id = None
+        self.version = None
+        self.flags = None
+        self.authorization = None
+        self.channelid = None
         self.params = params
         self.index = index
         self.sender_initializer()
-        self.latest_image_timestamp = datetime.now(timezone.utc) - timedelta(days=1)
-        self.images = []
 
     def sender_initializer(self):
         with open(self.params, "r") as json_file:
             params = json.load(json_file)
-        self.channelid = params['channelid'][self.index]
+
+        self.channelid = params['channelid']
         self.authorization = params['authorization']
-        self.headers = {'authorization': self.authorization}
         self.application_id = params['application_id']
         self.guild_id = params['guild_id']
         self.session_id = params['session_id']
         self.version = params['version']
         self.id = params['id']
+        self.flags = params['flags']
 
     async def retrieve_messages(self):
+        headers = {
+            'authorization': self.authorization
+        }
         async with aiohttp.ClientSession() as session:
             async with session.get('https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}',
-                                   headers=self.headers) as resp:
+                                   headers=headers) as resp:
                 logger.info(
                     f'Sending GET request to https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}')
                 try:
@@ -73,6 +85,7 @@ class Midjourney:
                            'type': 3, 'name': 'prompt', 'value': str(prompt)
                        }], 'attachments': []}
                    }
+        logging.info('Payload: %s', payload)
         async with aiohttp.ClientSession() as session:
             max_retries = 10
             for _ in range(max_retries):
