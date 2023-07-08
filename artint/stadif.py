@@ -50,6 +50,8 @@ class StableDiffAI:
                 "samples": self.samples,
                 "width": self.width,
                 "height": self.height,
+                "multi_lingual": "yes",
+                "safety_checker": "yes",
                 "guidance_scale": self.guidance_scale,
                 "num_inference_steps": self.steps,
             }
