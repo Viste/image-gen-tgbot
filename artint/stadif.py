@@ -11,7 +11,7 @@ class StableDiffAI:
     def __init__(self):
         super().__init__()
         self.key = config.sd_api_key
-        self.url = "https://stablediffusionapi.com/api/v4/dreambooth"
+        self.url = config.sd_api_url
         self.video_url = "https://stablediffusionapi.com/api/v5/text2video"
         self.samples = 1
         self.width = 768
@@ -51,7 +51,6 @@ class StableDiffAI:
                 "width": self.width,
                 "height": self.height,
                 "multi_lingual": "yes",
-                "safety_checker": "yes",
                 "guidance_scale": self.guidance_scale,
                 "num_inference_steps": self.steps,
             }
