@@ -11,7 +11,7 @@ class StableDiffAI:
     def __init__(self):
         super().__init__()
         self.key = config.sd_api_key
-        self.url = config.sd_api_url
+        self.url = "https://stablediffusionapi.com/api/v4/dreambooth"
         self.video_url = "https://stablediffusionapi.com/api/v5/text2video"
         self.samples = 1
         self.width = 768
@@ -44,6 +44,7 @@ class StableDiffAI:
             }
             data = {
                 "key": self.key,
+                "model_id" : "deliberate-v2",
                 "prompt": prompt,
                 "negative_prompt": self.negatives,
                 "samples": self.samples,
