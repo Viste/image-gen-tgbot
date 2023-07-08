@@ -168,7 +168,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         text = "⏳Время генерации: " + str(result['generationTime']) \
                + " секунд. 🌾Зерно: " \
                + str(result['meta']['seed']) \
-               + ", 💃Модель: " + str(result['meta']['model']) \
+               + ", 💃Модель: " + str(result['meta']['model_id']) \
                + ", 🦶Шаги: " + str(result['meta']['steps'])
         try:
             photo = result['output'][0]
