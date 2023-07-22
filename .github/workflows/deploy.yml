@@ -1,4 +1,4 @@
-name: Deploy
+name: deploy
 
 on:
   push:
@@ -7,16 +7,24 @@ on:
     branches: [ 'master' ]
 
 jobs:
-  build:
-    runs-on: self-hosted
-
+  docker:
+    runs-on: ubuntu-latest
     steps:
-      - uses: webfactory/ssh-agent@v0.4.1
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Stop Nastya bot
-        run: systemctl stop nastya
-      - name: Pull Nastya source
-        run: cd /opt/nastya && rm tools/config.json params.json && cp ../nastya_params.json params.json && cp ../nastya.json  tools/config.json && git pull
-      - name: Start Nastya  bot
-        run: systemctl start nastya
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: vistee/pprfnk:nastya
