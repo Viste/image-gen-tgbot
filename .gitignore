@@ -69,3 +69,4 @@ testMain.py
 
 # documentation
 _build/
+.spyproject/
