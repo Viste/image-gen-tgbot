@@ -21,6 +21,8 @@ class Midjourney:
         self.flags = None
         self.authorization = None
         self.channelid = None
+        self.latest_image_timestamp = datetime.now(timezone.utc) - timedelta(days=1)
+        self.images = []
         self.params = params
         self.index = index
         self.sender_initializer()
@@ -59,17 +61,16 @@ class Midjourney:
         message_list = await self.retrieve_messages()
         for message in message_list:
             try:
-                if (message['author']['username'] == 'Midjourney Bot') and ('**' in message['content']):
-                    if len(message['attachments']) > 0:
-                        if (message['attachments'][0]['filename'][-4:] == '.png') or (
-                                '(Open on website for full quality)' in message['content']):
-                            id = message['id']
-                            prompt = message['content'].split('**')[1].split(' --')[0]
-                            url = message['attachments'][0]['url']
-                            filename = message['attachments'][0]['filename']
-                            uuid = filename.split('_')[-1].split('.')[0]
-                            self.images.append({'id': id, 'prompt': prompt, 'url': url, 'uuid': uuid})
-                            self.latest_image_timestamp = parse(message["timestamp"])
+                if (message.get("author", {}).get("username") == "Midjourney Bot") and ("**" in message.get("content", "")):
+                    if len(message.get("attachments", [])) > 0:
+                        if (message["attachments"][0].get("filename", "")[-4:] == ".png") or ("(Open on website for full quality)" in message.get("content", "")):
+                            id = message.get("id")
+                            prompt = (message.get("content", "").split("**")[1].split(" --")[0])
+                            url = message["attachments"][0].get("url")
+                            filename = message["attachments"][0].get("filename")
+                            uuid = filename.split("_")[-1].split(".")[0]
+                            self.images.append({"id": id, "prompt": prompt, "url": url, "uuid": uuid})
+                            self.latest_image_timestamp = parse(message.get("timestamp", self.latest_image_timestamp))
             except KeyError:
                 logging.info("Error: Message does not contain expected elements")
 
@@ -130,23 +131,24 @@ class Midjourney:
 
     async def upscale(self, message_id, number, uuid):
         await self.send_upscale_request(message_id, number, uuid)
-        initial_image_timestamp = self.latest_image_timestamp
-
+        initial_image_timestamp = self.latest_image_timestamp if self.latest_image_timestamp else datetime.now(timezone.utc)
+    
         # Wait for new image to appear
         max_wait_time = 300
         wait_time = 0
 
         while wait_time < max_wait_time:
             await self.collecting_results()
-            current_image_timestamp = self.latest_image_timestamp
+            current_image_timestamp = self.latest_image_timestamp if self.latest_image_timestamp else datetime.now(timezone.utc)
+
             if current_image_timestamp and current_image_timestamp > initial_image_timestamp:
                 break
             await asyncio.sleep(1)
             wait_time += 1
-
-        if current_image_timestamp and current_image_timestamp > initial_image_timestamp:
-            latest_image = self.images[-1]
-            latest_image_url = latest_image['url']
-        else:
-            latest_image_url = None
-        return latest_image_url
+        
+            if current_image_timestamp and current_image_timestamp > initial_image_timestamp:
+                latest_image = self.images[-1] if self.images else None
+                latest_image_url = latest_image.get("url") if latest_image else None
+            else:
+                latest_image_url = None
+            return latest_image_url
