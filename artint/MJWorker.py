@@ -20,7 +20,7 @@ class Midjourney:
         self.version = None
         self.flags = None
         self.authorization = None
-        self.channelid = None
+        self.channelid = params['channelid']
         self.params = params
         self.index = index
         self.sender_initializer()
@@ -43,10 +43,10 @@ class Midjourney:
             'authorization': self.authorization
         }
         async with aiohttp.ClientSession() as session:
-            async with session.get('https://discord.com/api/v10/channels/{self.channelid}/messages?limit={10}',
+            async with session.get(f'https://discord.com/api/v10/channels/{self.channelid[self.index]}/messages?limit=10',
                                    headers=headers) as resp:
                 logger.info(
-                    f'Sending GET request to https://discord.com/api/v10/channels/{self.channelid[self.index]}/messages?limit={10}')
+                    f'Sending GET request to https://discord.com/api/v10/channels/{self.channelid[self.index]}/messages?limit=10')
                 try:
                     result = await resp.text()
                     logger.info(f'Received response: {result}')
