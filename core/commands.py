@@ -124,7 +124,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         escaped_text = text.strip('Отобрази: ')
         image_generator = random.choice(image_generators)
         resp = await image_generator.get_images(escaped_text)
-        print(resp)
+        logging.info("RESPONSE FROM IMAGE GENERA %s", resp)
         try:
             photo = resp['url'][0]
             uuid = resp['uuid'][0]
