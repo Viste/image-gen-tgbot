@@ -20,7 +20,7 @@ class Midjourney:
         self.version = None
         self.flags = None
         self.authorization = None
-        self.channelid = params['channelid']
+        self.channelid = None
         self.params = params
         self.index = index
         self.sender_initializer()
@@ -121,9 +121,9 @@ class Midjourney:
                                         headers=header) as resp:
                     logger.info(f'Received response: {resp.text}')
                     if resp.status == 204:
-                        logging.info(
-                            f'Upscale request for message_id {message_id} and number {number} successfully sent!')
+                        logging.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
             else:
+                await asyncio.sleep(3)
                 logging.info(f'Failed to send upscale request after {max_retries} retries')
         logging.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
 
