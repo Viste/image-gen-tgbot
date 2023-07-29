@@ -1,19 +1,22 @@
 import html
 import logging
 import random
+import tempfile
+import os
 
 from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.types.input_file import InputFile
 
 from artint.MJWorker import Midjourney
 from artint.conversation import OpenAI
 from artint.stadif import StableDiffAI
 from tools.states import DAImage, SDImage, Text, MJImage
-from tools.utils import config, load_params, split_into_chunks
+from tools.utils import config, load_params, split_into_chunks, download_image
 
-logger = logging.getLogger("__name__")
+logger = logging.getLogger(__name__)
 router = Router()
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
@@ -133,7 +136,13 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             for i in range(1, 5):
                 builder.add(types.KeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}:{image_generator}"))
             builder.adjust(4)
-            await message.reply_photo(str(photo), caption='какое изображение будет увеличивать?', reply_markup=builder.as_markup(resize_keyboard=True))
+            photo_data = await download_image(photo)
+            if photo_data is not None:
+                with tempfile.NamedTemporaryFile(delete=False) as temp:
+                    temp.write(photo_data)
+                    temp_file_name = temp.name
+                    await message.reply_photo(InputFile(temp_file_name), caption="какое изображение будет увеличивать?", reply_markup=builder.as_markup(resize_keyboard=True))
+                    os.unlink(temp_file_name)
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "

@@ -8,7 +8,7 @@ from tools.language import Lang
 from tools.utils import DeleteMsgCallback
 from tools.utils import config
 
-logger = logging.getLogger("nasty_bot")
+logger = logging.getLogger(__name__)
 router = Router()
 
 

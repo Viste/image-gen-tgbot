@@ -1,10 +1,15 @@
 import json
 import os
+import aiohttp
+import logging
+
 from typing import Dict, List, Union
 
 from aiogram import Bot, types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import ChatMemberAdministrator, ChatMemberOwner
+
+logger = logging.getLogger(__name__)
 
 
 class JSONObject:
@@ -59,6 +64,15 @@ def get_from_dalle(response: List[Dict[str, str]]) -> str:
         result.append(clear_message)
     return """ """.join(result)
 
+
+async def download_image(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                return await resp.read()
+            else:
+                logging.error(f"Unable to download image. Status: {resp.status}")
+                return None
 
 new_user_added = types.ChatPermissions(
     can_send_messages=False,

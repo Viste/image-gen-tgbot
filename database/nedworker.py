@@ -8,7 +8,7 @@ from artint.conversation import OpenAI
 from artint.stadif import StableDiffAI
 from database.models import Dates, Woman
 
-logger = logging.getLogger("__name__")
+logger = logging.getLogger(__name__)
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
 
