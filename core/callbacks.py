@@ -2,6 +2,7 @@ import logging
 
 from aiogram import types, Bot, Router
 from aiogram.exceptions import TelegramAPIError
+from aiogram.types import ReplyKeyboardRemove
 
 from tools.language import Lang
 from tools.utils import DeleteMsgCallback
@@ -50,7 +51,7 @@ async def process_callback(call: types.CallbackQuery):
     try:
         result = await image_generator.upscale(message_id, number, uuid)
         print(result)
-        await call.message.answer(result)
-        await call.answer()
+        await call.message.answer(result, reply_markup=ReplyKeyboardRemove())
+        await call.answer(reply_markup=ReplyKeyboardRemove())
     except Exception as e:
         await call.answer(show_alert=True, text=f"{e}")
