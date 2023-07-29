@@ -8,7 +8,6 @@ from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
-from aiogram.types.input_file import InputFile
 
 from artint.MJWorker import Midjourney
 from artint.conversation import OpenAI
@@ -138,11 +137,11 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             builder.adjust(4)
             photo_data = await download_image(photo)
             if photo_data is not None:
-                with tempfile.NamedTemporaryFile(delete=False) as temp:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp:
                     temp.write(photo_data)
                     temp_file_name = temp.name
-                    await message.reply_photo(InputFile(temp_file_name), caption="какое изображение будет увеличивать?", reply_markup=builder.as_markup(resize_keyboard=True))
-                    os.unlink(temp_file_name)
+                await message.reply_photo(photo=temp_file_name, caption="какое изображение будет увеличивать?", reply_markup=builder.as_markup(resize_keyboard=True))
+                os.unlink(temp_file_name)
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
