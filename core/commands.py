@@ -15,13 +15,10 @@ from tools.utils import config, load_params, split_into_chunks
 
 logger = logging.getLogger("__name__")
 router = Router()
-
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
 params = load_params("params.json")
 params_file = "params.json"
-
-# Create a list of ImageGenerator instances for each channel
 image_generators = [Midjourney(params_file, i) for i in range(10)]
 
 
@@ -127,14 +124,14 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         logging.info("RESPONSE FROM IMAGE GENERA %s", resp)
         try:
             photo = resp[0]['url']
-            logging.info("OK NOW WE GET RESULT PHOTO %", photo)
+            logging.info("OK NOW WE GET RESULT PHOTO %s", photo)
             uuid = resp[0]['uuid']
-            logging.info("OK NOW WE GET RESULT UUID %", uuid)
+            logging.info("OK NOW WE GET RESULT UUID %s", uuid)
             message_id = resp[0]['id']
-            logging.info("OK NOW WE GET RESULT MESS ID %", message_id)
+            logging.info("OK NOW WE GET RESULT MESS ID %s", message_id)
             builder = ReplyKeyboardBuilder()
             for i in range(1, 5):
-                builder.add(types.KeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}"))
+                builder.add(types.KeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}:{image_generator}"))
             builder.adjust(4)
             await message.reply_photo(photo)
             await message.reply("какое изображение будет увеличивать?:",
