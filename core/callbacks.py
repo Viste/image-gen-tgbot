@@ -48,7 +48,7 @@ async def delmsg_callback(call: types.CallbackQuery, callback_data: DeleteMsgCal
 async def process_callback(call: types.CallbackQuery):
     _, message_id, number, uuid, image_generator = call.data.split(":")
     try:
-        result = await image_generator.send_upscale_request(message_id, number, uuid)
+        result = await image_generator.upscale(message_id, number, uuid)
         print(result)
         await call.message.answer(result)
         await call.answer()
