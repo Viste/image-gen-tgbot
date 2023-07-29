@@ -133,9 +133,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             for i in range(1, 5):
                 builder.add(types.KeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}:{image_generator}"))
             builder.adjust(4)
-            await message.reply_photo(photo)
-            await message.reply("какое изображение будет увеличивать?:",
-                                reply_markup=builder.as_markup(resize_keyboard=True))
+            await message.reply_photo(str(photo), caption='какое изображение будет увеличивать?', reply_markup=builder.as_markup(resize_keyboard=True))
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
