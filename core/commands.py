@@ -126,9 +126,10 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         resp = await image_generator.get_images(escaped_text)
         logging.info("RESPONSE FROM IMAGE GENERA %s", resp)
         try:
-            photo = resp['url'][0]
-            uuid = resp['uuid'][0]
-            message_id = resp['message_id'][0]
+            result = resp[0]
+            photo = result['url']
+            uuid = result['uuid']
+            message_id = result['id']
             builder = ReplyKeyboardBuilder()
             for i in range(1, 5):
                 builder.add(types.KeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}"))
