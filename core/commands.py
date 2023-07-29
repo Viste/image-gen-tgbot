@@ -127,13 +127,14 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         logging.info("RESPONSE FROM IMAGE GENERA %s", resp)
         try:
             result = resp[0]
-            logging.info("OK NOW WE GET RESULT %", result)
+            print(result)
+            # logging.info("OK NOW WE GET RESULT %", result)
             photo = result['url']
-            logging.info("OK NOW WE GET RESULT PHOTO %", photo)
+            # logging.info("OK NOW WE GET RESULT PHOTO %", photo)
             uuid = result['uuid']
-            logging.info("OK NOW WE GET RESULT UUID %", uuid)
+            # logging.info("OK NOW WE GET RESULT UUID %", uuid)
             message_id = result['id']
-            logging.info("OK NOW WE GET RESULT MESS ID %", message_id)
+            # logging.info("OK NOW WE GET RESULT MESS ID %", message_id)
             builder = ReplyKeyboardBuilder()
             for i in range(1, 5):
                 builder.add(types.KeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}"))
