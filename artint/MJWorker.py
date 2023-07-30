@@ -40,8 +40,8 @@ class Midjourney:
 
     async def retrieve_messages(self):
         headers = {
-            'authorization': self.authorization
-        }
+                'authorization': self.authorization
+            }
         async with aiohttp.ClientSession() as session:
             async with session.get(f'https://discord.com/api/v10/channels/{self.channelid[self.index]}/messages?limit=10',
                                    headers=headers) as resp:
@@ -75,14 +75,14 @@ class Midjourney:
     async def send_prompt(self, prompt):
         header = {
             'authorization': self.authorization
-        }
+            }
         payload = {'type': 2, 'application_id': self.application_id, 'guild_id': self.guild_id,
                    'channel_id': self.channelid[self.index], 'session_id': self.session_id,
                    'data': {
                        'version': self.version, 'id': self.id, 'name': 'imagine', 'type': 1,
                        'options': [{
                            'type': 3, 'name': 'prompt', 'value': str(prompt)
-                       }], 'attachments': []}
+                           }], 'attachments': []}
                    }
         logger.info('Payload: %s', payload)
         async with aiohttp.ClientSession() as session:
@@ -105,46 +105,46 @@ class Midjourney:
         return self.images
 
     async def send_upscale_request(self, message_id, number, uuid):
-        header = {'authorization': self.authorization}
-        payload = {'type': 3,
-                   'application_id': self.application_id,
-                   'guild_id': self.guild_id,
-                   'channel_id': self.channelid[self.index],
-                   'session_id': self.session_id,
-                   "message_flags": 0,
-                   "message_id": message_id,
-                   "data": {"component_type": 2, "custom_id": f"MJ::JOB::upsample::{number}::{uuid}"}}
+        header = {"authorization": self.authorization}
+        payload = {
+            "type": 3,
+            "application_id": self.application_id,
+            "guild_id": self.guild_id,
+            "channel_id": self.channelid[self.index],
+            "session_id": self.session_id,
+            "message_flags": 0,
+            "message_id": message_id,
+            "data": {
+                "component_type": 2,
+                "custom_id": f"MJ::JOB::upsample::{number}::{uuid}",
+                },
+            }
         async with aiohttp.ClientSession() as session:
             max_retries = 10
             for _ in range(max_retries):
-                async with session.post('https://discord.com/api/v9/interactions', json=payload,
-                                        headers=header) as resp:
-                    logger.info(f'Received response: {resp.text}')
+                async with session.post("https://discord.com/api/v9/interactions", json=payload, headers=header) as resp:
+                    logger.info(f"Received response: {resp.text}")
                     if resp.status == 204:
-                        logger.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
-            else:
+                        logger.info(f"Upscale request for message_id {message_id} and number {number} successfully sent!")
+                        break
+                    else:
+                        logger.info(f"Failed to send upscale request after {max_retries} retries")
                 await asyncio.sleep(3)
-                logger.info(f'Failed to send upscale request after {max_retries} retries')
-        logger.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
 
     async def upscale(self, message_id, number, uuid):
         await self.send_upscale_request(message_id, number, uuid)
-        initial_image_timestamp = self.latest_image_timestamp if self.latest_image_timestamp else datetime.now(timezone.utc)
-    
-        # Wait for new image to appear
-        max_wait_time = 300
-        wait_time = 0
+        await asyncio.sleep(120)  # Ожидание 2 минуты
 
-        while wait_time < max_wait_time:
-            await self.collecting_results()
-            current_image_timestamp = self.latest_image_timestamp if self.latest_image_timestamp else datetime.now(timezone.utc)
-
-            if current_image_timestamp and current_image_timestamp > initial_image_timestamp:
-                break
-            await asyncio.sleep(1)
-            wait_time += 1
-        
-            if current_image_timestamp and current_image_timestamp > initial_image_timestamp:
-                latest_image = self.images[-1] if self.images else None
-                latest_image_url = latest_image.get("url") if latest_image else None
-                return latest_image_url
+        # Получение последних 10 сообщений
+        message_list = await self.retrieve_messages()
+        for message in reversed(message_list):
+            try:
+                if (message.get("author", {}).get("username") == "Midjourney Bot") and ("**" in message.get("content", "")):
+                    if len(message.get("attachments", [])) > 0:
+                        if (message["attachments"][0].get("filename", "")[-4:] == ".png") or ("(Open on website for full quality)" in message.get("content", "")):
+                            id = message.get("id")
+                            if id == message_id:
+                                return message["attachments"][0].get("url")
+            except KeyError:
+                logger.info("Error: Message does not contain expected elements")
+        return None
