@@ -30,7 +30,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
-        logging.info("%s", message)
+        logger.info("%s", message)
         text = html.escape(message.text)
         escaped_text = text.strip('@naastyyaabot ')
 
@@ -44,10 +44,10 @@ async def ask(message: types.Message, state: FSMContext) -> None:
                     await message.reply(chunk, parse_mode=None)
             except Exception as err:
                 try:
-                    logging.info('From try in for index chunks: %s', err)
+                    logger.info('From try in for index chunks: %s', err)
                     await message.reply(chunk + str(err), parse_mode=None)
                 except Exception as error:
-                    logging.info('Last exception from Core: %s', error)
+                    logger.info('Last exception from Core: %s', error)
                     await message.reply(str(error), parse_mode=None)
 
 
@@ -58,7 +58,7 @@ async def process_ask(message: types.Message) -> None:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
-        logging.info("%s", message)
+        logger.info("%s", message)
 
         # Generate response
         replay_text, total_tokens = await openai.get_chat_response(uid, message.text)
@@ -69,10 +69,10 @@ async def process_ask(message: types.Message) -> None:
                     await message.reply(chunk, parse_mode=None)
             except Exception as err:
                 try:
-                    logging.info('From try in for index chunks: %s', err)
+                    logger.info('From try in for index chunks: %s', err)
                     await message.reply(chunk + str(err), parse_mode=None)
                 except Exception as error:
-                    logging.info('Last exception from Core: %s', error)
+                    logger.info('Last exception from Core: %s', error)
                     await message.reply(str(error), parse_mode=None)
 
 
@@ -84,7 +84,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
-        logging.info("%s", message)
+        logger.info("%s", message)
         text = html.escape(message.text)
         escaped_text = text.strip('Нарисуй: ')
         result = await openai.send_dalle(escaped_text)
@@ -95,17 +95,17 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
-                logging.info('From try in Picture: %s', err)
+                logger.info('From try in Picture: %s', err)
                 await message.reply(text, parse_mode=None)
             except Exception as error:
-                logging.info('Last exception from Picture: %s', error)
+                logger.info('Last exception from Picture: %s', error)
                 await message.reply(str(error), parse_mode=None)
 
 
 @router.message(DAImage.get)
 async def process_paint(message: types.Message, state: FSMContext) -> None:
     await state.set_state(DAImage.result)
-    logging.info("%s", message)
+    logger.info("%s", message)
 
 
 @router.message(F.text.startswith("Отобрази: "))
@@ -116,19 +116,19 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
-        logging.info("%s", message)
+        logger.info("%s", message)
         text = html.escape(message.text)
         escaped_text = text.strip('Отобрази: ')
         image_generator = random.choice(image_generators)
         resp = await image_generator.get_images(escaped_text)
-        logging.info("RESPONSE FROM IMAGE GENERA %s", resp)
+        logger.info("RESPONSE FROM IMAGE GENERA %s", resp)
         try:
             photo = resp[0]['url']
-            logging.info("OK NOW WE GET RESULT PHOTO %s", photo)
+            logger.info("OK NOW WE GET RESULT PHOTO %s", photo)
             uuid = resp[0]['uuid']
-            logging.info("OK NOW WE GET RESULT UUID %s", uuid)
+            logger.info("OK NOW WE GET RESULT UUID %s", uuid)
             message_id = resp[0]['id']
-            logging.info("OK NOW WE GET RESULT MESS ID %s", message_id)
+            logger.info("OK NOW WE GET RESULT MESS ID %s", message_id)
             builder = ReplyKeyboardBuilder()
             for i in range(1, 5):
                 builder.add(types.KeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}:{image_generator}"))
@@ -137,17 +137,17 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
-                logging.info('From try in Picture: %s', err)
+                logger.info('From try in Picture: %s', err)
                 await message.reply(text, parse_mode=None)
             except Exception as error:
-                logging.info('Last exception from Picture: %s', error)
+                logger.info('Last exception from Picture: %s', error)
                 await message.reply(str(error), parse_mode=None)
 
 
 @router.message(MJImage.get)
 async def process_imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(MJImage.result)
-    logging.info("%s", message)
+    logger.info("%s", message)
 
 
 @router.message(F.text.startswith("Представь: "))
@@ -158,7 +158,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
-        logging.info("%s", message)
+        logger.info("%s", message)
         text = html.escape(message.text)
         escaped_text = text.strip('Представь: ')
         result = await stable_diff_ai.send2sdapi(escaped_text)
@@ -174,17 +174,17 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
-                logging.info('From try in SD Picture: %s', err)
+                logger.info('From try in SD Picture: %s', err)
                 await message.answer(text + result['output'][0], parse_mode=None)
             except Exception as error:
-                logging.info('Last exception from SD Picture: %s', error)
+                logger.info('Last exception from SD Picture: %s', error)
                 await message.answer(str(error), parse_mode=None)
 
 
 @router.message(SDImage.get)
 async def process_imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.result)
-    logging.info("%s", message)
+    logger.info("%s", message)
 
 
 @router.message(Command(commands="help"))

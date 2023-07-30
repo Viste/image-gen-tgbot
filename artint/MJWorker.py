@@ -21,8 +21,6 @@ class Midjourney:
         self.flags = None
         self.authorization = None
         self.channelid = None
-        self.latest_image_timestamp = datetime.now(timezone.utc) - timedelta(days=1)
-        self.images = []
         self.params = params
         self.index = index
         self.sender_initializer()
@@ -72,7 +70,7 @@ class Midjourney:
                             self.images.append({"id": id, "prompt": prompt, "url": url, "uuid": uuid})
                             self.latest_image_timestamp = parse(message.get("timestamp", self.latest_image_timestamp))
             except KeyError:
-                logging.info("Error: Message does not contain expected elements")
+                logger.info("Error: Message does not contain expected elements")
 
     async def send_prompt(self, prompt):
         header = {
@@ -86,7 +84,7 @@ class Midjourney:
                            'type': 3, 'name': 'prompt', 'value': str(prompt)
                        }], 'attachments': []}
                    }
-        logging.info('Payload: %s', payload)
+        logger.info('Payload: %s', payload)
         async with aiohttp.ClientSession() as session:
             max_retries = 10
             for _ in range(max_retries):
@@ -94,10 +92,10 @@ class Midjourney:
                                         headers=header) as resp:
                     logger.info(f'Received response: {resp.text}')
                     if resp.status == 204:
-                        logging.info(f'prompt {prompt} successfully sent!')
+                        logger.info(f'prompt {prompt} successfully sent!')
                         break
                     else:
-                        logging.info(f'Failed to send prompt request after {max_retries} retries')
+                        logger.info(f'Failed to send prompt request after {max_retries} retries')
                 await asyncio.sleep(3)
 
     async def get_images(self, prompt):
@@ -123,11 +121,11 @@ class Midjourney:
                                         headers=header) as resp:
                     logger.info(f'Received response: {resp.text}')
                     if resp.status == 204:
-                        logging.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
+                        logger.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
             else:
                 await asyncio.sleep(3)
-                logging.info(f'Failed to send upscale request after {max_retries} retries')
-        logging.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
+                logger.info(f'Failed to send upscale request after {max_retries} retries')
+        logger.info(f'Upscale request for message_id {message_id} and number {number} successfully sent!')
 
     async def upscale(self, message_id, number, uuid):
         await self.send_upscale_request(message_id, number, uuid)
@@ -149,6 +147,4 @@ class Midjourney:
             if current_image_timestamp and current_image_timestamp > initial_image_timestamp:
                 latest_image = self.images[-1] if self.images else None
                 latest_image_url = latest_image.get("url") if latest_image else None
-            else:
-                latest_image_url = None
-            return latest_image_url
+                return latest_image_url

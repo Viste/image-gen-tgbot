@@ -40,18 +40,18 @@ class OAI:
 
             except openai.error.RateLimitError as e:
                 self.retries += 1
-                logging.info("Dialog From Ratelim: %s", e)
+                logger.info("Dialog From Ratelim: %s", e)
                 if self.retries == self.max_retries:
                     return f'⚠️OpenAI: Превышены лимиты ⚠️\n{str(e)}'
 
             except openai.error.InvalidRequestError as er:
                 self.retries += 1
-                logging.info("Dialog From bad req: %s", er)
+                logger.info("Dialog From bad req: %s", er)
                 if self.retries == self.max_retries:
                     return f'⚠️OpenAI: кривой запрос ⚠️\n{str(er)}'
 
             except Exception as err:
                 self.retries += 1
-                logging.info("Dialog From custom exception: %s", err)
+                logger.info("Dialog From custom exception: %s", err)
                 if self.retries == self.max_retries:
                     return f'⚠️Ошибочка вышла ⚠️\n{str(err)}', err

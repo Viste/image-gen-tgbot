@@ -117,11 +117,11 @@ async def any_message_from_channel(message: types.Message, lang: Lang, bot: Bot)
 @router.message(F.text.casefold() == "cancel")
 async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     current_state = await state.get_state()
-    logging.info("%s", message)
+    logger.info("%s", message)
     if current_state is None:
         return
 
-    logging.info("Cancelling state %r", current_state)
+    logger.info("Cancelling state %r", current_state)
     await state.clear()
     await message.answer(
         "Cancelled.",

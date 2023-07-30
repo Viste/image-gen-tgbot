@@ -76,36 +76,36 @@ class OpenAI:
                 exceeded_max_history_size = len(self.user_dialogs[user_id]) > self.max_history_size
 
                 if exceeded_max_tokens or exceeded_max_history_size:
-                    logging.info(f'Chat history for chat ID {user_id} is too long. Summarising...')
+                    logger.info(f'Chat history for chat ID {user_id} is too long. Summarising...')
                     try:
                         summary = await self.__summarise(self.user_dialogs[user_id][:-1])
-                        logging.info(f'Summary: {summary}')
+                        logger.info(f'Summary: {summary}')
                         self.__reset_chat_history(user_id)
                         self.__add_to_history(user_id, role="assistant", content=summary)
                         self.__add_to_history(user_id, role="user", content=query)
-                        logging.info("Dialog From summary: %s", self.user_dialogs[user_id])
+                        logger.info("Dialog From summary: %s", self.user_dialogs[user_id])
                     except Exception as e:
-                        logging.info(f'Error while summarising chat history: {str(e)}. Popping elements instead...')
+                        logger.info(f'Error while summarising chat history: {str(e)}. Popping elements instead...')
                         self.user_dialogs[user_id] = self.user_dialogs[user_id][-self.max_history_size:]
-                        logging.info("Dialog From summary exception: %s", self.user_dialogs[user_id])
+                        logger.info("Dialog From summary exception: %s", self.user_dialogs[user_id])
 
                 return await openai.ChatCompletion.acreate(model=self.model, messages=self.user_dialogs[user_id], **args)
 
             except openai.error.RateLimitError as e:
                 self.retries += 1
-                logging.info("Dialog From Ratelim: %s", self.user_dialogs[user_id])
+                logger.info("Dialog From Ratelim: %s", self.user_dialogs[user_id])
                 if self.retries == self.max_retries:
                     return f'⚠️OpenAI: Превышены лимиты ⚠️\n{str(e)}'
 
             except openai.error.InvalidRequestError as er:
                 self.retries += 1
-                logging.info("Dialog From bad req: %s", self.user_dialogs[user_id])
+                logger.info("Dialog From bad req: %s", self.user_dialogs[user_id])
                 if self.retries == self.max_retries:
                     return f'⚠️OpenAI: кривой запрос ⚠️\n{str(er)}'
 
             except Exception as err:
                 self.retries += 1
-                logging.info("Dialog From custom exception: %s", self.user_dialogs[user_id])
+                logger.info("Dialog From custom exception: %s", self.user_dialogs[user_id])
                 if self.retries == self.max_retries:
                     return f'⚠️Ошибочка вышла ⚠️\n{str(err)}', err
 
