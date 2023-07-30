@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import types, Bot, Router
+from aiogram import types, Bot, Router, F
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import ReplyKeyboardRemove
 
@@ -45,13 +45,13 @@ async def delmsg_callback(call: types.CallbackQuery, callback_data: DeleteMsgCal
         await call.answer(show_alert=True, text=lang.get("action_deleted_partially"))
 
 
-@router.callback_query(lambda c: c.data and c.data.startswith('upscale:'))
-async def process_callback(call: types.CallbackQuery):
-    _, message_id, number, uuid, image_generator = call.data.split(":")
+@router.callback_query(F.data.startswith('upscale:'))
+async def upscase_callback(callback: types.CallbackQuery):
+    _, message_id, number, uuid, image_generator = callback.data.split(":")
     try:
         result = await image_generator.upscale(message_id, number, uuid)
         print(result)
-        await call.message.answer(result, reply_markup=ReplyKeyboardRemove())
-        await call.answer(reply_markup=ReplyKeyboardRemove())
+        await callback.message.answer(result, reply_markup=ReplyKeyboardRemove())
+        await callback.answer(reply_markup=ReplyKeyboardRemove())
     except Exception as e:
-        await call.answer(show_alert=True, text=f"{e}")
+        await callback.answer(show_alert=True, text=f"{e}")
