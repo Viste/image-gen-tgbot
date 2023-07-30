@@ -91,7 +91,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         print(result)
         try:
             photo = result
-            await message.reply_photo(photo)
+            await message.reply_photo(types.URLInputFile(photo))
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
@@ -131,7 +131,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             logger.info("OK NOW WE GET RESULT MESS ID %s", message_id)
             builder = InlineKeyboardBuilder()
             for i in range(1, 5):
-                builder.add(types.InlineKeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}:{image_generator}"))
+                builder.row(types.InlineKeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}:{image_generator}"))
             builder.adjust(4)
             await message.reply_photo(photo=types.URLInputFile(photo), caption="какое изображение будет увеличивать?", reply_markup=builder.as_markup(resize_keyboard=True))
         except Exception as err:
@@ -162,7 +162,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         text = html.escape(message.text)
         escaped_text = text.strip('Представь: ')
         result = await stable_diff_ai.send2sdapi(escaped_text)
-        print(result)
+        logger.info("Result: %s", result)
         text = "⏳Время генерации: " + str(result['generationTime']) \
                + " секунд. 🌾Зерно: " \
                + str(result['meta']['seed']) \
@@ -170,7 +170,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
                + ", 🦶Шаги: " + str(result['meta']['steps'])
         try:
             photo = result['output'][0]
-            await message.reply_photo(photo, caption=text)
+            await message.reply_photo(types.URLInputFile(photo), caption=text)
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "

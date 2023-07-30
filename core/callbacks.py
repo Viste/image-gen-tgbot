@@ -50,8 +50,8 @@ async def upscase_callback(callback: types.CallbackQuery):
     _, message_id, number, uuid, image_generator = callback.data.split(":")
     try:
         result = await image_generator.upscale(message_id, number, uuid)
-        print(result)
+        logger.info("Callback result: %s", result)
         await callback.message.answer(result, reply_markup=ReplyKeyboardRemove())
-        await callback.answer(reply_markup=ReplyKeyboardRemove())
+        await callback.answer()
     except Exception as e:
         await callback.answer(show_alert=True, text=f"{e}")
