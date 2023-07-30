@@ -36,58 +36,48 @@ class StableDiffAI:
         disappearing legs, fused ears, bad ears, poorly drawn ears, extra ears, liquid ears, heavy ears, missing ears, old photo, low res, black and white, black and white filter,
         colorless,(nsfw, naked:1.4)
         """
+        self.headers = {
+            "Content-Type": "application/json"
+        }
+        self.data = {
+            "key": self.key,
+            "samples": self.samples,
+            "width": self.width,
+            "height": self.height,
+            "guidance_scale": self.guidance_scale,
+            "num_inference_steps": self.steps,
+        }
+
+    async def _send_request(self, url, data):
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=self.headers, json=data) as resp:
+                return await resp.json()
 
     async def send2sdapi(self, prompt):
-        async with aiohttp.ClientSession() as session:
-            headers = {
-                "Content-Type": "application/json"
-            }
-            data = {
-                "key": self.key,
-                "model_id": "sdxl",
-                "prompt": prompt,
-                "negative_prompt": self.negatives,
-                "samples": self.samples,
-                "width": self.width,
-                "height": self.height,
-                "multi_lingual": "yes",
-                "guidance_scale": self.guidance_scale,
-                "num_inference_steps": self.steps,
-            }
-            async with session.post(self.url, headers=headers, json=data) as resp:
-                return await resp.json()
+        data = self.data.copy()
+        data.update({
+            "model_id": "sdxl",
+            "prompt": prompt,
+            "negative_prompt": self.negatives,
+            "multi_lingual": "yes",
+        })
+        return await self._send_request(self.url, data)
 
     async def gen_ned_img(self, prompt):
-        async with aiohttp.ClientSession() as session:
-            headers = {
-                "Content-Type": "application/json"
-            }
-            data = {
-                "key": self.key,
-                "prompt": prompt,
-                "negative_prompt": self.negatives,
-                "samples": self.samples,
-                "width": self.width,
-                "height": self.height,
-                "guidance_scale": self.guidance_scale,
-                "num_inference_steps": self.steps,
-            }
-            async with session.post(self.url, headers=headers, json=data) as resp:
-                response = await resp.json()
-                url = response["output"][0]
-                return url
+        data = self.data.copy()
+        data.update({
+            "prompt": prompt,
+            "negative_prompt": self.negatives,
+        })
+        response = await self._send_request(self.url, data)
+        return response["output"][0]
 
     async def send2sd_video(self, prompt):
-        async with aiohttp.ClientSession() as session:
-            headers = {
-                "Content-Type": "application/json"
-            }
-            data = {
-                "key": self.key,
-                "prompt": prompt,
-                "negative_prompt": self.video_negative,
-                "scheduler": self.scheduler,
-                "seconds": self.video_length,
-            }
-            async with session.post(self.video_url, headers=headers, json=data) as resp:
-                return await resp.json()
+        data = {
+            "key": self.key,
+            "prompt": prompt,
+            "negative_prompt": self.video_negative,
+            "scheduler": self.scheduler,
+            "seconds": self.video_length,
+        }
+        return await self._send_request(self.video_url, data)
