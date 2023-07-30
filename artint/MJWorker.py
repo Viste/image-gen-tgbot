@@ -4,7 +4,6 @@ import logging
 from datetime import datetime, timezone, timedelta
 
 import aiohttp
-from dateutil.parser import parse
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +67,6 @@ class Midjourney:
                             filename = message["attachments"][0].get("filename")
                             uuid = filename.split("_")[-1].split(".")[0]
                             self.images.append({"id": id, "prompt": prompt, "url": url, "uuid": uuid})
-                            self.latest_image_timestamp = parse(message.get("timestamp", self.latest_image_timestamp))
             except KeyError:
                 logger.info("Error: Message does not contain expected elements")
 
@@ -133,17 +131,16 @@ class Midjourney:
 
     async def upscale(self, message_id, number, uuid):
         await self.send_upscale_request(message_id, number, uuid)
-        await asyncio.sleep(120)  # Ожидание 2 минуты
+        await asyncio.sleep(20)
 
-        # Получение последних 10 сообщений
         message_list = await self.retrieve_messages()
         for message in reversed(message_list):
             try:
-                if (message.get("author", {}).get("username") == "Midjourney Bot") and ("**" in message.get("content", "")):
+                if (message.get("author", {}).get("username") == "Midjourney Bot") and (f"Image #{number}" in message.get("content", "")):
                     if len(message.get("attachments", [])) > 0:
                         if (message["attachments"][0].get("filename", "")[-4:] == ".png") or ("(Open on website for full quality)" in message.get("content", "")):
-                            id = message.get("id")
-                            if id == message_id:
+                            ref_id = message["message_reference"].get("message_id")
+                            if ref_id == message_id:
                                 return message["attachments"][0].get("url")
             except KeyError:
                 logger.info("Error: Message does not contain expected elements")

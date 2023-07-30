@@ -60,7 +60,7 @@ async def upscase_callback(callback: types.CallbackQuery, state: FSMContext):
     try:
         result = await image_generators.upscale(message_id, number, uuid)
         logger.info("Callback result: %s", result)
-        await callback.message.answer(result, reply_markup=ReplyKeyboardRemove())
+        await callback.message.reply_photo(result, reply_markup=ReplyKeyboardRemove())
         await callback.answer()
     except Exception as e:
         await callback.answer(show_alert=True, text=f"{e}")
