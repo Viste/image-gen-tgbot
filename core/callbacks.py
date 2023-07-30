@@ -2,6 +2,7 @@ import logging
 
 from aiogram import types, Bot, Router, F
 from aiogram.exceptions import TelegramAPIError
+from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 
 from tools.language import Lang
@@ -46,8 +47,11 @@ async def delmsg_callback(call: types.CallbackQuery, callback_data: DeleteMsgCal
 
 
 @router.callback_query(F.data.startswith('upscale:'))
-async def upscase_callback(callback: types.CallbackQuery):
-    message_id, number, uuid, image_generator = callback.data.split(":")
+async def upscase_callback(callback: types.CallbackQuery, state: FSMContext):
+    number, uuid = callback.data.split(":")
+    data = await state.get_data()
+    image_generator = data['image_generator']
+    message_id = data['msg_id']
     try:
         result = await image_generator.upscale(message_id, number, uuid)
         logger.info("Callback result: %s", result)
