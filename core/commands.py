@@ -131,7 +131,8 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             logger.info("OK NOW WE GET RESULT MESS ID %s", message_id)
             builder = InlineKeyboardBuilder()
             for i in range(1, 5):
-                builder.row(types.InlineKeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{message_id}:{i}:{uuid}:{image_generator}"))
+                print(len(f'{message_id}:{i}:{uuid}:{image_generator}'.encode('utf-8')))
+                builder.row(types.InlineKeyboardButton(text=f"Upscale {i}", callback_data=f"{message_id}:{i}:{uuid}:{image_generator}"))
             builder.adjust(4)
             await message.reply_photo(photo=types.URLInputFile(photo), caption="какое изображение будет увеличивать?", reply_markup=builder.as_markup(resize_keyboard=True))
         except Exception as err:

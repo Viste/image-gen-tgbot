@@ -47,7 +47,7 @@ async def delmsg_callback(call: types.CallbackQuery, callback_data: DeleteMsgCal
 
 @router.callback_query(F.data.startswith('upscale:'))
 async def upscase_callback(callback: types.CallbackQuery):
-    _, message_id, number, uuid, image_generator = callback.data.split(":")
+    message_id, number, uuid, image_generator = callback.data.split(":")
     try:
         result = await image_generator.upscale(message_id, number, uuid)
         logger.info("Callback result: %s", result)
