@@ -129,13 +129,14 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             logger.info("OK GET RESULT UUID %s", uuid)
             message_id = resp[0]['id']
             logger.info("OK GET RESULT MESS ID %s", message_id)
+            logger.info("OK GET RESULT IMGEN CHANNEL ID %s", image_generators.index(image_generator))
             await state.update_data(msg_id=message_id)
-            await state.update_data(image_generator=image_generator)
+            await state.update_data(image_generator=image_generators.index(image_generator))
             await state.update_data(uuid=uuid)
             builder = InlineKeyboardBuilder()
             for i in range(1, 5):
-                print(len(f'upscale:{i}:{image_generator}'))
-                builder.add(types.InlineKeyboardButton(text=f"Upscale {i}", callback_data=f"upscale:{i}:{image_generator}"))
+                print(len(f'ups:{i}:{image_generators.index(image_generator)}'))
+                builder.add(types.InlineKeyboardButton(text=f"Upscale {i}", callback_data=f"ups:{i}:{image_generators.index(image_generator)}"))
             builder.adjust(4)
             await message.reply_photo(photo=types.URLInputFile(photo), caption="какое изображение будет увеличивать?", reply_markup=builder.as_markup(resize_keyboard=True))
         except Exception as err:
