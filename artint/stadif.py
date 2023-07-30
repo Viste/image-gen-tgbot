@@ -44,7 +44,7 @@ class StableDiffAI:
             }
             data = {
                 "key": self.key,
-                "model_id" : "deliberate-v2",
+                "model_id": "sdxl",
                 "prompt": prompt,
                 "negative_prompt": self.negatives,
                 "samples": self.samples,
