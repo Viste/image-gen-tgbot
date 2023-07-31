@@ -11,6 +11,7 @@ from aiogram.fsm.strategy import FSMStrategy
 from aiogram.types import BotCommand, BotCommandScopeChat, InputMediaPhoto
 from aioredis.client import Redis
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from artint.oairaw import OAI
 from artint.stadif import StableDiffAI
@@ -26,6 +27,7 @@ redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.r
 nasty = Bot(token=config.token, parse_mode="HTML")
 stable_diff_ai = StableDiffAI()
 oai = OAI()
+scheduler = AsyncIOScheduler()
 
 
 async def set_bot_commands(bot: Bot, main_group_id: int):
@@ -40,6 +42,8 @@ async def cron_task_wrapper():
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
     async with session_maker() as session:
         await cron_task(session)
+
+scheduler.add_job(cron_task_wrapper, 'interval', minutes=60)
 
 
 async def generate_url_list(session):
@@ -123,7 +127,7 @@ async def run_scheduler(session: AsyncSession):
                     sleep_time = (nearest_date['date'] - now).total_seconds()
                     await asyncio.sleep(sleep_time)
             else:
-                logger.info("Table is empty. No nearest date found.")
+                logging.info("Table is empty. No nearest date found.")
                 await asyncio.sleep(86400)  # Sleep for 24 hours before checking again
         except asyncio.CancelledError:
             break
@@ -204,6 +208,8 @@ async def main_coro():
 
     main_task = asyncio.create_task(main())
     await main_task
+
+    scheduler.start()
 
     scheduler_task = asyncio.create_task(run_scheduler_wrapper())
     handle_signals(loop, scheduler_task)
