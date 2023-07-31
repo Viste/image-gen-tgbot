@@ -54,11 +54,11 @@ class Midjourney:
                     logger.error("Error: Invalid JSON response")
                     return []
 
-    async def collecting_results(self):
+    async def collecting_results(self, promt):
         message_list = await self.retrieve_messages()
         for message in message_list:
             try:
-                if (message.get("author", {}).get("username") == "Midjourney Bot") and ("**" in message.get("content", "")):
+                if (message.get("author", {}).get("username") == "Midjourney Bot") and (f"{promt}" in message.get("content", "")):
                     if len(message.get("attachments", [])) > 0:
                         if (message["attachments"][0].get("filename", "")[-4:] == ".png") or ("(Open on website for full quality)" in message.get("content", "")):
                             id = message.get("id")
@@ -99,7 +99,7 @@ class Midjourney:
     async def get_images(self, prompt):
         await self.send_prompt(prompt)
         await asyncio.sleep(140)
-        await self.collecting_results()
+        await self.collecting_results(prompt)
         return self.images
 
     async def send_upscale_request(self, message_id, number, uuid):
