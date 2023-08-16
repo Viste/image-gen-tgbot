@@ -94,7 +94,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
             await message.reply_photo(types.URLInputFile(photo))
         except Exception as err:
             try:
-                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
+                text = "Что-то пошло не по плану. Если в это сообщении нет ссылки на нужное изображение, попробуй еще раз.\n "
                 logger.info('From try in Picture: %s', err)
                 await message.reply(text, parse_mode=None)
             except Exception as error:
