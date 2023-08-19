@@ -98,7 +98,7 @@ class Midjourney:
 
     async def get_images(self, prompt):
         await self.send_prompt(prompt)
-        await asyncio.sleep(140)
+        await asyncio.sleep(120)
         await self.collecting_results(prompt)
         return self.images
 
