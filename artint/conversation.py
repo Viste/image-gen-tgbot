@@ -14,17 +14,17 @@ openai.api_key = config.api_key
 logger = logging.getLogger(__name__)
 
 args = {
-    "temperature": 0.0, "max_tokens": 512, "top_p": 1, "frequency_penalty": 0, "presence_penalty": 0.8, "stop": None
+    "temperature": 0.0, "max_tokens": 4096, "top_p": 1, "frequency_penalty": 0, "presence_penalty": 0.8, "stop": None
     }
 
 
 class OpenAI:
     def __init__(self):
         super().__init__()
-        self.model = "gpt-3.5-turbo"
+        self.model = "gpt-3.5-turbo-16k"
         self.max_retries = 5
-        self.max_tokens = 4096
-        self.config_tokens = 768
+        self.max_tokens = 16096
+        self.config_tokens = 4096
         self.max_history_size = 10
         self.n_choices = 1
         self.retries = 0
