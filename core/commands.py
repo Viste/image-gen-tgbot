@@ -7,9 +7,9 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from artint.MJWorker import Midjourney
-from artint.conversation import OpenAI
-from artint.stadif import StableDiffAI
+from tools.ai.MJWorker import Midjourney
+from tools.ai.conversation import OpenAI
+from tools.ai.stadif import StableDiffAI
 from tools.states import DAImage, SDImage, Text, MJImage
 from tools.utils import config, load_params, split_into_chunks
 

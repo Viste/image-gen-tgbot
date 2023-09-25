@@ -14,3 +14,4 @@ tiktoken
 urllib3
 tqdm
 apscheduler
+fluent.runtime

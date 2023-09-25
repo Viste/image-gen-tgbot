@@ -5,7 +5,7 @@ from aiogram.exceptions import TelegramAPIError
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 
-from artint.MJWorker import Midjourney
+from tools.ai.MJWorker import Midjourney
 from tools.language import Lang
 from tools.utils import DeleteMsgCallback
 from tools.utils import config, load_params

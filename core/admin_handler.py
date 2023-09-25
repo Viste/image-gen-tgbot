@@ -4,7 +4,7 @@ from datetime import timedelta
 from aiogram import types, Bot, Router, F
 from aiogram.filters.command import Command
 
-from artint.conversation import OpenAI
+from tools.ai.conversation import OpenAI
 from tools.language import Lang
 from tools.utils import config
 

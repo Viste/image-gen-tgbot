@@ -12,36 +12,39 @@ from aiogram.types import BotCommand, BotCommandScopeChat, InputMediaPhoto
 from aioredis.client import Redis
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from fluent.runtime import FluentLocalization, FluentResourceLoader
+from pathlib import Path
 
-from artint.oairaw import OAI
-from artint.stadif import StableDiffAI
+from tools.ai.oairaw import OAI
+from tools.ai.stadif import StableDiffAI
 from core import setup_routers
 from database.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date
 from middlewares.database import DbSessionMiddleware
-from tools.language import Lang
+from middlewares.l10n import L10nMiddleware
 from tools.utils import config
 from tools.utils import fetch_admins, check_rights_and_permissions
 
-engine = create_async_engine(url=config.db_url, echo=True, pool_size=50, max_overflow=30, pool_timeout=30, pool_recycle=3600)
 redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
 nasty = Bot(token=config.token, parse_mode="HTML")
 stable_diff_ai = StableDiffAI()
 oai = OAI()
 scheduler = AsyncIOScheduler()
+engine = create_async_engine(url=config.db_url, echo=True, echo_pool=False, pool_size=50, max_overflow=30, pool_timeout=30, pool_recycle=3600)
+session_maker = async_sessionmaker(engine, expire_on_commit=False)
+db_middleware = DbSessionMiddleware(session_pool=session_maker)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(name)s - %(message)s", stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 
 async def set_bot_commands(bot: Bot, main_group_id: int):
-    commands = [
-        BotCommand(command="report", description="Пожаловаться на сообщение"),
-        BotCommand(command="help", description="Помощь"),
-    ]
+    commands = [BotCommand(command="report", description="Пожаловаться на сообщение"), BotCommand(command="help", description="Помощь"), ]
     await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=main_group_id))
 
 
 async def cron_task_wrapper():
-    session_maker = async_sessionmaker(engine, expire_on_commit=False)
     async with session_maker() as session:
         await cron_task(session)
+
 
 scheduler.add_job(cron_task_wrapper, 'interval', minutes=60)
 
@@ -100,7 +103,6 @@ async def cron_task(session: AsyncSession):
 async def run_scheduler_wrapper():
     while True:
         try:
-            session_maker = async_sessionmaker(engine, expire_on_commit=False)
             async with session_maker() as session:
                 await run_scheduler(session)
         except (KeyboardInterrupt, SystemExit):
@@ -137,13 +139,9 @@ async def run_scheduler(session: AsyncSession):
 
 
 async def main():
-    session_maker = async_sessionmaker(engine, expire_on_commit=False)
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-        stream=sys.stdout,
-    )
+    locales_dir = Path(__file__).parent.joinpath("locales")
+    l10n_loader = FluentResourceLoader(str(locales_dir) + "/{locale}")
+    l10n = FluentLocalization(["ru"], ["strings.ftl", "errors.ftl"], l10n_loader)
 
     try:
         await check_rights_and_permissions(nasty, config.group_main)
@@ -166,21 +164,16 @@ async def main():
             return
     config.admins = result
 
-    try:
-        lang = Lang(config.lang)
-    except ValueError:
-        print(f"Error no localization found for language code: {config.lang}")
-        return
-
     storage = RedisStorage(redis=redis_client)
-    worker = Dispatcher(storage=storage, fsm_strategy=FSMStrategy.GLOBAL_USER)
+    worker = Dispatcher(storage=storage, fsm_strategy=FSMStrategy.USER_IN_CHAT)
     router = setup_routers()
-    worker.update.middleware(DbSessionMiddleware(session_pool=session_maker))
+    worker.update.middleware(db_middleware)
+    worker.update.middleware(L10nMiddleware(l10n))
     worker.include_router(router)
     useful_updates = worker.resolve_used_update_types()
     await set_bot_commands(nasty, config.group_main)
     logging.info("Starting bot")
-    await worker.start_polling(nasty, allowed_updates=useful_updates, lang=lang, handle_signals=True)
+    await worker.start_polling(nasty, allowed_updates=useful_updates, handle_signals=True)
 
 
 async def shutdown(sign, loop, scheduler_task):
@@ -223,6 +216,7 @@ async def main_coro():
     for task in [scheduler_task]:
         if not task.done():
             task.cancel()
+
 
 if __name__ == '__main__':
     try:

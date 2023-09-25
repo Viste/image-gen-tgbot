@@ -4,8 +4,8 @@ from datetime import datetime
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from artint.conversation import OpenAI
-from artint.stadif import StableDiffAI
+from tools.ai.conversation import OpenAI
+from tools.ai.stadif import StableDiffAI
 from database.models import Dates, Woman
 
 logger = logging.getLogger(__name__)
