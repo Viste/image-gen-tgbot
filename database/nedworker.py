@@ -1,12 +1,12 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import func, select, text
+from sqlalchemy import func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tools.ai.conversation import OpenAI
 from tools.ai.stadif import StableDiffAI
-from database.models import Dates, Woman
+from database.models import Workers, Users
 
 logger = logging.getLogger(__name__)
 openai = OpenAI()
@@ -14,7 +14,7 @@ stable_diff_ai = StableDiffAI()
 
 
 async def delete_nearest_date(session: AsyncSession, date_id: int):
-    stmt = select(Dates).where(Dates.id == date_id)
+    stmt = select(Workers).where(Workers.id == date_id)
     result = await session.execute(stmt)
     nearest_date = result.scalars().first()
 
@@ -29,7 +29,7 @@ async def delete_nearest_date(session: AsyncSession, date_id: int):
 async def get_nearest_date(session: AsyncSession):
     logger.info("Executing get_nearest_date...")
     now = datetime.now()
-    stmt = select(Dates).order_by(func.abs(func.timestampdiff(text('SECOND'), Dates.date, now)))
+    stmt = select(Workers).order_by(func.abs(func.timestampdiff(text('SECOND'), Workers.date, now)))
     result = await session.execute(stmt)
     nearest_date = result.scalars().first()
     if nearest_date:
@@ -41,6 +41,16 @@ async def get_nearest_date(session: AsyncSession):
 
 
 async def get_random_prompts(session: AsyncSession):
-    stmt = select(Woman.prompt).order_by(func.rand()).limit(10)
+    stmt = select(Workers.id, Workers.prompt).where(Workers.posted == False).order_by(func.rand()).limit(10)
     random_prompts = await session.execute(stmt)
     return random_prompts.scalars().all()
+
+
+async def mark_as_posted(session: AsyncSession, prompt_ids: list):
+    for prompt_id in prompt_ids:
+        stmt = select(Workers).where(Workers.id == prompt_id)
+        result = await session.execute(stmt)
+        worker = result.scalars().first()
+        if worker:
+            worker.posted = True
+            await session.commit()

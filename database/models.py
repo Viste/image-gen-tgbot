@@ -1,34 +1,26 @@
-from sqlalchemy import Column, Integer, TIMESTAMP, String, Text
+from sqlalchemy import Column, Integer, BigInteger, String, Text, DateTime, Boolean
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
 
-class Dates(Base):
-    __tablename__ = 'dates'
+class Users(Base):
+    __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    date = Column(TIMESTAMP, nullable=False)
-    theme = Column(String(255), nullable=True)
+    tg_id = Column(BigInteger, nullable=False)
+    tg_username = Column(String(255), nullable=True)
+    sub_start = Column(DateTime, nullable=True)
+    sub_end = Column(DateTime, nullable=True)
+    sub_state = Column(String(50), nullable=False, default='inactive')
     mariadb_engine = "InnoDB"
 
-
-class Woman(Base):
-    __tablename__ = 'Woman'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    prompt = Column(Text, nullable=False)
-
-
-class SciFi(Base):
-    __tablename__ = 'Scifi'
+class Workers(Base):
+    __tablename__ = 'workers'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    date = Column(DateTime, nullable=False)
+    theme = Column(String(255), nullable=True)
     prompt = Column(Text, nullable=False)
-
-
-class Other(Base):
-    __tablename__ = 'Other'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    prompt = Column(Text, nullable=False)
+    posted = Column(Boolean, nullable=False, default=False)
+    mariadb_engine = "InnoDB"

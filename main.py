@@ -18,7 +18,7 @@ from pathlib import Path
 from tools.ai.oairaw import OAI
 from tools.ai.stadif import StableDiffAI
 from core import setup_routers
-from database.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date
+from database.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date, mark_as_posted
 from middlewares.database import DbSessionMiddleware
 from middlewares.l10n import L10nMiddleware
 from tools.utils import config
@@ -57,7 +57,7 @@ async def generate_url_list(session):
     while len(url_list) < 10 and prompt_index < len(random_prompts):
         prompt = random_prompts[prompt_index]
         try:
-            url = await stable_diff_ai.gen_ned_img(prompt)
+            url = await stable_diff_ai.gen_ned_img(prompt['prompt'])
             url_list.append(url)
         except IndexError as e:
             print(f"Error generating image URL for prompt '{prompt}': {e}")
@@ -65,7 +65,7 @@ async def generate_url_list(session):
             prompt_index += 1
 
     print(url_list)
-    return url_list
+    return url_list, [prompt['id'] for prompt in random_prompts]
 
 
 async def send_media_group(url_list):
@@ -80,8 +80,9 @@ async def send_media_group(url_list):
 
 
 async def post_images(session):
-    url_list = await generate_url_list(session)
+    url_list, prompts = await generate_url_list(session)
     await send_media_group(url_list)
+    await mark_as_posted(session, prompts)
 
 
 async def cron_task(session: AsyncSession):
