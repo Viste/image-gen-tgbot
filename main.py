@@ -45,8 +45,13 @@ async def cron_task_wrapper():
     async with session_maker() as session:
         await cron_task(session)
 
-
 scheduler.add_job(cron_task_wrapper, 'interval', minutes=60)
+
+
+def handle_signals(loop, scheduler_task):
+    signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+    for sig in signals:
+        loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(shutdown(s, loop, scheduler_task)))
 
 
 async def generate_url_list(session):
@@ -64,19 +69,19 @@ async def generate_url_list(session):
         finally:
             prompt_index += 1
 
-    print(url_list)
+    logger.info(url_list)
     return url_list, [prompt['id'] for prompt in random_prompts]
 
 
 async def send_media_group(url_list):
     prompt = "Make a beautiful description for the post in the public telegram, the post attached 10 pictures of beautiful girls. the maximum length of 1024 characters"
     result = await oai.get_synopsis(prompt)
-    print(result)
-    if len(url_list) == 10:
+    logger.info(result)
+    if len(url_list) >= 1:
         media = [InputMediaPhoto(media=url, caption=result if i == 0 else None) for i, url in enumerate(url_list)]
         await nasty.send_media_group(chat_id=config.post_channel, media=media)
     else:
-        print("The number of URLs is not equal to 10.")
+        logger.error("The number of URLs is less than 1.")
 
 
 async def post_images(session):
@@ -131,7 +136,7 @@ async def run_scheduler(session: AsyncSession):
                     await asyncio.sleep(sleep_time)
             else:
                 logging.info("Table is empty. No nearest date found.")
-                await asyncio.sleep(86400)  # Sleep for 24 hours before checking again
+                await asyncio.sleep(3600)  # Sleep for 1 hour before checking again
         except asyncio.CancelledError:
             break
         except Exception as e:
@@ -189,12 +194,6 @@ async def shutdown(sign, loop, scheduler_task):
     logging.info("Cancelling outstanding tasks")
     await asyncio.gather(*tasks, return_exceptions=True)
     loop.stop()
-
-
-def handle_signals(loop, scheduler_task):
-    signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
-    for sig in signals:
-        loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(shutdown(s, loop, scheduler_task)))
 
 
 async def main_coro():

@@ -56,7 +56,7 @@ class StableDiffAI:
     async def send2sdapi(self, prompt):
         data = self.data.copy()
         data.update({
-            "model_id": "sdxl",
+            "model_id": "realistic-vision-v13",
             "prompt": prompt,
             "negative_prompt": self.negatives,
             "multi_lingual": "yes",

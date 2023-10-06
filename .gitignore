@@ -70,3 +70,5 @@ testMain.py
 # documentation
 _build/
 .spyproject/
+
+tools/config.json
