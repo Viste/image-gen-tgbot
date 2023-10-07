@@ -170,9 +170,8 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         logger.info("Result: %s", result)
         text = "⏳Время генерации: " + str(result['generationTime']) \
                + " секунд. 🌾Зерно: " \
-               + str(result['meta']['seed']) \
-               + ", 💃Модель: " + str(result['meta']['model']) \
-               + ", 🦶Шаги: " + str(result['meta']['steps'])
+               + str(result['seed']) \
+               + ", 🦶Шаги: " + str(result['steps'])
         try:
             photo = result['output'][0]
             await message.reply_photo(types.URLInputFile(photo), caption=text)
