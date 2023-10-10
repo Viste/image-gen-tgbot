@@ -6,6 +6,7 @@ from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from fluent.runtime import FluentLocalization
 
 from tools.ai.MJWorker import Midjourney
 from tools.ai.conversation import OpenAI
@@ -192,36 +193,5 @@ async def process_imagine(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(Command(commands="help"))
-async def info(message: types.Message):
-    uid = message.from_user.id
-    if uid in config.banned_user_ids:
-        text = "не хочу с тобой разговаривать"
-        await message.reply(text, parse_mode=None)
-    else:
-        text = ("🤖НАСТЯ - ВАШ ПОМОЩНИК В СЕТИ!\n" 
-                "\n"
-                "Проекты участия:\n"
-                "Нейронка Каждый День\n"
-                "Paperfunk Chat\n"
-                "PPRFNK Технократы\n"
-                "\n"
-                "Безопасность:\n"
-                "🚫Если заметили нарушителя, дайте знать: /report.\n"
-                "❌Отменить действие: /cancel.\n"
-                "\n"
-                "Общение:\n"
-                "Хотите задать вопрос? Обращайтесь: @naastyyaabot.\n"
-                "\n"
-                "🎨DaLLE2:\n"
-                "Нарисуй: ....\n"
-                "\n"
-                "🌌Stable Diffusio (SD):\n"
-                "Представь: ....\n"
-                "\n"
-                "🌠Midjourney:\n"
-                "Отобрази: ...\n"
-                "Ожидайте примерно 3 минуты. После этого будут представлены 4 варианта изображения, один из которых вы сможете увеличить для лучшего просмотра."
-                "\n"
-                "\n"
-                "Автор: @vistee, Помогал: @paperclipdnb")
-        await message.reply(text, parse_mode=None)
+async def info_user(message: types.Message, l10n: FluentLocalization):
+    await message.answer(l10n.format_value("help"))
