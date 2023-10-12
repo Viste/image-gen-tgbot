@@ -1,5 +1,5 @@
 import logging
-
+import json
 import aiohttp
 
 from tools.utils import config
@@ -14,6 +14,7 @@ class StableDiffAI:
         self.url = config.sd_api_url
         self.video_url = "https://stablediffusionapi.com/api/v5/text2video"
         self.fetch_url = "https://stablediffusionapi.com/api/v4/dreambooth/fetch"
+        self.video_fetch = ""
         self.samples = 1
         self.width = 768
         self.height = 768
@@ -84,10 +85,13 @@ class StableDiffAI:
         return await self._send_request(self.video_url, data)
 
     async def get_queued(self, img_id: int):
-        payload = {
+        data = json.dumps({
             "key": self.key,
             "request_id": img_id
-            }
+            })
         async with aiohttp.ClientSession() as session:
-            async with session.post(self.fetch_url, headers=self.headers, data=payload) as resp:
+            async with session.post(self.fetch_url, headers=self.headers, json=data) as resp:
                 return await resp.json()
+
+    async def get_queued_video(self, img_id: int):
+        pass
