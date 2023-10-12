@@ -16,11 +16,6 @@ jobs:
           apk update
           apk add nodejs docker-cli
 
-      - name: Checkout repository
-        uses: https://github.com/actions/checkout@master
-        with:
-          submodules: 'recursive'
-
       - name: Build image
         shell: sh
         run: |
