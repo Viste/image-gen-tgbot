@@ -20,6 +20,6 @@ class MJImage(StatesGroup):
     result = State()
 
 
-class Video(StatesGroup):
+class SDVideo(StatesGroup):
     get = State()
     result = State()

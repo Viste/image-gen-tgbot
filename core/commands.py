@@ -11,7 +11,7 @@ from fluent.runtime import FluentLocalization
 from tools.ai.MJWorker import Midjourney
 from tools.ai.conversation import OpenAI
 from tools.ai.stadif import StableDiffAI
-from tools.states import DAImage, SDImage, Text, MJImage
+from tools.states import DAImage, SDImage, Text, MJImage, SDVideo
 from tools.utils import config, load_params, split_into_chunks
 
 logger = logging.getLogger(__name__)
@@ -189,6 +189,39 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
 @router.message(SDImage.get)
 async def process_imagine(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDImage.result)
+    logger.info("%s", message)
+
+
+@router.message(F.text.startswith("Покажи: "))
+async def imagine(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(SDVideo.get)
+    uid = message.from_user.id
+    if uid in config.banned_user_ids:
+        text = "не хочу с тобой разговаривать"
+        await message.reply(text, parse_mode=None)
+    else:
+        logger.info("%s", message)
+        text = html.escape(message.text)
+        escaped_text = text.strip('Представь: ')
+        result = await stable_diff_ai.send2sd_video(escaped_text)
+        logger.info("Result: %s", result)
+        text = "⏳Время генерации: " + str(result['generationTime'])
+        try:
+            video = result['output'][0]
+            await message.reply_video(types.URLInputFile(video), caption=text)
+        except Exception as err:
+            try:
+                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
+                logger.info('From try in SD Picture: %s', err)
+                await message.answer(text + result['output'][0], parse_mode=None)
+            except Exception as error:
+                logger.info('Last exception from SD Picture: %s', error)
+                await message.answer(str(error), parse_mode=None)
+
+
+@router.message(SDVideo.get)
+async def process_imagine(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(SDVideo.result)
     logger.info("%s", message)
 
 

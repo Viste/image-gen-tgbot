@@ -18,9 +18,9 @@ class StableDiffAI:
         self.height = 768
         self.steps = 50
         self.guidance_scale = 7.5
-        self.video_length = 3
+        self.video_length = 10
         self.video_negative = "Low Quality"
-        self.scheduler = "UniPCMultistepScheduler"
+        self.scheduler = "DDIMInverseScheduler"
         self.negatives = """
         (((deformed))), blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, (extra_limb), (ugly), (poorly drawn hands), fused fingers, messy drawing, broken legs
         censor, censored, censor_bar, multiple breasts, (mutated hands and fingers:1.5), (long body :1.3), (mutation, poorly drawn :1.2), black-white, bad anatomy, liquid body,
