@@ -211,7 +211,7 @@ async def show(message: types.Message, state: FSMContext) -> None:
     else:
         logger.info("%s", message)
         text = html.escape(message.text)
-        escaped_text = text.strip('Представь: ')
+        escaped_text = text.strip('Покажи: ')
         result = await stable_diff_ai.send2sd_video(escaped_text)
         logger.info("Result: %s", result)
         if result['status'] == 'processing':
