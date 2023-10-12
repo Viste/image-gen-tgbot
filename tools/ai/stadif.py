@@ -84,6 +84,10 @@ class StableDiffAI:
         return await self._send_request(self.video_url, data)
 
     async def get_queued(self, img_id: int):
+        payload = {
+            "key": self.key,
+            "request_id": img_id
+            }
         async with aiohttp.ClientSession() as session:
-            async with session.post(self.fetch_url, headers=self.headers) as resp:
+            async with session.post(self.fetch_url, headers=self.headers, data=payload) as resp:
                 return await resp.json()
