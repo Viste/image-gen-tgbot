@@ -175,7 +175,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
             img_id = result['id']
             await asyncio.sleep(30)
             res = await stable_diff_ai.get_queued(img_id)
-            photo = result['output'][0]
+            photo = res['output'][0]
             await message.reply_photo(types.URLInputFile(photo))
         else:
             text = "⏳Время генерации: " + str(result['generationTime']) \
@@ -219,7 +219,7 @@ async def show(message: types.Message, state: FSMContext) -> None:
             img_id = result['id']
             await asyncio.sleep(30)
             res = await stable_diff_ai.get_queued(img_id)
-            video = result['output'][0]
+            video = res['output'][0]
             await message.reply_video(types.URLInputFile(video))
         else:
             text = "⏳Время генерации: " + str(result['generationTime'])
