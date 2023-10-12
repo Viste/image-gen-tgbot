@@ -79,7 +79,7 @@ async def process_ask(message: types.Message) -> None:
 
 
 @router.message(F.text.startswith("Нарисуй: "))
-async def draw(message: types.Message, state: FSMContext) -> None:
+async def paint(message: types.Message, state: FSMContext) -> None:
     await state.set_state(DAImage.get)
     uid = message.from_user.id
     if uid in config.banned_user_ids:
@@ -152,7 +152,7 @@ async def draw(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(MJImage.get)
-async def process_imagine(message: types.Message, state: FSMContext) -> None:
+async def process_draw(message: types.Message, state: FSMContext) -> None:
     await state.set_state(MJImage.result)
     logger.info("%s", message)
 
@@ -171,6 +171,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         result = await stable_diff_ai.send2sdapi(escaped_text)
         logger.info("Result: %s", result)
         if result['status'] == 'processing':
+            logger.info("PROCESSING")
             img_id = result['id']
             await asyncio.sleep(20)
             res = await stable_diff_ai.get_queued(img_id)
@@ -201,7 +202,7 @@ async def process_imagine(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(F.text.startswith("Покажи: "))
-async def imagine(message: types.Message, state: FSMContext) -> None:
+async def show(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDVideo.get)
     uid = message.from_user.id
     if uid in config.banned_user_ids:
@@ -214,6 +215,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         result = await stable_diff_ai.send2sd_video(escaped_text)
         logger.info("Result: %s", result)
         if result['status'] == 'processing':
+            logger.info("PROCESSING")
             img_id = result['id']
             await asyncio.sleep(20)
             res = await stable_diff_ai.get_queued(img_id)
@@ -235,7 +237,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(SDVideo.get)
-async def process_imagine(message: types.Message, state: FSMContext) -> None:
+async def process_show(message: types.Message, state: FSMContext) -> None:
     await state.set_state(SDVideo.result)
     logger.info("%s", message)
 
