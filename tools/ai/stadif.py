@@ -87,10 +87,10 @@ class StableDiffAI:
     async def get_queued(self, img_id: int):
         data = json.dumps({
             "key": self.key,
-            "request_id": img_id
+            "request_id": img_id,
             })
         async with aiohttp.ClientSession() as session:
-            async with session.post(self.fetch_url, headers=self.headers, json=data) as resp:
+            async with session.post(self.fetch_url, headers=self.headers, data=data) as resp:
                 return await resp.json()
 
     async def get_queued_video(self, img_id: int):
