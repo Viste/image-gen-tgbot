@@ -13,6 +13,7 @@ class StableDiffAI:
         self.key = config.sd_api_key
         self.url = config.sd_api_url
         self.video_url = "https://stablediffusionapi.com/api/v5/text2video"
+        self.fetch_url = "https://stablediffusionapi.com/api/v4/dreambooth/fetch"
         self.samples = 1
         self.width = 768
         self.height = 768
@@ -38,7 +39,7 @@ class StableDiffAI:
         """
         self.headers = {
             "Content-Type": "application/json"
-        }
+            }
         self.data = {
             "key": self.key,
             "samples": self.samples,
@@ -46,7 +47,7 @@ class StableDiffAI:
             "height": self.height,
             "guidance_scale": self.guidance_scale,
             "num_inference_steps": self.steps,
-        }
+            }
 
     async def _send_request(self, url, data):
         async with aiohttp.ClientSession() as session:
@@ -81,3 +82,8 @@ class StableDiffAI:
             "seconds": self.video_length,
         }
         return await self._send_request(self.video_url, data)
+
+    async def get_queued(self, img_id: int):
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self.fetch_url, headers=self.headers) as resp:
+                return await resp.json()

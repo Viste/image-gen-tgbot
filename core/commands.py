@@ -1,6 +1,7 @@
 import html
 import logging
 import random
+import asyncio
 
 from aiogram import types, F, Router
 from aiogram.filters.command import Command
@@ -169,21 +170,28 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         escaped_text = text.strip('Представь: ')
         result = await stable_diff_ai.send2sdapi(escaped_text)
         logger.info("Result: %s", result)
-        text = "⏳Время генерации: " + str(result['generationTime']) \
-               + " секунд. 🌾Зерно: " \
-               + str(result['meta']['seed']) \
-               + ", 🦶Шаги: " + str(result['meta']['steps'])
-        try:
+        if result['status'] == 'processing':
+            img_id = result['id']
+            await asyncio.sleep(20)
+            res = await stable_diff_ai.get_queued(img_id)
             photo = result['output'][0]
-            await message.reply_photo(types.URLInputFile(photo), caption=text)
-        except Exception as err:
+            await message.reply_photo(types.URLInputFile(photo))
+        else:
+            text = "⏳Время генерации: " + str(result['generationTime']) \
+                   + " секунд. 🌾Зерно: " \
+                   + str(result['meta']['seed']) \
+                   + ", 🦶Шаги: " + str(result['meta']['steps'])
             try:
-                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
-                logger.info('From try in SD Picture: %s', err)
-                await message.answer(text + result['output'][0], parse_mode=None)
-            except Exception as error:
-                logger.info('Last exception from SD Picture: %s', error)
-                await message.answer(str(error), parse_mode=None)
+                photo = result['output'][0]
+                await message.reply_photo(types.URLInputFile(photo), caption=text)
+            except Exception as err:
+                try:
+                    text = "Не удалось получить картинку. Попробуйте еще раз.\n "
+                    logger.info('From try in SD Picture: %s', err)
+                    await message.answer(text + result['output'][0], parse_mode=None)
+                except Exception as error:
+                    logger.info('Last exception from SD Picture: %s', error)
+                    await message.answer(str(error), parse_mode=None)
 
 
 @router.message(SDImage.get)
@@ -205,18 +213,25 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         escaped_text = text.strip('Представь: ')
         result = await stable_diff_ai.send2sd_video(escaped_text)
         logger.info("Result: %s", result)
-        text = "⏳Время генерации: " + str(result['generationTime'])
-        try:
+        if result['status'] == 'processing':
+            img_id = result['id']
+            await asyncio.sleep(20)
+            res = await stable_diff_ai.get_queued(img_id)
             video = result['output'][0]
-            await message.reply_video(types.URLInputFile(video), caption=text)
-        except Exception as err:
+            await message.reply_video(types.URLInputFile(video))
+        else:
+            text = "⏳Время генерации: " + str(result['generationTime'])
             try:
-                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
-                logger.info('From try in SD Picture: %s', err)
-                await message.answer(text + result['output'][0], parse_mode=None)
-            except Exception as error:
-                logger.info('Last exception from SD Picture: %s', error)
-                await message.answer(str(error), parse_mode=None)
+                video = result['output'][0]
+                await message.reply_video(types.URLInputFile(video), caption=text)
+            except Exception as err:
+                try:
+                    text = "Не удалось получить картинку. Попробуйте еще раз.\n "
+                    logger.info('From try in SD Picture: %s', err)
+                    await message.answer(text + result['output'][0], parse_mode=None)
+                except Exception as error:
+                    logger.info('Last exception from SD Picture: %s', error)
+                    await message.answer(str(error), parse_mode=None)
 
 
 @router.message(SDVideo.get)
