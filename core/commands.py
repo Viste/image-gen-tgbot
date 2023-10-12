@@ -173,7 +173,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         if result['status'] == 'processing':
             logger.info("PROCESSING")
             img_id = result['id']
-            await asyncio.sleep(60)
+            await asyncio.sleep(300)
             res = await stable_diff_ai.get_queued(img_id)
             logger.info("PROCCESSING Res: %s", res)
             photo = res['output']
@@ -218,7 +218,7 @@ async def show(message: types.Message, state: FSMContext) -> None:
         if result['status'] == 'processing':
             logger.info("PROCESSING")
             img_id = result['id']
-            await asyncio.sleep(60)
+            await asyncio.sleep(600)
             res = await stable_diff_ai.get_queued(img_id)
             logger.info("PROCCESSING Res: %s", res)
             video = res['output']
