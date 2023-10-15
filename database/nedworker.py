@@ -43,7 +43,7 @@ async def get_nearest_date(session: AsyncSession):
 async def get_random_prompts(session: AsyncSession):
     stmt = select(Workers.id, Workers.prompt).where(Workers.posted == False).order_by(func.rand()).limit(10)
     random_prompts = await session.execute(stmt)
-    return random_prompts.scalars().all()
+    return random_prompts.mappings().all()
 
 
 async def mark_as_posted(session: AsyncSession, prompt_ids: list):
