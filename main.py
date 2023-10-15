@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import signal
 import sys
 from datetime import datetime
 
@@ -28,7 +27,6 @@ redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.r
 nasty = Bot(token=config.token, parse_mode="HTML")
 stable_diff_ai = StableDiffAI()
 oai = OAI()
-scheduler = AsyncIOScheduler()
 engine = create_async_engine(url=config.db_url, echo=True, echo_pool=False, pool_size=50, max_overflow=30, pool_timeout=30, pool_recycle=3600)
 session_maker = async_sessionmaker(engine, expire_on_commit=False)
 db_middleware = DbSessionMiddleware(session_pool=session_maker)
@@ -44,14 +42,6 @@ async def set_bot_commands(bot: Bot, main_group_id: int):
 async def cron_task_wrapper():
     async with session_maker() as session:
         await cron_task(session)
-
-scheduler.add_job(cron_task_wrapper, 'interval', minutes=60)
-
-
-def handle_signals(loop, scheduler_task):
-    signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
-    for sig in signals:
-        loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(shutdown(s, loop, scheduler_task)))
 
 
 async def generate_url_list(session):
@@ -106,44 +96,6 @@ async def cron_task(session: AsyncSession):
         print("From cron after post")
 
 
-async def run_scheduler_wrapper():
-    while True:
-        try:
-            async with session_maker() as session:
-                await run_scheduler(session)
-        except (KeyboardInterrupt, SystemExit):
-            break
-        except Exception as e:
-            logging.error(f"Error in run_scheduler_wrapper: {e}")
-            try:
-                await session.rollback()
-            except Exception as rollback_error:
-                logging.error(f"Error rolling back transaction: {rollback_error}")
-            await asyncio.sleep(60)
-
-
-async def run_scheduler(session: AsyncSession):
-    while True:
-        try:
-            nearest_date = await get_nearest_date(session)
-            if nearest_date:
-                now = datetime.now()
-                if now >= nearest_date['date']:
-                    await cron_task_wrapper()
-                    await asyncio.sleep(60)
-                else:
-                    sleep_time = (nearest_date['date'] - now).total_seconds()
-                    await asyncio.sleep(sleep_time)
-            else:
-                logging.info("Table is empty. No nearest date found.")
-                await asyncio.sleep(3600)  # Sleep for 1 hour before checking again
-        except asyncio.CancelledError:
-            break
-        except Exception as e:
-            logging.error(f"Error in run_scheduler: {e}")
-            await asyncio.sleep(60)
-
-
 async def main():
     locales_dir = Path(__file__).parent.joinpath("locales")
     l10n_loader = FluentResourceLoader(str(locales_dir) + "/{locale}")
@@ -179,47 +131,21 @@ async def main():
     useful_updates = worker.resolve_used_update_types()
     await set_bot_commands(nasty, config.group_main)
     logging.info("Starting bot")
-    await worker.start_polling(nasty, allowed_updates=useful_updates, handle_signals=True)
 
+    # Initialize the scheduler
+    scheduler = AsyncIOScheduler()
 
-async def shutdown(sign, loop, scheduler_task):
-    logging.info(f"Received exit signal {sign.name}...")
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    # Add the cron_task_wrapper function as a job to the scheduler
+    scheduler.add_job(cron_task_wrapper, 'interval', minutes=60)
 
-    scheduler_task.cancel()
-
-    for task in tasks:
-        task.cancel()
-
-    logging.info("Cancelling outstanding tasks")
-    await asyncio.gather(*tasks, return_exceptions=True)
-    loop.stop()
-
-
-async def main_coro():
-    loop = asyncio.get_event_loop()
-
-    main_task = asyncio.create_task(main())
-    await main_task
-
+    # Start the scheduler
     scheduler.start()
 
-    scheduler_task = asyncio.create_task(run_scheduler_wrapper())
-    handle_signals(loop, scheduler_task)
-
-    results = await asyncio.gather(scheduler_task, return_exceptions=True)
-
-    for task, result in zip([scheduler_task], results):
-        if isinstance(result, Exception):
-            logging.error(f"Task {task} raised an exception: {result}")
-
-    for task in [scheduler_task]:
-        if not task.done():
-            task.cancel()
+    await worker.start_polling(nasty, allowed_updates=useful_updates, handle_signals=True)
 
 
 if __name__ == '__main__':
     try:
-        asyncio.run(main_coro())
+        asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logging.error("Bot stopped!")
