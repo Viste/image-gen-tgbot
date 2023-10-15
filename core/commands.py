@@ -2,15 +2,15 @@ import html
 import logging
 import random
 import asyncio
-import io
 import base64
-import tempfile
+import uuid
+
 from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import BufferedInputFile
 from fluent.runtime import FluentLocalization
-from PIL import Image
 
 from tools.ai.MJWorker import Midjourney
 from tools.ai.conversation import OpenAI
@@ -132,14 +132,14 @@ async def draw(message: types.Message, state: FSMContext) -> None:
         try:
             photo = resp[0]['url']
             logger.info("OK GET RESULT PHOTO %s", photo)
-            uuid = resp[0]['uuid']
+            uid = resp[0]['uuid']
             logger.info("OK GET RESULT UUID %s", uuid)
             message_id = resp[0]['id']
             logger.info("OK GET RESULT MESS ID %s", message_id)
             logger.info("OK GET RESULT IMGEN CHANNEL ID %s", image_generators.index(image_generator))
             await state.update_data(msg_id=message_id)
             await state.update_data(image_generator=image_generators.index(image_generator))
-            await state.update_data(uuid=uuid)
+            await state.update_data(uuid=uid)
             builder = InlineKeyboardBuilder()
             for i in range(1, 5):
                 print(image_generators.index(image_generator))
@@ -177,17 +177,14 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         logger.info("Result: %s", result)
         try:
             base64_image = result['image']
-            image_data = base64.b64decode(base64_image)
-            image_stream = io.BytesIO(image_data)
-            image = Image.open(image_stream)
-            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp:
-                image.save(temp, format='JPEG')
-                await message.reply_photo(photo=temp.name)
+            image_bytes = base64.b64decode(base64_image)
+            filename = f"{uuid.uuid4()}.jpg"
+            await message.reply_photo(photo=BufferedInputFile(image_bytes, filename=filename))
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
                 logger.info('From try in SD Picture: %s', err)
-                await message.answer(text + result['output'][0], parse_mode=None)
+                await message.answer(text + result['image'], parse_mode=None)
             except Exception as error:
                 logger.info('Last exception from SD Picture: %s', error)
                 await message.answer(str(error), parse_mode=None)
