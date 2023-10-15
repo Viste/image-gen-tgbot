@@ -17,7 +17,6 @@ class SDAI:
         self.steps = 50
         self.guidance_scale = 7.5
         self.scheduler = "euler"
-        self.output_format = "jpg"
         self.model = "stable-diffusion-xl-v1-0"
         self.negatives = "(((deformed))), blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, (extra_limb), (ugly), (poorly drawn hands), fused fingers, messy drawing"
         self.headers = {
@@ -28,7 +27,6 @@ class SDAI:
         self.data = {
             "model": self.model,
             "steps": self.steps,
-            "output_format": self.output_format,
             "width": self.width,
             "height": self.height,
             "guidance_scale": self.guidance_scale,
