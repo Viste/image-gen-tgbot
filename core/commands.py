@@ -175,7 +175,6 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         escaped_text = text.strip('Представь: ')
         result = await sd_ai.s2sdapi(escaped_text)
         logger.info("Result: %s", result)
-        text = "⏳Время генерации: " + str(result['seed'])
         try:
             base64_image = result['image']
             image_data = base64.b64decode(base64_image)
@@ -183,7 +182,7 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
             image = Image.open(image_stream)
             with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp:
                 image.save(temp, format='JPEG')
-                await message.reply_photo(photo=temp.name, caption=text)
+                await message.reply_photo(photo=temp.name)
         except Exception as err:
             try:
                 text = "Не удалось получить картинку. Попробуйте еще раз.\n "
