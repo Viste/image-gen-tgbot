@@ -2,16 +2,20 @@ import html
 import logging
 import random
 import asyncio
-
+import io
+import base64
+import tempfile
 from aiogram import types, F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from fluent.runtime import FluentLocalization
+from PIL import Image
 
 from tools.ai.MJWorker import Midjourney
 from tools.ai.conversation import OpenAI
 from tools.ai.stadif import StableDiffAI
+from tools.ai.sdapi import SDAI
 from tools.states import DAImage, SDImage, Text, MJImage, SDVideo
 from tools.utils import config, load_params, split_into_chunks
 
@@ -19,6 +23,7 @@ logger = logging.getLogger(__name__)
 router = Router()
 openai = OpenAI()
 stable_diff_ai = StableDiffAI()
+sd_ai = SDAI()
 params = load_params("params.json")
 params_file = "params.json"
 image_generators = [Midjourney(params_file, i) for i in range(10)]
@@ -168,32 +173,25 @@ async def imagine(message: types.Message, state: FSMContext) -> None:
         logger.info("%s", message)
         text = html.escape(message.text)
         escaped_text = text.strip('Представь: ')
-        result = await stable_diff_ai.send2sdapi(escaped_text)
+        result = await sd_ai.s2sdapi(escaped_text)
         logger.info("Result: %s", result)
-        if result['status'] == 'processing':
-            logger.info("PROCESSING")
-            img_id = result['id']
-            await asyncio.sleep(300)
-            res = await stable_diff_ai.get_queued(img_id)
-            logger.info("PROCCESSING Res: %s", res)
-            photo = res['output']
-            await message.reply_photo(types.URLInputFile(photo))
-        else:
-            text = "⏳Время генерации: " + str(result['generationTime']) \
-                   + " секунд. 🌾Зерно: " \
-                   + str(result['meta']['seed']) \
-                   + ", 🦶Шаги: " + str(result['meta']['steps'])
+        text = "⏳Время генерации: " + str(result['seed'])
+        try:
+            base64_image = result['image']
+            image_data = base64.b64decode(base64_image)
+            image_stream = io.BytesIO(image_data)
+            image = Image.open(image_stream)
+            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp:
+                image.save(temp, format='JPEG')
+                await message.reply_photo(photo=temp.name, caption=text)
+        except Exception as err:
             try:
-                photo = result['output'][0]
-                await message.reply_photo(types.URLInputFile(photo), caption=text)
-            except Exception as err:
-                try:
-                    text = "Не удалось получить картинку. Попробуйте еще раз.\n "
-                    logger.info('From try in SD Picture: %s', err)
-                    await message.answer(text + result['output'][0], parse_mode=None)
-                except Exception as error:
-                    logger.info('Last exception from SD Picture: %s', error)
-                    await message.answer(str(error), parse_mode=None)
+                text = "Не удалось получить картинку. Попробуйте еще раз.\n "
+                logger.info('From try in SD Picture: %s', err)
+                await message.answer(text + result['output'][0], parse_mode=None)
+            except Exception as error:
+                logger.info('Last exception from SD Picture: %s', error)
+                await message.answer(str(error), parse_mode=None)
 
 
 @router.message(SDImage.get)
