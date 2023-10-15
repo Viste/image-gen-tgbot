@@ -139,7 +139,7 @@ async def main():
     scheduler = AsyncIOScheduler()
 
     # Add the cron_task_wrapper function as a job to the scheduler
-    scheduler.add_job(cron_task_wrapper, 'interval', minutes=60)
+    scheduler.add_job(cron_task_wrapper, 'interval', minutes=20)
 
     # Start the scheduler
     scheduler.start()
