@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import sys
+import base64
 from datetime import datetime
 
 from aiogram import Bot, Dispatcher
@@ -8,6 +9,7 @@ from aiogram.exceptions import TelegramAPIError
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.types import BotCommand, BotCommandScopeChat, InputMediaPhoto
+from aiogram.types.input_file import InputFile
 from aioredis.client import Redis
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -15,7 +17,7 @@ from fluent.runtime import FluentLocalization, FluentResourceLoader
 from pathlib import Path
 
 from tools.ai.oairaw import OAI
-from tools.ai.stadif import StableDiffAI
+from tools.ai.sdapi import SDAI
 from core import setup_routers
 from database.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date, mark_as_posted
 from middlewares.database import DbSessionMiddleware
@@ -25,7 +27,7 @@ from tools.utils import fetch_admins, check_rights_and_permissions
 
 redis_client = Redis(host=config.redis.host, port=config.redis.port, db=config.redis.db, decode_responses=True)
 nasty = Bot(token=config.token, parse_mode="HTML")
-stable_diff_ai = StableDiffAI()
+stable_diff_ai = SDAI()
 oai = OAI()
 engine = create_async_engine(url=config.db_url, echo=True, echo_pool=False, pool_size=50, max_overflow=30, pool_timeout=30, pool_recycle=3600)
 session_maker = async_sessionmaker(engine, expire_on_commit=False)
@@ -44,38 +46,39 @@ async def cron_task_wrapper():
         await cron_task(session)
 
 
-async def generate_url_list(session):
+async def generate_image_list(session):
     random_prompts = await get_random_prompts(session)
 
-    url_list = []
+    image_list = []
     prompt_index = 0
-    while len(url_list) < 10 and prompt_index < len(random_prompts):
+    while len(image_list) < 10 and prompt_index < len(random_prompts):
         prompt = random_prompts[prompt_index]
         try:
-            url = await stable_diff_ai.gen_ned_img(prompt['prompt'])
-            url_list.append(url)
+            base64_image = await stable_diff_ai.neda_gen(prompt['prompt'])
+            image_bytes = base64.b64decode(base64_image)
+            image_list.append(image_bytes)
         except IndexError as e:
-            print(f"Error generating image URL for prompt '{prompt}': {e}")
+            print(f"Error generating image for prompt '{prompt}': {e}")
         finally:
             prompt_index += 1
 
-    logger.info(url_list)
-    return url_list, [prompt['id'] for prompt in random_prompts]
+    logger.info(f"Generated {len(image_list)} images")
+    return image_list, [prompt['id'] for prompt in random_prompts]
 
 
-async def send_media_group(url_list):
+async def send_media_group(image_list):
     prompt = "Make a beautiful description for the post in the public telegram, the post attached 10 pictures of beautiful girls. the maximum length of 1024 characters"
     result = await oai.get_synopsis(prompt)
     logger.info(result)
-    if len(url_list) >= 1:
-        media = [InputMediaPhoto(media=url, caption=result if i == 0 else None) for i, url in enumerate(url_list)]
+    if len(image_list) >= 1:
+        media = [InputMediaPhoto(media=InputFile(image), caption=result if i == 0 else None) for i, image in enumerate(image_list)]
         await nasty.send_media_group(chat_id=config.post_channel, media=media)
     else:
-        logger.error("The number of URLs is less than 1.")
+        logger.error("The number of images is less than 1.")
 
 
 async def post_images(session):
-    url_list, prompts = await generate_url_list(session)
+    url_list, prompts = await generate_image_list(session)
     await send_media_group(url_list)
     await mark_as_posted(session, prompts)
 

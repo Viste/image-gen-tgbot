@@ -51,4 +51,4 @@ class SDAI:
             "negative_prompt": self.negatives,
             })
         response = await self._send_req(self.url, data)
-        return response["output"][0]
+        return response["image"]
