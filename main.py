@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 import base64
+import uuid
 from datetime import datetime
 
 from aiogram import Bot, Dispatcher
@@ -9,7 +10,7 @@ from aiogram.exceptions import TelegramAPIError
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.types import BotCommand, BotCommandScopeChat, InputMediaPhoto
-from aiogram.types.input_file import InputFile
+from aiogram.types.input_file import BufferedInputFile
 from aioredis.client import Redis
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -71,7 +72,7 @@ async def send_media_group(image_list):
     result = await oai.get_synopsis(prompt)
     logger.info(result)
     if len(image_list) >= 1:
-        media = [InputMediaPhoto(media=InputFile(image), caption=result if i == 0 else None) for i, image in enumerate(image_list)]
+        media = [InputMediaPhoto(media=BufferedInputFile(image, filename=f"{uuid.uuid4()}.jpg"), caption=result if i == 0 else None) for i, image in enumerate(image_list)]
         await nasty.send_media_group(chat_id=config.post_channel, media=media)
     else:
         logger.error("The number of images is less than 1.")
