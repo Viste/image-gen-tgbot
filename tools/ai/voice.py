@@ -24,6 +24,7 @@ class ELAI:
     async def _send_req(self, url, data):
         async with aiohttp.ClientSession() as session:
             async with session.post(url, headers=self.headers, json=data) as resp:
+                logger.info(resp)
                 return await resp.json()
 
     async def send2api(self, text):
