@@ -68,11 +68,12 @@ async def generate_image_list(session):
 
 
 async def send_media_group(image_list):
-    prompt = "Make a beautiful description for the post in the public telegram, the post attached 10 pictures of beautiful girls. the maximum length of 1024 characters"
+    prompt = "Make a beautiful description for the post in the public telegram, the post attached 10 pictures of beautiful girls. the maximum length of text 1024 characters!"
     result = await oai.get_synopsis(prompt)
+    res = result[:1024]
     logger.info(result)
     if len(image_list) >= 1:
-        media = [InputMediaPhoto(media=BufferedInputFile(image, filename=f"{uuid.uuid4()}.jpg"), caption=result if i == 0 else None) for i, image in enumerate(image_list)]
+        media = [InputMediaPhoto(media=BufferedInputFile(image, filename=f"{uuid.uuid4()}.jpg"), caption=res if i == 0 else None) for i, image in enumerate(image_list)]
         await nasty.send_media_group(chat_id=config.post_channel, media=media)
     else:
         logger.error("The number of images is less than 1.")
@@ -90,14 +91,14 @@ async def cron_task(session: AsyncSession):
     scheduled_theme = result['theme']
     scheduled_id = result['id']
 
-    print(scheduled_date)
-    print(scheduled_theme)
+    logger.info("%s", scheduled_date)
+    logger.info("%s", scheduled_theme)
     # TODO use theme returned from get_nearest_date
-    print("From cron task before IF")
-    if scheduled_date <= datetime.now():
+    print("CR0N TasK BeFoRE IF")
+    if scheduled_date == datetime.now():
         await post_images(session)
         await delete_nearest_date(session, scheduled_id)
-        print("From cron after post")
+        logger.info("From cron after post")
 
 
 async def main():
@@ -136,13 +137,8 @@ async def main():
     await set_bot_commands(nasty, config.group_main)
     logging.info("Starting bot")
 
-    # Initialize the scheduler
     scheduler = AsyncIOScheduler()
-
-    # Add the cron_task_wrapper function as a job to the scheduler
-    scheduler.add_job(cron_task_wrapper, 'interval', minutes=20)
-
-    # Start the scheduler
+    scheduler.add_job(cron_task_wrapper, 'interval', minutes=1)
     scheduler.start()
 
     await worker.start_polling(nasty, allowed_updates=useful_updates, handle_signals=True)
