@@ -180,3 +180,25 @@ class OpenAI:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     raise Exception(f'⚠️ Ошибочка вышла ⚠️\n{str(e)}') from e
+
+    async def send_voice(self, uid):
+        while self.retries < self.max_retries:
+            try:
+                audio_file = open(f"{str(uid)}.wav", "rb")
+                result = openai.Audio.transcribe("whisper-1", audio_file, temperature=0.9, language="ru")
+                return result
+
+            except openai.error.RateLimitError as e:
+                self.retries += 1
+                if self.retries == self.max_retries:
+                    raise Exception(f'⚠️ OpenAI: Превышены лимиты ⚠️\n{str(e)}') from e
+
+            except openai.error.InvalidRequestError as e:
+                self.retries += 1
+                if self.retries == self.max_retries:
+                    raise Exception(f'⚠️ OpenAI: кривой запрос ⚠️\n{str(e)}') from e
+
+            except Exception as e:
+                self.retries += 1
+                if self.retries == self.max_retries:
+                    raise Exception(f'⚠️ Ошибочка вышла ⚠️\n{str(e)}') from e

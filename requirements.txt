@@ -15,5 +15,5 @@ urllib3
 tqdm
 apscheduler~=3.10.1
 fluent.runtime
-pillow
 elevenlabs
+pydub

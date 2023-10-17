@@ -1,7 +1,7 @@
 import html
 import logging
 import random
-import asyncio
+import os
 import base64
 import uuid
 
@@ -11,17 +11,22 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import BufferedInputFile
 from fluent.runtime import FluentLocalization
+from pydub import AudioSegment
 
+from main import nasty
 from tools.ai.MJWorker import Midjourney
 from tools.ai.conversation import OpenAI
 from tools.ai.stadif import StableDiffAI
 from tools.ai.sdapi import SDAI
-from tools.states import DAImage, SDImage, Text, MJImage, SDVideo
+from tools.ai.voice import ELAI
+from tools.states import DAImage, SDImage, Text, MJImage, Voice
 from tools.utils import config, load_params, split_into_chunks
 
 logger = logging.getLogger(__name__)
+
 router = Router()
 openai = OpenAI()
+elevenlabs = ELAI()
 stable_diff_ai = StableDiffAI()
 sd_ai = SDAI()
 params = load_params("params.json")
@@ -196,45 +201,40 @@ async def process_imagine(message: types.Message, state: FSMContext) -> None:
     logger.info("%s", message)
 
 
-@router.message(F.text.startswith("Покажи: "))
-async def show(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(SDVideo.get)
+@router.message(F.content_type.in_({'voice'}))
+async def ask(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(Voice.get)
     uid = message.from_user.id
     if uid in config.banned_user_ids:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
-        logger.info("%s", message)
-        text = html.escape(message.text)
-        escaped_text = text.strip('Покажи: ')
-        result = await stable_diff_ai.send2sd_video(escaped_text)
-        logger.info("Result: %s", result)
-        if result['status'] == 'processing':
-            logger.info("PROCESSING")
-            img_id = result['id']
-            await asyncio.sleep(600)
-            res = await stable_diff_ai.get_queued(img_id)
-            logger.info("PROCCESSING Res: %s", res)
-            video = res['output']
-            await message.reply_video(types.URLInputFile(video))
-        else:
-            text = "⏳Время генерации: " + str(result['generationTime'])
-            try:
-                video = result['output'][0]
-                await message.reply_video(types.URLInputFile(video), caption=text)
-            except Exception as err:
-                try:
-                    text = "Не удалось получить картинку. Попробуйте еще раз.\n "
-                    logger.info('From try in SD Picture: %s', err)
-                    await message.answer(text + result['output'][0], parse_mode=None)
-                except Exception as error:
-                    logger.info('Last exception from SD Picture: %s', error)
-                    await message.answer(str(error), parse_mode=None)
+        logging.info("%s", message)
+        # process the voice message
+        file_info = await nasty.get_file(message.voice.file_id)
+        file_data = file_info.file_path
+        await nasty.download_file(file_data, f"{str(uid)}.ogg")
+        sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
+        sound.export(f"{str(uid)}.wav", format="wav")
+        result = openai.send_voice(uid)
+        logging.info("%s", result)
+        try:
+            text_from_ai = result["text"]
+            text = openai.get_chat_response(uid, text_from_ai)
+            voice = elevenlabs.gen_voice(text)
+            filename = f"{uuid.uuid4()}.jpg"
+            await message.reply_voice(BufferedInputFile(voice, filename=filename))
+            os.remove(f"{str(uid)}.ogg")
+            os.remove(f"{str(uid)}.wav")
+        except RuntimeError as err:
+            logging.info('error: %s', err)
+            text = err
+            await message.reply(text, parse_mode=None)
 
 
-@router.message(SDVideo.get)
+@router.message(Voice.get)
 async def process_show(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(SDVideo.result)
+    await state.set_state(Voice.result)
     logger.info("%s", message)
 
 
