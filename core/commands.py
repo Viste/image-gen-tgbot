@@ -216,12 +216,12 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         await nasty.download_file(file_data, f"{str(uid)}.ogg")
         sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
         sound.export(f"{str(uid)}.wav", format="wav")
-        result = openai.send_voice(uid)
+        result = await openai.send_voice(uid)
         logging.info("%s", result)
         try:
             text_from_ai = result["text"]
-            text = openai.get_chat_response(uid, text_from_ai)
-            voice = elevenlabs.gen_voice(text)
+            text = await openai.get_chat_response(uid, text_from_ai)
+            voice = await elevenlabs.gen_voice(text)
             filename = f"{uuid.uuid4()}.jpg"
             await message.reply_voice(BufferedInputFile(voice, filename=filename))
             os.remove(f"{str(uid)}.ogg")
