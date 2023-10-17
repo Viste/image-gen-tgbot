@@ -202,7 +202,7 @@ async def process_imagine(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(F.content_type.in_({'voice'}))
-async def ask(message: types.Message, state: FSMContext) -> None:
+async def voice_dialogue(message: types.Message, state: FSMContext) -> None:
     await state.set_state(Voice.get)
     uid = message.from_user.id
     if uid in config.banned_user_ids:
@@ -221,21 +221,15 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         try:
             text_from_ai = result["text"]
             text = await openai.get_chat_response(uid, text_from_ai)
-            voice = await elevenlabs.send2api(str(text))
-            logger.info("VOOOOOIIICEEEEE: %s", voice)
-            with open(f'{str(uid)}.mp3', 'wb') as f:
-                while True:
-                    chunk = await voice.content.read(1024)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-            with open(f'{str(uid)}.mp3', 'rb') as f:
+            voice_filename = await elevenlabs.send2api(str(text), uid)
+            logger.info("voice: %s", voice_filename)
+            with open(voice_filename, 'rb') as f:
                 voice_bytes = f.read()
-            filename = f"{uuid.uuid4()}.jpg"
+            filename = f"{uuid.uuid4()}.mp3"
             await message.reply_voice(BufferedInputFile(voice_bytes, filename=filename))
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
-            os.remove(f"{str(uid)}.mp3")
+            os.remove(voice_filename)
         except RuntimeError as err:
             logging.info('error: %s', err)
             text = "error"

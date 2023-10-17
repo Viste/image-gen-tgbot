@@ -25,11 +25,14 @@ class ELAI:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, headers=self.headers, json=data) as resp:
                 logger.info("SEND REQUEST LOGGER %s",resp)
-                return await resp.json()
+                return await resp.read()
 
-    async def send2api(self, text):
+    async def send2api(self, text, uid):
         data = self.data.copy()
         data.update({
             "text": text,
             })
-        return await self._send_req(self.url, data)
+        content = await self._send_req(self.url, data)
+        with open(f'{str(uid)}.mp3', 'wb') as f:
+            f.write(content)
+        return f'{str(uid)}.mp3'
