@@ -10,7 +10,7 @@ class ELAI:
     def __init__(self):
         super().__init__()
         self.key = config.el_key
-        self.url = "https://api.elevenlabs.io/v1/text-to-speech/dWvQRPctX7BT3AMBjjdX"
+        self.url = "https://api.elevenlabs.io/v1/text-to-speech/dWvQRPctX7BT3AMBjjdX/stream"
         self.model = "eleven_monolingual_v2"
         self.headers = {
             "Accept": "audio/mpeg",

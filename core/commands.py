@@ -221,7 +221,7 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         try:
             text_from_ai = result["text"]
             text = await openai.get_chat_response(uid, text_from_ai)
-            voice = await elevenlabs.send2api(text)
+            voice = await elevenlabs.send2api(str(text))
             logger.info("VOOOOOIIICEEEEE: %s", voice)
             with open(f'{str(uid)}.mp3', 'wb') as f:
                 while True:

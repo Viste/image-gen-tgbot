@@ -87,14 +87,15 @@ async def post_images(session):
 
 async def cron_task(session: AsyncSession):
     result = await get_nearest_date(session)
-    scheduled_date = result['date']
+    scheduled_date_str = result['date']
     scheduled_theme = result['theme']
     scheduled_id = result['id']
 
-    logger.info("%s", scheduled_date)
-    logger.info("%s", scheduled_theme)
+    logger.info("scheduled_date_str %s", scheduled_date_str)
+    logger.info("scheduled_theme %s", scheduled_theme)
     print("CR0N TasK BeFoRE IF")
     now = datetime.now().replace(second=0, microsecond=0)
+    scheduled_date = datetime.strptime(scheduled_date_str, '%Y-%m-%d %H:%M')
     if scheduled_date == now:
         await post_images(session)
         await delete_nearest_date(session, scheduled_id)
