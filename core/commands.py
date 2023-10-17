@@ -221,14 +221,21 @@ async def ask(message: types.Message, state: FSMContext) -> None:
         try:
             text_from_ai = result["text"]
             text = await openai.get_chat_response(uid, text_from_ai)
-            voice = await elevenlabs.gen_voice(text)
+            voice = await elevenlabs.send2api(text)
+            with open(f'{str(uid)}.mp3', 'wb') as f:
+                for chunk in voice.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+            with open(f'{str(uid)}.mp3', 'rb') as f:
+                voice_bytes = f.read()
             filename = f"{uuid.uuid4()}.jpg"
-            await message.reply_voice(BufferedInputFile(voice, filename=filename))
+            await message.reply_voice(BufferedInputFile(voice_bytes, filename=filename))
             os.remove(f"{str(uid)}.ogg")
             os.remove(f"{str(uid)}.wav")
+            os.remove(f"{str(uid)}.mp3")
         except RuntimeError as err:
             logging.info('error: %s', err)
-            text = err
+            text = "error"
             await message.reply(text, parse_mode=None)
 
 
