@@ -224,9 +224,11 @@ async def ask(message: types.Message, state: FSMContext) -> None:
             voice = await elevenlabs.send2api(text)
             logger.info("VOOOOOIIICEEEEE: %s", voice)
             with open(f'{str(uid)}.mp3', 'wb') as f:
-                for chunk in voice.iter_content(chunk_size=1024):
-                    if chunk:
-                        f.write(chunk)
+                while True:
+                    chunk = await voice.content.read(1024)
+                    if not chunk:
+                        break
+                    f.write(chunk)
             with open(f'{str(uid)}.mp3', 'rb') as f:
                 voice_bytes = f.read()
             filename = f"{uuid.uuid4()}.jpg"

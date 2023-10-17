@@ -13,9 +13,9 @@ class ELAI:
         self.url = "https://api.elevenlabs.io/v1/text-to-speech/dWvQRPctX7BT3AMBjjdX"
         self.model = "eleven_monolingual_v2"
         self.headers = {
-            "accept": "audio/mpeg",
+            "Accept": "audio/mpeg",
             "Content-Type": "application/json",
-            "authorization": "Bearer " + str(self.key)
+            "xi-api-key": str(self.key)
             }
         self.data = {
             "model": self.model,
@@ -24,7 +24,7 @@ class ELAI:
     async def _send_req(self, url, data):
         async with aiohttp.ClientSession() as session:
             async with session.post(url, headers=self.headers, json=data) as resp:
-                logger.info(resp)
+                logger.info("SEND REQUEST LOGGER %s",resp)
                 return await resp.json()
 
     async def send2api(self, text):
