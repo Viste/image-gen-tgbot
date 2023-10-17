@@ -15,7 +15,7 @@ class ELAI:
         txt = generate(
             api_key=self.key,
             text=text,
-            voice="NASTYA",
+            voice="dWvQRPctX7BT3AMBjjdX",
             model="eleven_multilingual_v2"
             )
         return txt
