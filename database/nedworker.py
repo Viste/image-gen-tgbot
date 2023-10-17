@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import func, select, text, update
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tools.ai.conversation import OpenAI
@@ -42,7 +42,7 @@ async def get_nearest_date(session: AsyncSession):
 
 
 async def get_random_prompts(session: AsyncSession):
-    stmt = select(Workers.id, Workers.prompt).where(Workers.posted == False).order_by(func.rand()).limit(10)
+    stmt = select(Workers.id, Workers.prompt).where(Workers.posted is False).order_by(func.rand()).limit(10)
     random_prompts = await session.execute(stmt)
     return random_prompts.mappings().all()
 
