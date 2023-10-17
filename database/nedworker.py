@@ -33,8 +33,9 @@ async def get_nearest_date(session: AsyncSession):
     result = await session.execute(stmt)
     nearest_date = result.scalars().first()
     if nearest_date:
-        logger.info(f"Nearest date found: {nearest_date.date}")
-        return {'id': nearest_date.id, 'date': nearest_date.date, 'theme': nearest_date.theme}
+        formatted_date = nearest_date.date.strftime('%Y-%m-%d %H:%M')
+        logger.info(f"Nearest date found: {formatted_date}")
+        return {'id': nearest_date.id, 'date': formatted_date, 'theme': nearest_date.theme}
     else:
         logger.info("No nearest date found.")
         return None

@@ -93,12 +93,12 @@ async def cron_task(session: AsyncSession):
 
     logger.info("%s", scheduled_date)
     logger.info("%s", scheduled_theme)
-    # TODO use theme returned from get_nearest_date
     print("CR0N TasK BeFoRE IF")
-    if scheduled_date == datetime.now():
+    now = datetime.now().replace(second=0, microsecond=0)
+    if scheduled_date == now:
         await post_images(session)
         await delete_nearest_date(session, scheduled_id)
-        logger.info("From cron after post")
+        logger.info("FR0M CR0N after P0ST")
 
 
 async def main():
