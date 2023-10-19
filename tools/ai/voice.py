@@ -33,8 +33,8 @@ class ELAI:
             "text": text,
             "voice_settings": {
                 "stability": 1,
-                "similarity_boost": 0.9,
-                "style": 0.6,
+                "similarity_boost": 0.1,
+                "style": 0.5,
                 "use_speaker_boost": True
                 }
             })
