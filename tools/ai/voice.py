@@ -19,10 +19,6 @@ class ELAI:
             }
         self.data = {
             "model": self.model,
-            "voice_settings": {
-                "stability": 0.9,
-                "similarity_boost": 0.7
-                }
             }
 
     async def _send_req(self, url, data):
@@ -35,6 +31,10 @@ class ELAI:
         data = self.data.copy()
         data.update({
             "text": text,
+            "voice_settings": {
+                "stability": 1,
+                "similarity_boost": 0.3
+                }
             })
         content = await self._send_req(self.url, data)
         with open(f'{str(uid)}.mp3', 'wb') as f:
