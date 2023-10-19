@@ -18,7 +18,7 @@ class ELAI:
             "xi-api-key": str(self.key)
             }
         self.data = {
-            "model_id": self.model,
+            "model": self.model,
             "voice_settings": {
                 "stability": 0.9,
                 "similarity_boost": 0.7
