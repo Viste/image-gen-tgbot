@@ -18,7 +18,11 @@ class ELAI:
             "xi-api-key": str(self.key)
             }
         self.data = {
-            "model": self.model,
+            "model_id": self.model,
+            "voice_settings": {
+                "stability": 0.9,
+                "similarity_boost": 0.7
+                }
             }
 
     async def _send_req(self, url, data):
