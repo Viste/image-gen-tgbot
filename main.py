@@ -68,12 +68,11 @@ async def generate_image_list(session):
 
 
 async def send_media_group(image_list):
-    prompt = "Make a beautiful description for the post in the public telegram, the post attached 10 pictures of beautiful girls. the maximum length of text 1024 characters!"
+    prompt = "Make a beautiful description for the post in the telegram public(the maximum length of text 1024 characters!), the post attached 10 pictures of beautiful girls. "
     result = await oai.get_synopsis(prompt)
-    res = result[:1024]
     logger.info(result)
     if len(image_list) >= 1:
-        media = [InputMediaPhoto(media=BufferedInputFile(image, filename=f"{uuid.uuid4()}.jpg"), caption=res if i == 0 else None) for i, image in enumerate(image_list)]
+        media = [InputMediaPhoto(media=BufferedInputFile(image, filename=f"{uuid.uuid4()}.jpg"), caption=result if i == 0 else None) for i, image in enumerate(image_list)]
         await nasty.send_media_group(chat_id=config.post_channel, media=media)
     else:
         logger.error("The number of images is less than 1.")
