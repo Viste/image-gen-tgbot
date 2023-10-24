@@ -32,8 +32,8 @@ class ELAI:
         data.update({
             "text": text,
             "voice_settings": {
-                "stability": 1,
-                "similarity_boost": 0.1,
+                "stability": 0.94,
+                "similarity_boost": 0.75,
                 "style": 0.5,
                 "use_speaker_boost": True
                 }
