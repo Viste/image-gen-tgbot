@@ -18,7 +18,7 @@ from tools.ai.MJWorker import Midjourney
 from tools.ai.conversation import OpenAI
 from tools.ai.stadif import StableDiffAI
 from tools.ai.sdapi import SDAI
-from tools.ai.voice_new import ELAI
+from tools.ai.voice import ELAI
 from tools.states import DAImage, SDImage, Text, MJImage, Voice
 from tools.utils import config, load_params, split_into_chunks
 
@@ -209,18 +209,15 @@ async def voice_dialogue(message: types.Message, state: FSMContext) -> None:
         text = "не хочу с тобой разговаривать"
         await message.reply(text, parse_mode=None)
     else:
-        logging.info("%s", message)
-        # process the voice message
         file_info = await nasty.get_file(message.voice.file_id)
         file_data = file_info.file_path
         await nasty.download_file(file_data, f"{str(uid)}.ogg")
         sound = AudioSegment.from_file(f"{str(uid)}.ogg", format="ogg")
         sound.export(f"{str(uid)}.wav", format="wav")
         result = await openai.send_voice(uid)
-        logging.info("%s", result)
         try:
             text_from_ai = result["text"]
-            text = await openai.get_chat_response(uid, text_from_ai)
+            text, tokens = await openai.get_chat_response(uid, text_from_ai)
             logger.info("TEXT SENDED TO ELEVENLABS: %s", text)
             voice_filename = await elevenlabs.send2api(str(text), uid)
             logger.info("voice: %s", voice_filename)
