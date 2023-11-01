@@ -11,7 +11,7 @@ class ELAI:
         super().__init__()
         self.key = config.el_key
         self.url = "https://api.elevenlabs.io/v1/text-to-speech/dWvQRPctX7BT3AMBjjdX?optimize_streaming_latency=0"
-        self.model = "eleven_monolingual_v2"
+        self.model = "eleven_monolingual_v1"
         self.headers = {
             "Accept": "audio/mpeg",
             "Content-Type": "application/json",
