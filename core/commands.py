@@ -18,7 +18,7 @@ from tools.ai.MJWorker import Midjourney
 from tools.ai.conversation import OpenAI
 from tools.ai.stadif import StableDiffAI
 from tools.ai.sdapi import SDAI
-from tools.ai.voice import ELAI
+from tools.ai.voice_new import ELAI
 from tools.states import DAImage, SDImage, Text, MJImage, Voice
 from tools.utils import config, load_params, split_into_chunks
 
