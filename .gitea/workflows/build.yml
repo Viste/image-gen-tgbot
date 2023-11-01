@@ -15,8 +15,8 @@ jobs:
         shell: sh
         run: |
           apk update
-          apk add nodejs
           apk add kubectl docker-cli docker-cli-buildx
+          apk add nodejs
 
       - name: Checkout repository
         uses: https://github.com/actions/checkout@master
@@ -54,11 +54,6 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
       - name: Kubernetes context
         uses: Azure/k8s-set-context@v3
         with:
@@ -69,3 +64,8 @@ jobs:
 
       - name: Rollout pod in k8s
         run: kubectl rollout restart -n nastya deployment nastya-bot
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

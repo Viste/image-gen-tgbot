@@ -218,8 +218,8 @@ async def voice_dialogue(message: types.Message, state: FSMContext) -> None:
         try:
             text_from_ai = result["text"]
             text, tokens = await openai.get_chat_response(uid, text_from_ai)
-            logger.info("TEXT SENDED TO ELEVENLABS: %s", text)
-            voice_filename = await elevenlabs.send2api(str(text), uid)
+            logger.info("TexT sent to 11labs: %s", text)
+            voice_filename = elevenlabs.send2api(str(text), uid)
             logger.info("voice: %s", voice_filename)
             with open(voice_filename, 'rb') as f:
                 voice_bytes = f.read()

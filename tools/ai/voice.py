@@ -13,9 +13,9 @@ class ELAI:
         self.model = "eleven_monolingual_v2"
         self.voice = self.user.get_voices_by_name("NASTYA")[0]
 
-    async def send2api(self, text, uid):
+    def send2api(self, text, uid):
         content = self.voice.generate_audio_v2(text, GenerationOptions(model="eleven_multilingual_v2",
-                                                                       stability=0.8, style=0.6,
-                                                                       similarity_boost=0.5))
+                                                                       stability=0.9, style=0.4,
+                                                                       similarity_boost=0.7))
         save_audio_bytes(content[0], f'{str(uid)}.mp3', outputFormat="mp3")
         return f'{str(uid)}.mp3'
