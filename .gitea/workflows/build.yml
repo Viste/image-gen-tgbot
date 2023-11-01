@@ -15,8 +15,8 @@ jobs:
         shell: sh
         run: |
           apk update
-          apk add nodejs docker-cli docker-cli-buildx
-          apk add kubectl
+          apk add nodejs
+          apk add kubectl docker-cli docker-cli-buildx
 
       - name: Checkout repository
         uses: https://github.com/actions/checkout@master
