@@ -11,12 +11,23 @@ jobs:
   build-image:
     runs-on: self-hosted
     steps:
-      - name: Prepare
+      - name: nodejs
         shell: sh
         run: |
           apk update
-          apk add kubectl docker-cli docker-cli-buildx
           apk add nodejs
+
+      - name: kubectl
+        shell: sh
+        run: |
+          apk update
+          apk add kubectl
+
+      - name: docker
+        shell: sh
+        run: |
+          apk update
+          apk add docker-cli docker-cli-buildx
 
       - name: Checkout repository
         uses: https://github.com/actions/checkout@master
