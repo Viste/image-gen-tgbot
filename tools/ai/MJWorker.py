@@ -74,14 +74,37 @@ class Midjourney:
         header = {
             'authorization': self.authorization
             }
-        payload = {'type': 2, 'application_id': self.application_id, 'guild_id': self.guild_id,
-                   'channel_id': self.channelid[self.index], 'session_id': self.session_id,
+        payload = {'type': 2,
+                   'application_id': self.application_id,
+                   'guild_id': self.guild_id,
+                   'channel_id': self.channelid[self.index],
+                   'session_id': self.session_id,
                    'data': {
-                       'version': self.version, 'id': self.id, 'name': 'imagine', 'type': 1,
+                       'version': self.version,
+                       'id': self.id,
+                       'name': 'imagine',
+                       'type': 1,
                        'options': [{
                            'type': 3, 'name': 'prompt', 'value': str(prompt)
-                           }], 'attachments': []}
-                   }
+                           }],
+                       'application_command': {
+                           'id': self.id,
+                           'application_id': self.application_id,
+                           'version': self.version,
+                           'default_member_permissions': 'null',
+                           'type': 1,
+                           'nsfw': False,
+                           'name': 'imagine',
+                           'description': 'Create images with Midjourney',
+                           'dm_permission': True,
+                           'contexts': 'null',
+                           'integration_types': [0],
+                           'options': [{
+                               'type': 3,
+                               'name': 'prompt',
+                               'description': 'The prompt to imagine',
+                               'required': True}]},
+                       'attachments': []}}
         logger.info('Payload: %s', payload)
         async with aiohttp.ClientSession() as session:
             max_retries = 10
