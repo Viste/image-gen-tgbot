@@ -6,8 +6,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import LabeledPrice
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.manager import UserManager as user_manager
-from database.models import User
 from tools.states import Payment
 from tools.utils import config
 

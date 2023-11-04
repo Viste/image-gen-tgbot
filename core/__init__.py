@@ -5,6 +5,7 @@ from tools.utils import config
 
 def setup_routers() -> Router:
     from . import callbacks, admins, admin_handler, users, commands, misc
+    from core.helpers import callbacks, payment
 
     router = Router()
     router.message.filter(F.chat.id != config.banned_group)

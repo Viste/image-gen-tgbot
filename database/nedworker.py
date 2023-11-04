@@ -5,7 +5,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.helpers.ai.conversation import OpenAI
-from core.helpers.ai import StableDiffAI
+from core.helpers.ai.stadif import StableDiffAI
 from database.models import Workers
 
 logger = logging.getLogger(__name__)

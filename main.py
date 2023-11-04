@@ -17,8 +17,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fluent.runtime import FluentLocalization, FluentResourceLoader
 from pathlib import Path
 
-from core.helpers.ai import OAI
-from core.helpers.ai import SDAI
+from core.helpers.ai.oairaw import OAI
+from core.helpers.ai.sdapi import SDAI
 from core import setup_routers
 from database.nedworker import get_random_prompts, delete_nearest_date, get_nearest_date, mark_as_posted
 from middlewares.database import DbSessionMiddleware

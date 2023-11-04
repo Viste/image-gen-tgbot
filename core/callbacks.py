@@ -5,7 +5,7 @@ from aiogram.exceptions import TelegramAPIError
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 
-from core.helpers.ai import Midjourney
+from core.helpers.ai.MJWorker import Midjourney
 from tools.language import Lang
 from tools.utils import DeleteMsgCallback
 from tools.utils import config, load_params

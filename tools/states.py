@@ -23,3 +23,8 @@ class MJImage(StatesGroup):
 class Voice(StatesGroup):
     get = State()
     result = State()
+
+
+class Payment(StatesGroup):
+    start = State()
+    process = State()
