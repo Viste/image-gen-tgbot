@@ -95,7 +95,6 @@ async def process_paint(message: types.Message, state: FSMContext) -> None:
 
 @router.message(F.text.startswith("Отобрази: "))
 async def draw(message: types.Message, state: FSMContext, l10n: FluentLocalization) -> None:
-
     uid = message.from_user.id
     if await reply_if_banned(message, uid, l10n):
         return

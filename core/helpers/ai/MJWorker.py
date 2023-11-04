@@ -58,7 +58,7 @@ class Midjourney:
         message_list = await self.retrieve_messages()
         for message in message_list:
             try:
-                if (message.get("author", {}).get("username") == "Midjourney Bot") and (f"**{payload} --v 5 --s 250** - <@408980422928760833> (fast)" == message.get("content", "")):
+                if (message.get("author", {}).get("username") == "Midjourney Bot") and (f'**{payload}' in message.get("content", "")):
                     if len(message.get("attachments", [])) > 0:
                         if (message["attachments"][0].get("filename", "")[-4:] == ".png") or ("(Open on website for full quality)" in message.get("content", "")):
                             message_id = message.get("id")
