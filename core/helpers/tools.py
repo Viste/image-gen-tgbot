@@ -10,7 +10,6 @@ from tools.utils import config
 logger = logging.getLogger(__name__)
 
 banned = set(config.banned_user_ids)
-shadowbanned = set(config.shadowbanned_user_ids)
 
 
 async def reply_if_banned(message: types.Message, uid: int, l10n: FluentLocalization) -> bool:
@@ -42,6 +41,5 @@ async def handle_exception(message: types.Message, err: Exception, logger: loggi
 
 def update_config():
     config.banned_user_ids = list(banned)
-    config.shadowbanned_user_ids = list(shadowbanned)
     with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w', encoding='utf8') as cfg_file:
         json.dump(config, cfg_file, default=lambda o: o.__dict__)
