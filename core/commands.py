@@ -32,7 +32,6 @@ stable_diff_ai = StableDiffAI()
 sd_ai = SDAI()
 params = load_params("params.json")
 params_file = "params.json"
-image_generators = [Midjourney(params_file, i) for i in range(10)]
 
 
 @router.message(F.text.startswith("@naastyyaabot"))
@@ -96,12 +95,14 @@ async def process_paint(message: types.Message, state: FSMContext) -> None:
 
 @router.message(F.text.startswith("Отобрази: "))
 async def draw(message: types.Message, state: FSMContext, l10n: FluentLocalization) -> None:
+
     uid = message.from_user.id
     if await reply_if_banned(message, uid, l10n):
         return
     else:
         logger.info("Message: %s", message)
         await state.set_state(MJImage.get)
+        image_generators = [Midjourney(params_file, i) for i in range(10)]
 
         text = html.escape(message.text)
         escaped_text = text.strip('Отобрази: ')
