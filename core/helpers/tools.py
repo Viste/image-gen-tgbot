@@ -31,6 +31,15 @@ async def send_reply(message: types.Message, text: str) -> None:
             logging.info('Last exception from Core: %s', error)
 
 
+async def handle_exception(message: types.Message, err: Exception, logger: logging.Logger, error_message: str = "Не удалось получить картинку. Попробуйте еще раз.\n "):
+    try:
+        logger.info('From exception in Picture: %s', err)
+        await message.reply(error_message, parse_mode=None)
+    except Exception as error:
+        logger.info('Last exception from Picture: %s', error)
+        await message.reply(str(error), parse_mode=None)
+
+
 def update_config():
     config.banned_user_ids = list(banned)
     config.shadowbanned_user_ids = list(shadowbanned)

@@ -54,19 +54,19 @@ class Midjourney:
                     logger.error("Error: Invalid JSON response")
                     return []
 
-    async def collecting_results(self, promt):
+    async def collecting_results(self, payload):
         message_list = await self.retrieve_messages()
         for message in message_list:
             try:
-                if (message.get("author", {}).get("username") == "Midjourney Bot") and (f"{promt}" in message.get("content", "")):
+                if (message.get("author", {}).get("username") == "Midjourney Bot") and (f"**{payload} --v 5 --s 250** - <@408980422928760833> (fast)" == message.get("content", "")):
                     if len(message.get("attachments", [])) > 0:
                         if (message["attachments"][0].get("filename", "")[-4:] == ".png") or ("(Open on website for full quality)" in message.get("content", "")):
-                            id = message.get("id")
+                            message_id = message.get("id")
                             prompt = (message.get("content", "").split("**")[1].split(" --")[0])
                             url = message["attachments"][0].get("url")
                             filename = message["attachments"][0].get("filename")
                             uuid = filename.split("_")[-1].split(".")[0]
-                            self.images.append({"id": id, "prompt": prompt, "url": url, "uuid": uuid})
+                            self.images.append({"id": message_id, "prompt": prompt, "url": url, "uuid": uuid})
             except KeyError:
                 logger.info("Error: Message does not contain expected elements")
 
@@ -104,7 +104,7 @@ class Midjourney:
 
     async def get_images(self, prompt):
         await self.send_prompt(prompt)
-        await asyncio.sleep(120)
+        await asyncio.sleep(90)
         await self.collecting_results(prompt)
         return self.images
 
@@ -127,7 +127,7 @@ class Midjourney:
             max_retries = 10
             for _ in range(max_retries):
                 async with session.post("https://discord.com/api/v9/interactions", json=payload, headers=header) as resp:
-                    logger.info(f"Received response: {resp.text}")
+                    logger.info(f"Upscale request response: {resp.text}")
                     if resp.status == 204:
                         logger.info(f"Upscale request for message_id {message_id} and number {number} successfully sent!")
                         break

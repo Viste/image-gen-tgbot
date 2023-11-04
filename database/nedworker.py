@@ -4,9 +4,9 @@ from datetime import datetime
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tools.ai.conversation import OpenAI
-from tools.ai.stadif import StableDiffAI
-from database.models import Workers, Users
+from core.helpers.ai.conversation import OpenAI
+from core.helpers.ai import StableDiffAI
+from database.models import Workers
 
 logger = logging.getLogger(__name__)
 openai = OpenAI()
