@@ -59,4 +59,5 @@ jobs:
           namespace: nastya
 
       - name: Rollout pod in k8s
+        shell: bash
         run: kubectl rollout restart -n nastya deployment nastya-bot
