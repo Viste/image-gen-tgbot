@@ -11,28 +11,8 @@ jobs:
   build-image:
     runs-on: self-hosted
     steps:
-      - name: nodejs
-        shell: sh
-        run: |
-          apk update
-          apk add nodejs
-
-      - name: kubectl
-        shell: sh
-        run: |
-          apk update
-          apk add kubectl
-
-      - name: docker
-        shell: sh
-        run: |
-          apk update
-          apk add docker-cli docker-cli-buildx
-
-      - name: Checkout repository
-        uses: https://github.com/actions/checkout@master
-        with:
-          submodules: 'recursive'
+      - name: Prepare
+        uses: https://${{ secrets.TOKEN }}@git.pprfnk.tech/PPRFNK-Tech/prepare-action@master
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
