@@ -1,10 +1,10 @@
 import logging
 
-import openai
+from openai import AsyncOpenAI
 
 from tools.utils import config
 
-openai.api_key = config.api_key
+
 logger = logging.getLogger(__name__)
 
 args = {
@@ -18,9 +18,12 @@ args = {
 
 
 class OAI:
+    max_retries: int
+
     def __init__(self):
         super().__init__()
-        self.model = "gpt-3.5-turbo"
+        self.model = "gpt-4-1106-preview"
+        self.client = AsyncOpenAI(api_key=config.api_key, base_url='http://176.222.52.92:9000/v1')
         self.max_retries = 5
         self.max_tokens = 4096
         self.config_tokens = 768
@@ -31,18 +34,18 @@ class OAI:
     async def get_synopsis(self, prompt):
         while self.retries < self.max_retries:
             try:
-                result = await openai.ChatCompletion().acreate(model=self.model, messages=[
+                result = await self.client.ChatCompletion().acreate(model=self.model, messages=[
                     {"role": "system", "content": self.content},
                     {"role": "user", "content": prompt}], **args)
                 return result["choices"][0]["message"]["content"].strip()
 
-            except openai.error.RateLimitError as e:
+            except await self.client.error.RateLimitError as e:
                 self.retries += 1
                 logger.info("Dialog From Ratelim: %s", e)
                 if self.retries == self.max_retries:
                     return f'⚠️OpenAI: Превышены лимиты ⚠️\n{str(e)}'
 
-            except openai.error.InvalidRequestError as er:
+            except await self.client.error.InvalidRequestError as er:
                 self.retries += 1
                 logger.info("Dialog From bad req: %s", er)
                 if self.retries == self.max_retries:
