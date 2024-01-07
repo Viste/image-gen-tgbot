@@ -46,7 +46,7 @@ async def start_chat(message: types.Message, state: FSMContext,  l10n: FluentLoc
         escaped_text = text.strip('@naastyyaabot ')
 
         await state.set_state(Text.get)
-        replay_text, total_tokens = await openai.get_chat_response(uid, escaped_text)
+        replay_text, total_tokens = await openai.get_resp(escaped_text, uid)
         chunks = split_into_chunks(replay_text)
         for index, chunk in enumerate(chunks):
             if index == 0:
@@ -58,12 +58,14 @@ async def process_chat(message: types.Message, l10n: FluentLocalization) -> None
     uid = message.from_user.id
     if await reply_if_banned(message, uid, l10n):
         return
-    else:
-        replay_text, total_tokens = await openai.get_chat_response(uid, message.text)
-        chunks = split_into_chunks(replay_text)
-        for index, chunk in enumerate(chunks):
-            if index == 0:
-                await send_reply(message, chunk)
+
+    text = html.escape(message.text)
+
+    replay_text, total_tokens = await openai.get_resp(text, uid)
+    chunks = split_into_chunks(replay_text)
+    for index, chunk in enumerate(chunks):
+        if index == 0:
+            await send_reply(message, chunk)
 
 
 @router.message(F.text.startswith("Нарисуй: "))
