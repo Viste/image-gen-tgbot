@@ -156,7 +156,7 @@ async def imagine(message: types.Message, state: FSMContext, l10n: FluentLocaliz
 
         logger.info("Result: %s", result)
         try:
-            base64_image = result['image']
+            base64_image = result
             image_bytes = base64.b64decode(base64_image)
             filename = f"{uuid.uuid4()}.jpg"
 
@@ -189,8 +189,9 @@ async def voice_dialogue(message: types.Message, state: FSMContext, l10n: Fluent
         result = await openai.send_voice(uid)
 
         try:
-            text_from_ai = result["text"]
-            text, tokens = await openai.get_chat_response(uid, text_from_ai)
+            logger.info("RESULT voice from OAI: %s", result)
+            text_from_ai = result
+            text, tokens = await openai.get_resp(text_from_ai, uid)
             voice_filename = elevenlabs.send2api(str(text), uid)
 
             logger.info("TexT sent to 11labs: %s", text)
