@@ -189,8 +189,8 @@ async def voice_dialogue(message: types.Message, state: FSMContext, l10n: Fluent
         result = await openai.send_voice(uid)
 
         try:
-            logger.info("RESULT voice from OAI: %s", result)
-            text_from_ai = result
+            logger.info("RESULT voice from OAI: %s", result.text)
+            text_from_ai = result.text
             text, tokens = await openai.get_resp(text_from_ai, uid)
             voice_filename = elevenlabs.send2api(str(text), uid)
 
