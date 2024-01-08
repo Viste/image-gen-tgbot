@@ -11,7 +11,7 @@ class ELAI:
         super().__init__()
         self.user = ElevenLabsUser(config.el_key)
         self.model = "eleven_monolingual_v2"
-        self.voice = self.user.get_voices_by_name("NASTYA")[0]
+        self.voice = self.user.get_voices_by_name("NastyaBot")[0]
 
     def send2api(self, text, uid):
         content = self.voice.generate_audio_v2(text, GenerationOptions(model="eleven_multilingual_v2",
