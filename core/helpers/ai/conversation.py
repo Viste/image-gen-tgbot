@@ -167,7 +167,7 @@ class OpenAI:
     @staticmethod
     def get_money():
         headers = {
-            "Authorization": f"Bearer {openai.api_key}"
+            "Authorization": f"Bearer {config.api_key}"
             }
         today = date.today()
         first_day = date(today.year, today.month, 1)
@@ -184,7 +184,7 @@ class OpenAI:
     async def send_dalle(self, data):
         while self.retries < self.max_retries:
             try:
-                result = await self.client.Image().acreate(prompt=data + "4k resolution", n=1, size="1024x1024")
+                result = await self.client.images.generate(model="dall-e-3", prompt=data + "4k resolution", n=1, size="1024x1024")
                 if 'data' not in result or len(result['data']) == 0:
                     logging.error(f'No response from GPT: {str(result)}')
                     raise Exception("⚠️ Ошибочка вышла ⚠️ попробуй еще")
@@ -208,7 +208,7 @@ class OpenAI:
         while self.retries < self.max_retries:
             try:
                 audio_file = open(f"{str(uid)}.wav", "rb")
-                result = await self.client.Audio.transcribe("whisper-1", audio_file, temperature=0.1, language="ru")
+                result = await self.client.audio.transcriptions.create(model="whisper-1", file=audio_file, temperature=0.1, language="ru")
                 return result
 
             except await self.client.error.RateLimitError as e:
