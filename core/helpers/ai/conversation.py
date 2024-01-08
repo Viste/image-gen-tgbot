@@ -46,7 +46,6 @@ class OpenAI:
         super().__init__()
         self.model = "gpt-4-1106-preview"
         self.client = AsyncOpenAI(api_key=config.api_key, base_url='http://176.222.52.92:9000/v1')
-        self.cl = AsyncOpenAI(api_key=config.api_key)
         self.history = UserHistoryManager()
         self.max_retries = 5
         self.max_tokens = 16096
@@ -65,7 +64,7 @@ class OpenAI:
     async def reset_history(self, user_id, content=''):
         await self.history.reset_history(user_id, content)
 
-    async def get_resp(self, query: str, chat_id: int) -> tuple[str, str]:
+    async def get_resp(self, query: str, chat_id: int) -> tuple[str, int]:
         response = await self._query_gpt(chat_id, query)
         answer = ''
 
@@ -185,17 +184,17 @@ class OpenAI:
     async def send_dalle(self, data):
         while self.retries < self.max_retries:
             try:
-                result = await self.cl.images.generate(model="dall-e-3", prompt=data + "4k resolution", n=1, size="1024x1024")
+                result = await self.client.images.generate(model="dall-e-3", prompt=data + "4k resolution", n=1, size="1024x1024")
                 if 'data' not in result or len(result['data']) == 0:
                     logging.error(f'No response from GPT: {str(result)}')
                     raise Exception("⚠️ Ошибочка вышла ⚠️ попробуй еще")
                 return result.data[0]['url']
-            except await self.cl.error.RateLimitError as e:
+            except await self.client.error.RateLimitError as e:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     raise Exception(f'⚠️ OpenAI: Превышены лимиты ⚠️\n{str(e)}') from e
 
-            except await self.cl.error.InvalidRequestError as e:
+            except await self.client.error.InvalidRequestError as e:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     raise Exception(f'⚠️ OpenAI: кривой запрос ⚠️\n{str(e)}') from e
@@ -209,15 +208,15 @@ class OpenAI:
         while self.retries < self.max_retries:
             try:
                 audio_file = open(f"{str(uid)}.wav", "rb")
-                result = await self.cl.audio.transcriptions.create(model="whisper-1", file=audio_file, temperature=0.1, language="ru")
+                result = await self.client.audio.transcriptions.create(model="whisper-1", file=audio_file, temperature=0.1, language="ru")
                 return result
 
-            except await self.cl.error.RateLimitError as e:
+            except await self.client.error.RateLimitError as e:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     raise Exception(f'⚠️ OpenAI: Превышены лимиты ⚠️\n{str(e)}') from e
 
-            except await self.cl.error.InvalidRequestError as e:
+            except await self.client.error.InvalidRequestError as e:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     raise Exception(f'⚠️ OpenAI: кривой запрос ⚠️\n{str(e)}') from e
