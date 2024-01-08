@@ -185,10 +185,11 @@ class OpenAI:
         while self.retries < self.max_retries:
             try:
                 result = await self.client.images.generate(model="dall-e-3", prompt=data + "4k resolution", n=1, size="1024x1024")
-                if 'data' not in result or len(result['data']) == 0:
+                if 'url' not in result or len(result.url) == 0:
                     logging.error(f'No response from GPT: {str(result)}')
                     raise Exception("⚠️ Ошибочка вышла ⚠️ попробуй еще")
-                return result.data[0]['url']
+                return result.url
+
             except await self.client.error.RateLimitError as e:
                 self.retries += 1
                 if self.retries == self.max_retries:
