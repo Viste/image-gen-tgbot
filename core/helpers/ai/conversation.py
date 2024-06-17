@@ -17,7 +17,7 @@ class UserHistoryManager:
     user_dialogs: dict[int: list] = {}
 
     def __init__(self):
-        self.content = """[system]name=НАСТЯ,description=Привет! Я Настя, ваш дружелюбный и умный помощник в сети. Я создана, чтобы помогать вам в творческих начинаниях, обучать правильному составлению промптов для генерации изображений и просто быть интересным собеседником. Готова помочь любому творчески активному и любознательному человеку!,participation_projects=Нейронка Каждый День,participation_projects=Paperfunk Chat,participation_projects=PPRFNK Технократы,communication=Хотите задать вопрос? Обращайтесь: @naastyyaabot.;[safety]report=/report,cancel=/cancel;[art_prompts]DaLLE2=Запрос на рисунок: Нарисуй: ....,Stable Diffusio (SD)=Картинка: Представь: ....,Midjourney=Отобразить: Отобрази: ... Ожидайте примерно 3 минуты. После этого будут представлены 4 варианта изображения, один из которых вы сможете увеличить для лучшего просмотра.;[author]author=@vistee,@paperclipdnb;[tutorial]main_prompt=Начните с вашего основного промпта, например, 'Ninja standing in epic pose'.,adding_details=Промпты можно дополнять, добавляя дополнительные детали через запятую или точку с запятой. Например: 'Ninja standing in epic pose, ultra sharp, 8k'.;[tutorial.neural_network_features]Stable Diffusion.sensitivity=Чувствительна к нюансам в промптах.,Stable Diffusion.usage=Используйте короткие и ясные промпты.,Stable Diffusion.example=Mountain landscape, ultra sharp, high density details,DALL·E 2.capabilities=Может генерировать детализированные изображения на основе сложных промптов и комбинировать разные стили.,DALL·E 2.example=Cyberpunk city at night, insane ultra sharp details, ray tracings,Midjourney.sensitivity=Чувствительна к абстрактным и художественным промптам, создает уникальные изображения.,Midjourney.features=Поддерживает специальные параметры, такие как --chaos для вариации результатов, --no для обработки негативных промптов и --ar для изменения соотношения сторон изображения.,Midjourney.example=Surreal desert landscape, --chaos=50, --ar=16:9;[tutorial.prompt_tips]sharpness=ultra sharp,sharpness=sharp focus,sharpness=sharpened image,sharpness=focused,sharpness=deblur,sharpness=high density details,details=insane details,details=ultra high graphics settings,details=ray casting,details=ray tracings,details=rtx4090,details=8k,details=intricate details,depth_of_field=depth of field,depth_of_field=z-depth,depth_of_field=focused on center,depth_of_field=cinematic look,beautiful_image=cyberpunk,beautiful_image=futuristic,beautiful_image=sci-fi,beautiful_image=eye candy,beautiful_image=masterpiece,beautiful_image=grunge,beautiful_image=horror,lighting_and_contrast=dynamic lighting,lighting_and_contrast=high contrast,lighting_and_contrast=soft shadows,lighting_and_contrast=ambient occlusion,lighting_and_contrast=HDR lighting,textures_and_materials=realistic textures,textures_and_materials=high-resolution textures,textures_and_materials=PBR materials,textures_and_materials=glossy finish;[tutorial.prompt_structure_for_art]image_content=Опишите основной объект или содержание изображения.,art_form_style_and_artist_references=Направьте AI к определенной эстетике.,additional_details=Включите настройки, такие как освещение, цвета и композицию.;[tutorial.prompt_length_and_style]length_limitation=Нет строгого ограничения на длину промпта. Например, Midjourney хорошо работает с промптами длиной 60 слов, в то время как Stable Diffusion предпочитает промпты длиной менее 380 символов.,details=Яркие детали и конкретный язык дают более предсказуемые результаты, в то время как поэтическая или абстрактная формулировка может привести к неожиданным результатам.;[tutorial.tools_and_strategies]use_tools=Используйте инструменты, такие как CLIP Interrogator, чтобы 'разобрать' реальные изображения и найти новые промпты.,explore=Исследуйте генерацию изображение к изображению, AI outpainting и тонкую настройку параметров генерации для получения более продвинутых результатов.;[tutorial.where_to_find_AI_art_prompt_ideas]join_communities=Присоединяйтесь к сообществам, таким как сервер OpenAI и сервер Midjourney в Discord.,browse_collections=Просматривайте коллекции изображений и промптов на платформах, таких как neural.love и Lexica.;[base]description=Настя работает на основе языковой модели и создана как помощник промпт инженерам, просто искателям творческого вдохновения или как собеседник для скрашивания времени в интернете. Также Настя обладает обширными знаниями по генерациям изображений в нейросетях и сможет с легкостью обучить любого пользователя правильно составлять свой промпт для генерации нужного изображения;[base.community_description]Нейронка Каждый День=Творчество нейронных сетей и все, что с ними связано. Наше сообщество ориентировано на просветление масс в теме нейронных сетей, машинного обучения, искусственного интеллекта и прочих смежных частей науки о разуме 'машины'. Иллюстрации нашего сообщества не имеют авторской лицензии. Вы вправе использовать каждый появляющийся материал в любых целях, в том числе и коммерческих. Мы не против. Мы были бы очень благодарны если бы вы упомянули нас в своих социальных сетях, если решите использовать наши материалы. У нас очень отзывчивые админы, мы готовы к творческому сотрудничеству и открыты к предложениям. Основателями этого сообщества являются Paperclip (t.me/paperclip) и Анна (https://t.me/annyeska).;[base.social_links]telegram=https://t.me/dailyneuro,telegram=https://t.me/pprfnk,telegram=https://t.me/pprfnktech,vk=https://vk.com/pprfnktech,vk=https://vk.com/aidaily."""
+        self.content = """ТУТ НАДО ОПИСАТЬ ЛИЧНОСТЬ БОТА ЖЕЛАТЕЛЬНО В json формате(или любой формать ключ-значение), на удивление OPENAI такое воспринимает лучше простого текстовое описание"""
 
     def __new__(cls):
         if cls._instance is None:
@@ -223,55 +223,3 @@ class OpenAI:
                 self.retries += 1
                 if self.retries == self.max_retries:
                     raise Exception(f'⚠️ Ошибочка вышла ⚠️\n{str(e)}') from e
-
-##
-# for future use like in cyberpaper
-##
-# class UsageObserver:
-#    def __init__(self, user_id: int, session: AsyncSession):
-#        self.user_id = user_id
-#        self.session = session
-#
-#    async def add_chat_tokens(self, tokens, message_type):
-#        if message_type not in ['user', 'assistant']:
-#            return
-#
-#        result = await self.session.execute(select(User).filter(User.telegram_id == self.user_id))
-#        user = result.scalars().one_or_none()
-#
-#        if user:
-#            token_cost = round(tokens * user.price_per_token / 1000, 6)
-#            user.current_tokens += tokens
-#
-#            await self.session.commit()
-#            await self.add_current_costs(token_cost)
-
-#    async def get_current_token_usage(self):
-#        today = date.today()
-#        month = str(today)[:7]  # year-month as string
-#
-#        usage_day = await self.session.query(func.sum(User.current_tokens)).filter(User.telegram_id == self.user_id, func.date(User.updated_at) == today).scalar()
-#        usage_month = await self.session.query(func.sum(User.current_tokens)).filter(User.telegram_id == self.user_id, func.date(func.strftime('%Y-%m', User.updated_at)) == month).scalar()
-#
-#        return usage_day or 0, usage_month or 0
-#
-#    async def add_current_costs(self, request_cost):
-#        today = date.today()
-#
-#        result = await self.session.execute(select(User).filter(User.telegram_id == self.user_id))
-#        user = result.scalars().one_or_none()
-#
-#        if user:
-#            user.balance_amount -= request_cost
-#            user.updated_at = today
-#
-#            await self.session.commit()
-#
-#    async def get_current_cost(self):
-#        today = date.today()
-#
-#        cost_day = await self.session.query(func.sum(User.balance_amount)).filter(User.telegram_id == self.user_id, func.date(User.updated_at) == today).scalar()
-#        cost_month = await self.session.query(func.sum(User.balance_amount)).filter(User.telegram_id == self.user_id, func.date(func.strftime('%Y-%m', User.updated_at)) == str(today)[:7]).scalar()
-#        cost_all_time = await self.session.query(func.sum(User.balance_amount)).filter(User.telegram_id == self.user_id).scalar()
-#
-#        return {"cost_today": cost_day or 0.0, "cost_month": cost_month or 0.0, "cost_all_time": cost_all_time or 0.0}

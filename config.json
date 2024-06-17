@@ -1,0 +1,40 @@
+{
+  "token": "",
+  "api_key": "",
+  "sd_api_key": "",
+  "sd_api_url": "https://stablediffusionapi.com/api/v4/dreambooth",
+  "sd_key": "",
+  "sd_url": "https://api.getimg.ai/v1/stable-diffusion-xl/text-to-image",
+  "el_key": "",
+  "post_channel": "",
+  "admins": [
+    58800377,
+    910007939,
+    350493882,
+    824834852
+  ],
+  "group_main": "",
+  "banned_group": "",
+  "banned_user_ids": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "banned_usernames": [
+    ""
+  ],
+  "remove_joins": "True",
+  "lang": "ru",
+  "report_mode": "private",
+  "group_reports": "",
+  "ban_channels": "True",
+  "db_url": "mariadb+aiomysql://USER:PASS@HOST/DBNAME?charset=utf8mb4",
+  "redis": {
+    "host": "HOST",
+    "port": 6379,
+    "password": null,
+    "db": 4,
+    "conversation": 3
+  }
+}
